@@ -1,0 +1,102 @@
+{
+  "_readme": "Made up data so the app can run without the real portfolio.json. Copy to portfolio.json to try it out.",
+  "refresh_minutes": 5,
+  "accounts": [
+    {
+      "name": "Example Broker",
+      "since": "2021-03",
+      "cash_eur": 125.4,
+      "closed_cashflow_eur": 310.0,
+      "profit_extra_eur": 45.0,
+      "note": "Example account.",
+      "positions": [
+        {
+          "name": "iShares Core MSCI World",
+          "isin": "IE00B4L5Y983",
+          "category": "Broad ETF",
+          "units": 20.5,
+          "cost_eur": 2400.0,
+          "net_cashflow_eur": -2400.0,
+          "ref_price_eur": 130.0,
+          "tickers": ["IWDA.AS"]
+        },
+        {
+          "name": "ASML",
+          "isin": "NL0010273215",
+          "category": "Stock",
+          "units": 1.0,
+          "cost_eur": 1200.0,
+          "net_cashflow_eur": -1200.0,
+          "ref_price_eur": 1650.0,
+          "tickers": ["ASML.AS"]
+        },
+        {
+          "name": "Example bond 2029",
+          "isin": "XS0000000000",
+          "category": "Bond",
+          "units": 1000.0,
+          "cost_eur": 1000.0,
+          "net_cashflow_eur": -1000.0,
+          "manual_price_eur": 0.97,
+          "ref_price_eur": 0.97,
+          "maturity": "2029-12",
+          "tickers": []
+        }
+      ]
+    }
+  ],
+  "managed": {
+    "name": "Example managed portfolio",
+    "value_eur": 25000.0,
+    "value_date": "2026-09-01",
+    "start_value_eur": 20000.0,
+    "start_date": "2022-01-01",
+    "profit_at_value_date_eur": 5000.0,
+    "fees_paid_eur": 900.0,
+    "proxy": [
+      {"symbol": "IWDA.AS", "weight": 0.8},
+      {"symbol": "D5BG.DE", "weight": 0.2}
+    ]
+  },
+  "savings": [
+    {
+      "name": "Savings account",
+      "bank": "Example Bank",
+      "principal_eur": 8000.0,
+      "rate_pct": 2.5,
+      "accrued_at_snapshot_eur": 0.0,
+      "snapshot_date": "2026-10-01",
+      "maturity": null
+    },
+    {
+      "name": "Current account",
+      "bank": "Example Bank",
+      "principal_eur": 1500.0,
+      "rate_pct": 0.0,
+      "accrued_at_snapshot_eur": 0.0,
+      "snapshot_date": "2026-10-01",
+      "maturity": null
+    }
+  ],
+  "debts": [
+    {
+      "name": "Student loan",
+      "balance_eur": 12000.0,
+      "rate_pct": 2.56,
+      "snapshot_date": "2026-10-01",
+      "expected_gift": false
+    }
+  ],
+  "todos": [
+    {"text": "Example to do", "done": false}
+  ],
+  "account_history": [
+    {"date": "2024-12-31", "account": "Example Broker", "value_eur": 3200, "source": "example"},
+    {"date": "2025-12-31", "account": "Example Broker", "value_eur": 4100, "source": "example"}
+  ],
+  "yearly_flows": [
+    {"year": 2025, "account": "Example Broker", "deposits_eur": null, "withdrawals_eur": null, "invested_eur": 900,
+     "dividends_eur": 42.5, "interest_received_eur": null, "interest_paid_eur": null, "fees_eur": 12.0,
+     "taxes_eur": null, "profit_eur": 310, "return_pct": 9, "note": "example"}
+  ]
+}

@@ -6,8 +6,6 @@ Every balance, payment, account, profile, conversation and market price in `demo
 
 ## Run it
 
-**Quick look:** download this repository (Code → Download ZIP), extract it, and open `preview.html` in your browser. It is a self-contained, read-only preview with synthetic data; no Python, network connection or setup needed. Use the full app below for editing and imports.
-
 Install **Python 3.9 or newer**. The default demo needs no third-party packages, account, API key or Supabase project.
 
 - **Windows:** double-click `start-demo-windows.bat`.
@@ -44,10 +42,10 @@ Install the original optional dependencies with `python -m pip install -r requir
 
 - **Yahoo prices:** `python demo.py --live-prices` uses genuine quotes for the invented holdings.
 - **AI / Ollama / Supabase:** `python demo.py --connect-services` allows your own separate setup. Use Settings in the demo; credentials stay in `.demo-runtime/settings.json`, excluded from Git. AI replies and AI imports need Claude Code or an Anthropic API key. Known bank CSV formats still import without AI.
-- **Supabase:** use a **new, empty demo project**. Run `supabase-schema.sql`, `supabase-history.sql`, `supabase-spending.sql`, `supabase-plans.sql`, then `demo_data/supabase-seed.sql` in that order. The first schema resets the dashboard tables, so do not run it against a database containing real data. Row-level security remains enabled; use your own project URL and server secret key locally. The seed includes no credentials.
+- **Supabase:** use a **new, empty demo project**. Run `supabase-schema.sql`, `supabase-history.sql`, `supabase-spending.sql` and `supabase-plans.sql` in that order. Run `python build_supabase_seed.py` locally, then paste the generated `cache/demo-supabase-seed.sql` into that project's SQL Editor. The first schema resets the dashboard tables, so do not run it against a database containing real data. Row-level security remains enabled; use your own project URL and server secret key locally. The seed includes no credentials.
 
 ## Working on it
 
 Tests: `python -m unittest discover tests`. Additional demo checks cover sample-data generation, isolation and offline APIs. The application guide is in `docs/APP_GUIDE.md`; the data format is documented in `DATA.md`.
 
-Keep `.demo-runtime/`, root data files, exports, backups and credentials out of Git. Only the generated fixtures in `demo_data/` should be shared. The downloadable package contains the same public-safe files as the repository.
+Keep `.demo-runtime/`, root data files, exports, backups and credentials out of Git. Only the generated fixtures in `demo_data/` should be shared. Versioned transactions are split by month and CSV history by quarter, with indexes in `demo_data/manifest.json`; SQL seed chunks are in `demo_data/sql/`. The runtime regenerates the normal single-file data layout automatically.

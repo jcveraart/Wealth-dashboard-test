@@ -1,0 +1,2 @@
+-- Synthetic seed is split into reviewable files in demo_data/sql/.
+-- Run python build_supabase_seed.py to assemble cache/demo-supabase-seed.sql.

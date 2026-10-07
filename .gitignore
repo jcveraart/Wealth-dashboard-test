@@ -1,0 +1,29 @@
+# Real data and credentials always stay out of Git.
+/portfolio.json
+/spending.json
+/notes.md
+/history.csv
+/history_accounts.csv
+/inbox.json
+/imports.json
+/ui.json
+/chats.json
+/settings.json
+/backups/
+/cache/
+/.demo-runtime/
+/.venv/
+**/__pycache__/
+*.pyc
+*.tmp
+.pytest_cache/
+.claude/
+.vscode/
+.DS_Store
+Transaction_export*.csv
+*_export*.csv
+*.TXT
+*.xlsx
+*.xls
+*.pdf
+# The invented demo_data/ fixtures are deliberately versioned.

@@ -1,0 +1,911 @@
+date,account,value
+2023-04-01,Example Broker One,18371.37
+2023-04-01,Example Broker Two,15449.19
+2023-04-01,Example Crypto Exchange,2530.22
+2023-04-01,Example Managed Portfolio,14144.25
+2023-04-01,Demo Bank Current Account,1766.47
+2023-04-01,Demo Travel Card,417.53
+2023-04-01,Emergency Savings,8049.94
+2023-04-01,Fixed Deposit,4284.48
+2023-04-01,Example Student Loan,-19761.5
+2023-04-01,Example Personal Loan,-7411.5
+2023-04-02,Example Broker One,18387.39
+2023-04-02,Example Broker Two,15462.66
+2023-04-02,Example Crypto Exchange,2532.43
+2023-04-02,Example Managed Portfolio,14156.58
+2023-04-02,Demo Bank Current Account,1768.01
+2023-04-02,Demo Travel Card,417.89
+2023-04-02,Emergency Savings,8056.96
+2023-04-02,Fixed Deposit,4288.22
+2023-04-02,Example Student Loan,-19757.6
+2023-04-02,Example Personal Loan,-7407.6
+2023-04-03,Example Broker One,18403.39
+2023-04-03,Example Broker Two,15476.12
+2023-04-03,Example Crypto Exchange,2534.63
+2023-04-03,Example Managed Portfolio,14168.91
+2023-04-03,Demo Bank Current Account,1769.54
+2023-04-03,Demo Travel Card,418.26
+2023-04-03,Emergency Savings,8063.98
+2023-04-03,Fixed Deposit,4291.95
+2023-04-03,Example Student Loan,-19753.7
+2023-04-03,Example Personal Loan,-7403.7
+2023-04-04,Example Broker One,18419.39
+2023-04-04,Example Broker Two,15489.57
+2023-04-04,Example Crypto Exchange,2536.83
+2023-04-04,Example Managed Portfolio,14181.22
+2023-04-04,Demo Bank Current Account,1771.08
+2023-04-04,Demo Travel Card,418.62
+2023-04-04,Emergency Savings,8070.99
+2023-04-04,Fixed Deposit,4295.68
+2023-04-04,Example Student Loan,-19749.8
+2023-04-04,Example Personal Loan,-7399.8
+2023-04-05,Example Broker One,18435.38
+2023-04-05,Example Broker Two,15503.01
+2023-04-05,Example Crypto Exchange,2539.04
+2023-04-05,Example Managed Portfolio,14193.53
+2023-04-05,Demo Bank Current Account,1772.62
+2023-04-05,Demo Travel Card,418.98
+2023-04-05,Emergency Savings,8077.99
+2023-04-05,Fixed Deposit,4299.41
+2023-04-05,Example Student Loan,-19745.9
+2023-04-05,Example Personal Loan,-7395.9
+2023-04-06,Example Broker One,18451.35
+2023-04-06,Example Broker Two,15516.44
+2023-04-06,Example Crypto Exchange,2541.24
+2023-04-06,Example Managed Portfolio,14205.83
+2023-04-06,Demo Bank Current Account,1774.16
+2023-04-06,Demo Travel Card,419.35
+2023-04-06,Emergency Savings,8084.99
+2023-04-06,Fixed Deposit,4303.13
+2023-04-06,Example Student Loan,-19742.0
+2023-04-06,Example Personal Loan,-7392.0
+2023-04-07,Example Broker One,18467.31
+2023-04-07,Example Broker Two,15529.86
+2023-04-07,Example Crypto Exchange,2543.43
+2023-04-07,Example Managed Portfolio,14218.11
+2023-04-07,Demo Bank Current Account,1775.69
+2023-04-07,Demo Travel Card,419.71
+2023-04-07,Emergency Savings,8091.98
+2023-04-07,Fixed Deposit,4306.86
+2023-04-07,Example Student Loan,-19738.1
+2023-04-07,Example Personal Loan,-7388.1
+2023-04-08,Example Broker One,18483.25
+2023-04-08,Example Broker Two,15543.27
+2023-04-08,Example Crypto Exchange,2545.63
+2023-04-08,Example Managed Portfolio,14230.39
+2023-04-08,Demo Bank Current Account,1777.22
+2023-04-08,Demo Travel Card,420.07
+2023-04-08,Emergency Savings,8098.97
+2023-04-08,Fixed Deposit,4310.57
+2023-04-08,Example Student Loan,-19734.2
+2023-04-08,Example Personal Loan,-7384.2
+2023-04-09,Example Broker One,18499.18
+2023-04-09,Example Broker Two,15556.67
+2023-04-09,Example Crypto Exchange,2547.82
+2023-04-09,Example Managed Portfolio,14242.65
+2023-04-09,Demo Bank Current Account,1778.75
+2023-04-09,Demo Travel Card,420.43
+2023-04-09,Emergency Savings,8105.95
+2023-04-09,Fixed Deposit,4314.29
+2023-04-09,Example Student Loan,-19730.3
+2023-04-09,Example Personal Loan,-7380.3
+2023-04-10,Example Broker One,18515.09
+2023-04-10,Example Broker Two,15570.05
+2023-04-10,Example Crypto Exchange,2550.02
+2023-04-10,Example Managed Portfolio,14254.9
+2023-04-10,Demo Bank Current Account,1780.28
+2023-04-10,Demo Travel Card,420.79
+2023-04-10,Emergency Savings,8112.92
+2023-04-10,Fixed Deposit,4318.0
+2023-04-10,Example Student Loan,-19726.4
+2023-04-10,Example Personal Loan,-7376.4
+2023-04-11,Example Broker One,18530.98
+2023-04-11,Example Broker Two,15583.41
+2023-04-11,Example Crypto Exchange,2552.2
+2023-04-11,Example Managed Portfolio,14267.14
+2023-04-11,Demo Bank Current Account,1781.81
+2023-04-11,Demo Travel Card,421.16
+2023-04-11,Emergency Savings,8119.88
+2023-04-11,Fixed Deposit,4321.71
+2023-04-11,Example Student Loan,-19722.5
+2023-04-11,Example Personal Loan,-7372.5
+2023-04-12,Example Broker One,18546.86
+2023-04-12,Example Broker Two,15596.76
+2023-04-12,Example Crypto Exchange,2554.39
+2023-04-12,Example Managed Portfolio,14279.36
+2023-04-12,Demo Bank Current Account,1783.34
+2023-04-12,Demo Travel Card,421.52
+2023-04-12,Emergency Savings,8126.84
+2023-04-12,Fixed Deposit,4325.41
+2023-04-12,Example Student Loan,-19718.6
+2023-04-12,Example Personal Loan,-7368.6
+2023-04-13,Example Broker One,18562.71
+2023-04-13,Example Broker Two,15610.09
+2023-04-13,Example Crypto Exchange,2556.57
+2023-04-13,Example Managed Portfolio,14291.56
+2023-04-13,Demo Bank Current Account,1784.86
+2023-04-13,Demo Travel Card,421.88
+2023-04-13,Emergency Savings,8133.79
+2023-04-13,Fixed Deposit,4329.11
+2023-04-13,Example Student Loan,-19714.7
+2023-04-13,Example Personal Loan,-7364.7
+2023-04-14,Example Broker One,18578.54
+2023-04-14,Example Broker Two,15623.41
+2023-04-14,Example Crypto Exchange,2558.75
+2023-04-14,Example Managed Portfolio,14303.75
+2023-04-14,Demo Bank Current Account,1786.39
+2023-04-14,Demo Travel Card,422.24
+2023-04-14,Emergency Savings,8140.72
+2023-04-14,Fixed Deposit,4332.8
+2023-04-14,Example Student Loan,-19710.8
+2023-04-14,Example Personal Loan,-7360.8
+2023-04-15,Example Broker One,18594.35
+2023-04-15,Example Broker Two,15636.7
+2023-04-15,Example Crypto Exchange,2560.93
+2023-04-15,Example Managed Portfolio,14315.92
+2023-04-15,Demo Bank Current Account,1787.91
+2023-04-15,Demo Travel Card,422.6
+2023-04-15,Emergency Savings,8147.65
+2023-04-15,Fixed Deposit,4336.48
+2023-04-15,Example Student Loan,-19706.9
+2023-04-15,Example Personal Loan,-7356.9
+2023-04-16,Example Broker One,18610.14
+2023-04-16,Example Broker Two,15649.97
+2023-04-16,Example Crypto Exchange,2563.11
+2023-04-16,Example Managed Portfolio,14328.08
+2023-04-16,Demo Bank Current Account,1789.42
+2023-04-16,Demo Travel Card,422.95
+2023-04-16,Emergency Savings,8154.57
+2023-04-16,Fixed Deposit,4340.17
+2023-04-16,Example Student Loan,-19703.0
+2023-04-16,Example Personal Loan,-7353.0
+2023-04-17,Example Broker One,18625.9
+2023-04-17,Example Broker Two,15663.23
+2023-04-17,Example Crypto Exchange,2565.28
+2023-04-17,Example Managed Portfolio,14340.21
+2023-04-17,Demo Bank Current Account,1790.94
+2023-04-17,Demo Travel Card,423.31
+2023-04-17,Emergency Savings,8161.47
+2023-04-17,Fixed Deposit,4343.84
+2023-04-17,Example Student Loan,-19699.1
+2023-04-17,Example Personal Loan,-7349.1
+2023-04-18,Example Broker One,18641.63
+2023-04-18,Example Broker Two,15676.46
+2023-04-18,Example Crypto Exchange,2567.44
+2023-04-18,Example Managed Portfolio,14352.33
+2023-04-18,Demo Bank Current Account,1792.45
+2023-04-18,Demo Travel Card,423.67
+2023-04-18,Emergency Savings,8168.37
+2023-04-18,Fixed Deposit,4347.51
+2023-04-18,Example Student Loan,-19695.2
+2023-04-18,Example Personal Loan,-7345.2
+2023-04-19,Example Broker One,18657.34
+2023-04-19,Example Broker Two,15689.67
+2023-04-19,Example Crypto Exchange,2569.61
+2023-04-19,Example Managed Portfolio,14364.42
+2023-04-19,Demo Bank Current Account,1793.96
+2023-04-19,Demo Travel Card,424.03
+2023-04-19,Emergency Savings,8175.25
+2023-04-19,Fixed Deposit,4351.17
+2023-04-19,Example Student Loan,-19691.3
+2023-04-19,Example Personal Loan,-7341.3
+2023-04-20,Example Broker One,18673.02
+2023-04-20,Example Broker Two,15702.85
+2023-04-20,Example Crypto Exchange,2571.77
+2023-04-20,Example Managed Portfolio,14376.49
+2023-04-20,Demo Bank Current Account,1795.47
+2023-04-20,Demo Travel Card,424.38
+2023-04-20,Emergency Savings,8182.12
+2023-04-20,Fixed Deposit,4354.83
+2023-04-20,Example Student Loan,-19687.4
+2023-04-20,Example Personal Loan,-7337.4
+2023-04-21,Example Broker One,18688.66
+2023-04-21,Example Broker Two,15716.01
+2023-04-21,Example Crypto Exchange,2573.92
+2023-04-21,Example Managed Portfolio,14388.54
+2023-04-21,Demo Bank Current Account,1796.97
+2023-04-21,Demo Travel Card,424.74
+2023-04-21,Emergency Savings,8188.98
+2023-04-21,Fixed Deposit,4358.48
+2023-04-21,Example Student Loan,-19683.5
+2023-04-21,Example Personal Loan,-7333.5
+2023-04-22,Example Broker One,18704.28
+2023-04-22,Example Broker Two,15729.15
+2023-04-22,Example Crypto Exchange,2576.07
+2023-04-22,Example Managed Portfolio,14400.56
+2023-04-22,Demo Bank Current Account,1798.48
+2023-04-22,Demo Travel Card,425.09
+2023-04-22,Emergency Savings,8195.82
+2023-04-22,Fixed Deposit,4362.12
+2023-04-22,Example Student Loan,-19679.6
+2023-04-22,Example Personal Loan,-7329.6
+2023-04-23,Example Broker One,18719.87
+2023-04-23,Example Broker Two,15742.25
+2023-04-23,Example Crypto Exchange,2578.22
+2023-04-23,Example Managed Portfolio,14412.56
+2023-04-23,Demo Bank Current Account,1799.97
+2023-04-23,Demo Travel Card,425.45
+2023-04-23,Emergency Savings,8202.65
+2023-04-23,Fixed Deposit,4365.76
+2023-04-23,Example Student Loan,-19675.7
+2023-04-23,Example Personal Loan,-7325.7
+2023-04-24,Example Broker One,18735.43
+2023-04-24,Example Broker Two,15755.33
+2023-04-24,Example Crypto Exchange,2580.36
+2023-04-24,Example Managed Portfolio,14424.54
+2023-04-24,Demo Bank Current Account,1801.47
+2023-04-24,Demo Travel Card,425.8
+2023-04-24,Emergency Savings,8209.47
+2023-04-24,Fixed Deposit,4369.39
+2023-04-24,Example Student Loan,-19671.8
+2023-04-24,Example Personal Loan,-7321.8
+2023-04-25,Example Broker One,18750.95
+2023-04-25,Example Broker Two,15768.39
+2023-04-25,Example Crypto Exchange,2582.5
+2023-04-25,Example Managed Portfolio,14436.49
+2023-04-25,Demo Bank Current Account,1802.96
+2023-04-25,Demo Travel Card,426.15
+2023-04-25,Emergency Savings,8216.27
+2023-04-25,Fixed Deposit,4373.0
+2023-04-25,Example Student Loan,-19667.9
+2023-04-25,Example Personal Loan,-7317.9
+2023-04-26,Example Broker One,18766.43
+2023-04-26,Example Broker Two,15781.41
+2023-04-26,Example Crypto Exchange,2584.63
+2023-04-26,Example Managed Portfolio,14448.41
+2023-04-26,Demo Bank Current Account,1804.45
+2023-04-26,Demo Travel Card,426.51
+2023-04-26,Emergency Savings,8223.05
+2023-04-26,Fixed Deposit,4376.62
+2023-04-26,Example Student Loan,-19664.0
+2023-04-26,Example Personal Loan,-7314.0
+2023-04-27,Example Broker One,18781.88
+2023-04-27,Example Broker Two,15794.4
+2023-04-27,Example Crypto Exchange,2586.76
+2023-04-27,Example Managed Portfolio,14460.31
+2023-04-27,Demo Bank Current Account,1805.94
+2023-04-27,Demo Travel Card,426.86
+2023-04-27,Emergency Savings,8229.82
+2023-04-27,Fixed Deposit,4380.22
+2023-04-27,Example Student Loan,-19660.1
+2023-04-27,Example Personal Loan,-7310.1
+2023-04-28,Example Broker One,18797.3
+2023-04-28,Example Broker Two,15807.36
+2023-04-28,Example Crypto Exchange,2588.88
+2023-04-28,Example Managed Portfolio,14472.17
+2023-04-28,Demo Bank Current Account,1807.42
+2023-04-28,Demo Travel Card,427.21
+2023-04-28,Emergency Savings,8236.58
+2023-04-28,Fixed Deposit,4383.81
+2023-04-28,Example Student Loan,-19656.2
+2023-04-28,Example Personal Loan,-7306.2
+2023-04-29,Example Broker One,18812.67
+2023-04-29,Example Broker Two,15820.29
+2023-04-29,Example Crypto Exchange,2591.0
+2023-04-29,Example Managed Portfolio,14484.01
+2023-04-29,Demo Bank Current Account,1808.9
+2023-04-29,Demo Travel Card,427.56
+2023-04-29,Emergency Savings,8243.31
+2023-04-29,Fixed Deposit,4387.4
+2023-04-29,Example Student Loan,-19652.3
+2023-04-29,Example Personal Loan,-7302.3
+2023-04-30,Example Broker One,18828.01
+2023-04-30,Example Broker Two,15833.19
+2023-04-30,Example Crypto Exchange,2593.11
+2023-04-30,Example Managed Portfolio,14495.82
+2023-04-30,Demo Bank Current Account,1810.37
+2023-04-30,Demo Travel Card,427.91
+2023-04-30,Emergency Savings,8250.03
+2023-04-30,Fixed Deposit,4390.98
+2023-04-30,Example Student Loan,-19648.4
+2023-04-30,Example Personal Loan,-7298.4
+2023-05-01,Example Broker One,18843.3
+2023-05-01,Example Broker Two,15846.05
+2023-05-01,Example Crypto Exchange,2595.22
+2023-05-01,Example Managed Portfolio,14507.59
+2023-05-01,Demo Bank Current Account,1811.84
+2023-05-01,Demo Travel Card,428.25
+2023-05-01,Emergency Savings,8256.74
+2023-05-01,Fixed Deposit,4394.54
+2023-05-01,Example Student Loan,-19644.5
+2023-05-01,Example Personal Loan,-7294.5
+2023-05-02,Example Broker One,18858.56
+2023-05-02,Example Broker Two,15858.88
+2023-05-02,Example Crypto Exchange,2597.32
+2023-05-02,Example Managed Portfolio,14519.34
+2023-05-02,Demo Bank Current Account,1813.31
+2023-05-02,Demo Travel Card,428.6
+2023-05-02,Emergency Savings,8263.42
+2023-05-02,Fixed Deposit,4398.1
+2023-05-02,Example Student Loan,-19640.6
+2023-05-02,Example Personal Loan,-7290.6
+2023-05-03,Example Broker One,18873.77
+2023-05-03,Example Broker Two,15871.67
+2023-05-03,Example Crypto Exchange,2599.41
+2023-05-03,Example Managed Portfolio,14531.05
+2023-05-03,Demo Bank Current Account,1814.77
+2023-05-03,Demo Travel Card,428.95
+2023-05-03,Emergency Savings,8270.09
+2023-05-03,Fixed Deposit,4401.65
+2023-05-03,Example Student Loan,-19636.7
+2023-05-03,Example Personal Loan,-7286.7
+2023-05-04,Example Broker One,18888.94
+2023-05-04,Example Broker Two,15884.43
+2023-05-04,Example Crypto Exchange,2601.5
+2023-05-04,Example Managed Portfolio,14542.73
+2023-05-04,Demo Bank Current Account,1816.23
+2023-05-04,Demo Travel Card,429.29
+2023-05-04,Emergency Savings,8276.73
+2023-05-04,Fixed Deposit,4405.19
+2023-05-04,Example Student Loan,-19632.8
+2023-05-04,Example Personal Loan,-7282.8
+2023-05-05,Example Broker One,18904.07
+2023-05-05,Example Broker Two,15897.15
+2023-05-05,Example Crypto Exchange,2603.59
+2023-05-05,Example Managed Portfolio,14554.38
+2023-05-05,Demo Bank Current Account,1817.69
+2023-05-05,Demo Travel Card,429.63
+2023-05-05,Emergency Savings,8283.36
+2023-05-05,Fixed Deposit,4408.71
+2023-05-05,Example Student Loan,-19628.9
+2023-05-05,Example Personal Loan,-7278.9
+2023-05-06,Example Broker One,18919.15
+2023-05-06,Example Broker Two,15909.83
+2023-05-06,Example Crypto Exchange,2605.66
+2023-05-06,Example Managed Portfolio,14565.99
+2023-05-06,Demo Bank Current Account,1819.14
+2023-05-06,Demo Travel Card,429.98
+2023-05-06,Emergency Savings,8289.97
+2023-05-06,Fixed Deposit,4412.23
+2023-05-06,Example Student Loan,-19625.0
+2023-05-06,Example Personal Loan,-7275.0
+2023-05-07,Example Broker One,18934.18
+2023-05-07,Example Broker Two,15922.47
+2023-05-07,Example Crypto Exchange,2607.73
+2023-05-07,Example Managed Portfolio,14577.56
+2023-05-07,Demo Bank Current Account,1820.58
+2023-05-07,Demo Travel Card,430.32
+2023-05-07,Emergency Savings,8296.56
+2023-05-07,Fixed Deposit,4415.74
+2023-05-07,Example Student Loan,-19621.1
+2023-05-07,Example Personal Loan,-7271.1
+2023-05-08,Example Broker One,18949.17
+2023-05-08,Example Broker Two,15935.08
+2023-05-08,Example Crypto Exchange,2609.8
+2023-05-08,Example Managed Portfolio,14589.1
+2023-05-08,Demo Bank Current Account,1822.02
+2023-05-08,Demo Travel Card,430.66
+2023-05-08,Emergency Savings,8303.12
+2023-05-08,Fixed Deposit,4419.23
+2023-05-08,Example Student Loan,-19617.2
+2023-05-08,Example Personal Loan,-7267.2
+2023-05-09,Example Broker One,18964.1
+2023-05-09,Example Broker Two,15947.64
+2023-05-09,Example Crypto Exchange,2611.86
+2023-05-09,Example Managed Portfolio,14600.6
+2023-05-09,Demo Bank Current Account,1823.46
+2023-05-09,Demo Travel Card,431.0
+2023-05-09,Emergency Savings,8309.67
+2023-05-09,Fixed Deposit,4422.72
+2023-05-09,Example Student Loan,-19613.3
+2023-05-09,Example Personal Loan,-7263.3
+2023-05-10,Example Broker One,18978.99
+2023-05-10,Example Broker Two,15960.16
+2023-05-10,Example Crypto Exchange,2613.91
+2023-05-10,Example Managed Portfolio,14612.06
+2023-05-10,Demo Bank Current Account,1824.89
+2023-05-10,Demo Travel Card,431.34
+2023-05-10,Emergency Savings,8316.19
+2023-05-10,Fixed Deposit,4426.19
+2023-05-10,Example Student Loan,-19609.4
+2023-05-10,Example Personal Loan,-7259.4
+2023-05-11,Example Broker One,18993.83
+2023-05-11,Example Broker Two,15972.64
+2023-05-11,Example Crypto Exchange,2615.95
+2023-05-11,Example Managed Portfolio,14623.49
+2023-05-11,Demo Bank Current Account,1826.32
+2023-05-11,Demo Travel Card,431.67
+2023-05-11,Emergency Savings,8322.69
+2023-05-11,Fixed Deposit,4429.65
+2023-05-11,Example Student Loan,-19605.5
+2023-05-11,Example Personal Loan,-7255.5
+2023-05-12,Example Broker One,19008.62
+2023-05-12,Example Broker Two,15985.07
+2023-05-12,Example Crypto Exchange,2617.99
+2023-05-12,Example Managed Portfolio,14634.87
+2023-05-12,Demo Bank Current Account,1827.74
+2023-05-12,Demo Travel Card,432.01
+2023-05-12,Emergency Savings,8329.17
+2023-05-12,Fixed Deposit,4433.1
+2023-05-12,Example Student Loan,-19601.6
+2023-05-12,Example Personal Loan,-7251.6
+2023-05-13,Example Broker One,19023.35
+2023-05-13,Example Broker Two,15997.46
+2023-05-13,Example Crypto Exchange,2620.02
+2023-05-13,Example Managed Portfolio,14646.22
+2023-05-13,Demo Bank Current Account,1829.16
+2023-05-13,Demo Travel Card,432.35
+2023-05-13,Emergency Savings,8335.63
+2023-05-13,Fixed Deposit,4436.53
+2023-05-13,Example Student Loan,-19597.7
+2023-05-13,Example Personal Loan,-7247.7
+2023-05-14,Example Broker One,19038.03
+2023-05-14,Example Broker Two,16009.81
+2023-05-14,Example Crypto Exchange,2622.04
+2023-05-14,Example Managed Portfolio,14657.52
+2023-05-14,Demo Bank Current Account,1830.57
+2023-05-14,Demo Travel Card,432.68
+2023-05-14,Emergency Savings,8342.06
+2023-05-14,Fixed Deposit,4439.96
+2023-05-14,Example Student Loan,-19593.8
+2023-05-14,Example Personal Loan,-7243.8
+2023-05-15,Example Broker One,19052.66
+2023-05-15,Example Broker Two,16022.11
+2023-05-15,Example Crypto Exchange,2624.05
+2023-05-15,Example Managed Portfolio,14668.78
+2023-05-15,Demo Bank Current Account,1831.97
+2023-05-15,Demo Travel Card,433.01
+2023-05-15,Emergency Savings,8348.47
+2023-05-15,Fixed Deposit,4443.37
+2023-05-15,Example Student Loan,-19589.9
+2023-05-15,Example Personal Loan,-7239.9
+2023-05-16,Example Broker One,19067.23
+2023-05-16,Example Broker Two,16034.37
+2023-05-16,Example Crypto Exchange,2626.06
+2023-05-16,Example Managed Portfolio,14680.0
+2023-05-16,Demo Bank Current Account,1833.38
+2023-05-16,Demo Travel Card,433.34
+2023-05-16,Emergency Savings,8354.86
+2023-05-16,Fixed Deposit,4446.77
+2023-05-16,Example Student Loan,-19586.0
+2023-05-16,Example Personal Loan,-7236.0
+2023-05-17,Example Broker One,19081.75
+2023-05-17,Example Broker Two,16046.57
+2023-05-17,Example Crypto Exchange,2628.06
+2023-05-17,Example Managed Portfolio,14691.18
+2023-05-17,Demo Bank Current Account,1834.77
+2023-05-17,Demo Travel Card,433.67
+2023-05-17,Emergency Savings,8361.22
+2023-05-17,Fixed Deposit,4450.15
+2023-05-17,Example Student Loan,-19582.1
+2023-05-17,Example Personal Loan,-7232.1
+2023-05-18,Example Broker One,19096.21
+2023-05-18,Example Broker Two,16058.73
+2023-05-18,Example Crypto Exchange,2630.05
+2023-05-18,Example Managed Portfolio,14702.31
+2023-05-18,Demo Bank Current Account,1836.16
+2023-05-18,Demo Travel Card,434.0
+2023-05-18,Emergency Savings,8367.55
+2023-05-18,Fixed Deposit,4453.53
+2023-05-18,Example Student Loan,-19578.2
+2023-05-18,Example Personal Loan,-7228.2
+2023-05-19,Example Broker One,19110.61
+2023-05-19,Example Broker Two,16070.84
+2023-05-19,Example Crypto Exchange,2632.03
+2023-05-19,Example Managed Portfolio,14713.4
+2023-05-19,Demo Bank Current Account,1837.55
+2023-05-19,Demo Travel Card,434.33
+2023-05-19,Emergency Savings,8373.86
+2023-05-19,Fixed Deposit,4456.88
+2023-05-19,Example Student Loan,-19574.3
+2023-05-19,Example Personal Loan,-7224.3
+2023-05-20,Example Broker One,19124.95
+2023-05-20,Example Broker Two,16082.9
+2023-05-20,Example Crypto Exchange,2634.01
+2023-05-20,Example Managed Portfolio,14724.44
+2023-05-20,Demo Bank Current Account,1838.93
+2023-05-20,Demo Travel Card,434.66
+2023-05-20,Emergency Savings,8380.15
+2023-05-20,Fixed Deposit,4460.23
+2023-05-20,Example Student Loan,-19570.4
+2023-05-20,Example Personal Loan,-7220.4
+2023-05-21,Example Broker One,19139.24
+2023-05-21,Example Broker Two,16094.91
+2023-05-21,Example Crypto Exchange,2635.98
+2023-05-21,Example Managed Portfolio,14735.44
+2023-05-21,Demo Bank Current Account,1840.3
+2023-05-21,Demo Travel Card,434.98
+2023-05-21,Emergency Savings,8386.41
+2023-05-21,Fixed Deposit,4463.56
+2023-05-21,Example Student Loan,-19566.5
+2023-05-21,Example Personal Loan,-7216.5
+2023-05-22,Example Broker One,19153.46
+2023-05-22,Example Broker Two,16106.87
+2023-05-22,Example Crypto Exchange,2637.94
+2023-05-22,Example Managed Portfolio,14746.39
+2023-05-22,Demo Bank Current Account,1841.67
+2023-05-22,Demo Travel Card,435.3
+2023-05-22,Emergency Savings,8392.64
+2023-05-22,Fixed Deposit,4466.88
+2023-05-22,Example Student Loan,-19562.6
+2023-05-22,Example Personal Loan,-7212.6
+2023-05-23,Example Broker One,19167.62
+2023-05-23,Example Broker Two,16118.78
+2023-05-23,Example Crypto Exchange,2639.89
+2023-05-23,Example Managed Portfolio,14757.29
+2023-05-23,Demo Bank Current Account,1843.03
+2023-05-23,Demo Travel Card,435.62
+2023-05-23,Emergency Savings,8398.84
+2023-05-23,Fixed Deposit,4470.18
+2023-05-23,Example Student Loan,-19558.7
+2023-05-23,Example Personal Loan,-7208.7
+2023-05-24,Example Broker One,19181.72
+2023-05-24,Example Broker Two,16130.64
+2023-05-24,Example Crypto Exchange,2641.83
+2023-05-24,Example Managed Portfolio,14768.14
+2023-05-24,Demo Bank Current Account,1844.38
+2023-05-24,Demo Travel Card,435.95
+2023-05-24,Emergency Savings,8405.02
+2023-05-24,Fixed Deposit,4473.47
+2023-05-24,Example Student Loan,-19554.8
+2023-05-24,Example Personal Loan,-7204.8
+2023-05-25,Example Broker One,19195.75
+2023-05-25,Example Broker Two,16142.44
+2023-05-25,Example Crypto Exchange,2643.76
+2023-05-25,Example Managed Portfolio,14778.95
+2023-05-25,Demo Bank Current Account,1845.73
+2023-05-25,Demo Travel Card,436.26
+2023-05-25,Emergency Savings,8411.17
+2023-05-25,Fixed Deposit,4476.74
+2023-05-25,Example Student Loan,-19550.9
+2023-05-25,Example Personal Loan,-7200.9
+2023-05-26,Example Broker One,19209.72
+2023-05-26,Example Broker Two,16154.19
+2023-05-26,Example Crypto Exchange,2645.68
+2023-05-26,Example Managed Portfolio,14789.7
+2023-05-26,Demo Bank Current Account,1847.08
+2023-05-26,Demo Travel Card,436.58
+2023-05-26,Emergency Savings,8417.29
+2023-05-26,Fixed Deposit,4480.0
+2023-05-26,Example Student Loan,-19547.0
+2023-05-26,Example Personal Loan,-7197.0
+2023-05-27,Example Broker One,19223.63
+2023-05-27,Example Broker Two,16165.88
+2023-05-27,Example Crypto Exchange,2647.6
+2023-05-27,Example Managed Portfolio,14800.41
+2023-05-27,Demo Bank Current Account,1848.41
+2023-05-27,Demo Travel Card,436.9
+2023-05-27,Emergency Savings,8423.38
+2023-05-27,Fixed Deposit,4483.24
+2023-05-27,Example Student Loan,-19543.1
+2023-05-27,Example Personal Loan,-7193.1
+2023-05-28,Example Broker One,19237.47
+2023-05-28,Example Broker Two,16177.52
+2023-05-28,Example Crypto Exchange,2649.51
+2023-05-28,Example Managed Portfolio,14811.06
+2023-05-28,Demo Bank Current Account,1849.74
+2023-05-28,Demo Travel Card,437.21
+2023-05-28,Emergency Savings,8429.45
+2023-05-28,Fixed Deposit,4486.47
+2023-05-28,Example Student Loan,-19539.2
+2023-05-28,Example Personal Loan,-7189.2
+2023-05-29,Example Broker One,19251.24
+2023-05-29,Example Broker Two,16189.1
+2023-05-29,Example Crypto Exchange,2651.4
+2023-05-29,Example Managed Portfolio,14821.67
+2023-05-29,Demo Bank Current Account,1851.07
+2023-05-29,Demo Travel Card,437.53
+2023-05-29,Emergency Savings,8435.48
+2023-05-29,Fixed Deposit,4489.68
+2023-05-29,Example Student Loan,-19535.3
+2023-05-29,Example Personal Loan,-7185.3
+2023-05-30,Example Broker One,19264.94
+2023-05-30,Example Broker Two,16200.63
+2023-05-30,Example Crypto Exchange,2653.29
+2023-05-30,Example Managed Portfolio,14832.22
+2023-05-30,Demo Bank Current Account,1852.39
+2023-05-30,Demo Travel Card,437.84
+2023-05-30,Emergency Savings,8441.49
+2023-05-30,Fixed Deposit,4492.88
+2023-05-30,Example Student Loan,-19531.4
+2023-05-30,Example Personal Loan,-7181.4
+2023-05-31,Example Broker One,19278.58
+2023-05-31,Example Broker Two,16212.09
+2023-05-31,Example Crypto Exchange,2655.17
+2023-05-31,Example Managed Portfolio,14842.72
+2023-05-31,Demo Bank Current Account,1853.7
+2023-05-31,Demo Travel Card,438.15
+2023-05-31,Emergency Savings,8447.46
+2023-05-31,Fixed Deposit,4496.06
+2023-05-31,Example Student Loan,-19527.5
+2023-05-31,Example Personal Loan,-7177.5
+2023-06-01,Example Broker One,19292.15
+2023-06-01,Example Broker Two,16223.5
+2023-06-01,Example Crypto Exchange,2657.04
+2023-06-01,Example Managed Portfolio,14853.16
+2023-06-01,Demo Bank Current Account,1855.0
+2023-06-01,Demo Travel Card,438.45
+2023-06-01,Emergency Savings,8453.41
+2023-06-01,Fixed Deposit,4499.22
+2023-06-01,Example Student Loan,-19523.6
+2023-06-01,Example Personal Loan,-7173.6
+2023-06-02,Example Broker One,19305.64
+2023-06-02,Example Broker Two,16234.85
+2023-06-02,Example Crypto Exchange,2658.9
+2023-06-02,Example Managed Portfolio,14863.55
+2023-06-02,Demo Bank Current Account,1856.3
+2023-06-02,Demo Travel Card,438.76
+2023-06-02,Emergency Savings,8459.32
+2023-06-02,Fixed Deposit,4502.37
+2023-06-02,Example Student Loan,-19519.7
+2023-06-02,Example Personal Loan,-7169.7
+2023-06-03,Example Broker One,19319.07
+2023-06-03,Example Broker Two,16246.14
+2023-06-03,Example Crypto Exchange,2660.74
+2023-06-03,Example Managed Portfolio,14873.89
+2023-06-03,Demo Bank Current Account,1857.59
+2023-06-03,Demo Travel Card,439.07
+2023-06-03,Emergency Savings,8465.21
+2023-06-03,Fixed Deposit,4505.5
+2023-06-03,Example Student Loan,-19515.8
+2023-06-03,Example Personal Loan,-7165.8
+2023-06-04,Example Broker One,19332.42
+2023-06-04,Example Broker Two,16257.37
+2023-06-04,Example Crypto Exchange,2662.58
+2023-06-04,Example Managed Portfolio,14884.17
+2023-06-04,Demo Bank Current Account,1858.87
+2023-06-04,Demo Travel Card,439.37
+2023-06-04,Emergency Savings,8471.06
+2023-06-04,Fixed Deposit,4508.61
+2023-06-04,Example Student Loan,-19511.9
+2023-06-04,Example Personal Loan,-7161.9
+2023-06-05,Example Broker One,19345.71
+2023-06-05,Example Broker Two,16268.54
+2023-06-05,Example Crypto Exchange,2664.41
+2023-06-05,Example Managed Portfolio,14894.4
+2023-06-05,Demo Bank Current Account,1860.15
+2023-06-05,Demo Travel Card,439.67
+2023-06-05,Emergency Savings,8476.88
+2023-06-05,Fixed Deposit,4511.71
+2023-06-05,Example Student Loan,-19508.0
+2023-06-05,Example Personal Loan,-7158.0
+2023-06-06,Example Broker One,19358.92
+2023-06-06,Example Broker Two,16279.65
+2023-06-06,Example Crypto Exchange,2666.23
+2023-06-06,Example Managed Portfolio,14904.57
+2023-06-06,Demo Bank Current Account,1861.42
+2023-06-06,Demo Travel Card,439.97
+2023-06-06,Emergency Savings,8482.67
+2023-06-06,Fixed Deposit,4514.79
+2023-06-06,Example Student Loan,-19504.1
+2023-06-06,Example Personal Loan,-7154.1
+2023-06-07,Example Broker One,19372.05
+2023-06-07,Example Broker Two,16290.7
+2023-06-07,Example Crypto Exchange,2668.04
+2023-06-07,Example Managed Portfolio,14914.68
+2023-06-07,Demo Bank Current Account,1862.68
+2023-06-07,Demo Travel Card,440.27
+2023-06-07,Emergency Savings,8488.42
+2023-06-07,Fixed Deposit,4517.86
+2023-06-07,Example Student Loan,-19500.2
+2023-06-07,Example Personal Loan,-7150.2
+2023-06-08,Example Broker One,19385.11
+2023-06-08,Example Broker Two,16301.68
+2023-06-08,Example Crypto Exchange,2669.84
+2023-06-08,Example Managed Portfolio,14924.74
+2023-06-08,Demo Bank Current Account,1863.94
+2023-06-08,Demo Travel Card,440.57
+2023-06-08,Emergency Savings,8494.14
+2023-06-08,Fixed Deposit,4520.9
+2023-06-08,Example Student Loan,-19496.3
+2023-06-08,Example Personal Loan,-7146.3
+2023-06-09,Example Broker One,19398.09
+2023-06-09,Example Broker Two,16312.6
+2023-06-09,Example Crypto Exchange,2671.63
+2023-06-09,Example Managed Portfolio,14934.73
+2023-06-09,Demo Bank Current Account,1865.19
+2023-06-09,Demo Travel Card,440.86
+2023-06-09,Emergency Savings,8499.83
+2023-06-09,Fixed Deposit,4523.93
+2023-06-09,Example Student Loan,-19492.4
+2023-06-09,Example Personal Loan,-7142.4
+2023-06-10,Example Broker One,19411.0
+2023-06-10,Example Broker Two,16323.45
+2023-06-10,Example Crypto Exchange,2673.41
+2023-06-10,Example Managed Portfolio,14944.67
+2023-06-10,Demo Bank Current Account,1866.43
+2023-06-10,Demo Travel Card,441.16
+2023-06-10,Emergency Savings,8505.49
+2023-06-10,Fixed Deposit,4526.94
+2023-06-10,Example Student Loan,-19488.5
+2023-06-10,Example Personal Loan,-7138.5
+2023-06-11,Example Broker One,19423.83
+2023-06-11,Example Broker Two,16334.24
+2023-06-11,Example Crypto Exchange,2675.17
+2023-06-11,Example Managed Portfolio,14954.55
+2023-06-11,Demo Bank Current Account,1867.66
+2023-06-11,Demo Travel Card,441.45
+2023-06-11,Emergency Savings,8511.11
+2023-06-11,Fixed Deposit,4529.93
+2023-06-11,Example Student Loan,-19484.6
+2023-06-11,Example Personal Loan,-7134.6
+2023-06-12,Example Broker One,19436.59
+2023-06-12,Example Broker Two,16344.97
+2023-06-12,Example Crypto Exchange,2676.93
+2023-06-12,Example Managed Portfolio,14964.37
+2023-06-12,Demo Bank Current Account,1868.89
+2023-06-12,Demo Travel Card,441.74
+2023-06-12,Emergency Savings,8516.7
+2023-06-12,Fixed Deposit,4532.91
+2023-06-12,Example Student Loan,-19480.7
+2023-06-12,Example Personal Loan,-7130.7
+2023-06-13,Example Broker One,19449.26
+2023-06-13,Example Broker Two,16355.63
+2023-06-13,Example Crypto Exchange,2678.68
+2023-06-13,Example Managed Portfolio,14974.13
+2023-06-13,Demo Bank Current Account,1870.11
+2023-06-13,Demo Travel Card,442.03
+2023-06-13,Emergency Savings,8522.25
+2023-06-13,Fixed Deposit,4535.86
+2023-06-13,Example Student Loan,-19476.8
+2023-06-13,Example Personal Loan,-7126.8
+2023-06-14,Example Broker One,19461.86
+2023-06-14,Example Broker Two,16366.22
+2023-06-14,Example Crypto Exchange,2680.41
+2023-06-14,Example Managed Portfolio,14983.83
+2023-06-14,Demo Bank Current Account,1871.32
+2023-06-14,Demo Travel Card,442.31
+2023-06-14,Emergency Savings,8527.77
+2023-06-14,Fixed Deposit,4538.8
+2023-06-14,Example Student Loan,-19472.9
+2023-06-14,Example Personal Loan,-7122.9
+2023-06-15,Example Broker One,19474.38
+2023-06-15,Example Broker Two,16376.75
+2023-06-15,Example Crypto Exchange,2682.13
+2023-06-15,Example Managed Portfolio,14993.46
+2023-06-15,Demo Bank Current Account,1872.52
+2023-06-15,Demo Travel Card,442.6
+2023-06-15,Emergency Savings,8533.26
+2023-06-15,Fixed Deposit,4541.72
+2023-06-15,Example Student Loan,-19469.0
+2023-06-15,Example Personal Loan,-7119.0
+2023-06-16,Example Broker One,19486.82
+2023-06-16,Example Broker Two,16387.21
+2023-06-16,Example Crypto Exchange,2683.85
+2023-06-16,Example Managed Portfolio,15003.04
+2023-06-16,Demo Bank Current Account,1873.72
+2023-06-16,Demo Travel Card,442.88
+2023-06-16,Emergency Savings,8538.71
+2023-06-16,Fixed Deposit,4544.62
+2023-06-16,Example Student Loan,-19465.1
+2023-06-16,Example Personal Loan,-7115.1
+2023-06-17,Example Broker One,19499.17
+2023-06-17,Example Broker Two,16397.6
+2023-06-17,Example Crypto Exchange,2685.55
+2023-06-17,Example Managed Portfolio,15012.55
+2023-06-17,Demo Bank Current Account,1874.91
+2023-06-17,Demo Travel Card,443.16
+2023-06-17,Emergency Savings,8544.12
+2023-06-17,Fixed Deposit,4547.5
+2023-06-17,Example Student Loan,-19461.2
+2023-06-17,Example Personal Loan,-7111.2
+2023-06-18,Example Broker One,19511.45
+2023-06-18,Example Broker Two,16407.92
+2023-06-18,Example Crypto Exchange,2687.24
+2023-06-18,Example Managed Portfolio,15022.0
+2023-06-18,Demo Bank Current Account,1876.09
+2023-06-18,Demo Travel Card,443.44
+2023-06-18,Emergency Savings,8549.5
+2023-06-18,Fixed Deposit,4550.36
+2023-06-18,Example Student Loan,-19457.3
+2023-06-18,Example Personal Loan,-7107.3
+2023-06-19,Example Broker One,19523.64
+2023-06-19,Example Broker Two,16418.17
+2023-06-19,Example Crypto Exchange,2688.92
+2023-06-19,Example Managed Portfolio,15031.39
+2023-06-19,Demo Bank Current Account,1877.26
+2023-06-19,Demo Travel Card,443.72
+2023-06-19,Emergency Savings,8554.84
+2023-06-19,Fixed Deposit,4553.21
+2023-06-19,Example Student Loan,-19453.4
+2023-06-19,Example Personal Loan,-7103.4
+2023-06-20,Example Broker One,19535.75
+2023-06-20,Example Broker Two,16428.35
+2023-06-20,Example Crypto Exchange,2690.59
+2023-06-20,Example Managed Portfolio,15040.71
+2023-06-20,Demo Bank Current Account,1878.42
+2023-06-20,Demo Travel Card,443.99
+2023-06-20,Emergency Savings,8560.15
+2023-06-20,Fixed Deposit,4556.03
+2023-06-20,Example Student Loan,-19449.5
+2023-06-20,Example Personal Loan,-7099.5
+2023-06-21,Example Broker One,19547.77
+2023-06-21,Example Broker Two,16438.47
+2023-06-21,Example Crypto Exchange,2692.24
+2023-06-21,Example Managed Portfolio,15049.97
+2023-06-21,Demo Bank Current Account,1879.58
+2023-06-21,Demo Travel Card,444.26
+2023-06-21,Emergency Savings,8565.42
+2023-06-21,Fixed Deposit,4558.84
+2023-06-21,Example Student Loan,-19445.6
+2023-06-21,Example Personal Loan,-7095.6
+2023-06-22,Example Broker One,19559.71
+2023-06-22,Example Broker Two,16448.51
+2023-06-22,Example Crypto Exchange,2693.89
+2023-06-22,Example Managed Portfolio,15059.16
+2023-06-22,Demo Bank Current Account,1880.73
+2023-06-22,Demo Travel Card,444.54
+2023-06-22,Emergency Savings,8570.65
+2023-06-22,Fixed Deposit,4561.62
+2023-06-22,Example Student Loan,-19441.7
+2023-06-22,Example Personal Loan,-7091.7
+2023-06-23,Example Broker One,19571.57
+2023-06-23,Example Broker Two,16458.48
+2023-06-23,Example Crypto Exchange,2695.52
+2023-06-23,Example Managed Portfolio,15068.29
+2023-06-23,Demo Bank Current Account,1881.87
+2023-06-23,Demo Travel Card,444.81
+2023-06-23,Emergency Savings,8575.85
+2023-06-23,Fixed Deposit,4564.39
+2023-06-23,Example Student Loan,-19437.8
+2023-06-23,Example Personal Loan,-7087.8
+2023-06-24,Example Broker One,19583.34
+2023-06-24,Example Broker Two,16468.38
+2023-06-24,Example Crypto Exchange,2697.14
+2023-06-24,Example Managed Portfolio,15077.36
+2023-06-24,Demo Bank Current Account,1883.0
+2023-06-24,Demo Travel Card,445.07
+2023-06-24,Emergency Savings,8581.0
+2023-06-24,Fixed Deposit,4567.13
+2023-06-24,Example Student Loan,-19433.9
+2023-06-24,Example Personal Loan,-7083.9
+2023-06-25,Example Broker One,19595.03
+2023-06-25,Example Broker Two,16478.21
+2023-06-25,Example Crypto Exchange,2698.75
+2023-06-25,Example Managed Portfolio,15086.35
+2023-06-25,Demo Bank Current Account,1884.12
+2023-06-25,Demo Travel Card,445.34
+2023-06-25,Emergency Savings,8586.13
+2023-06-25,Fixed Deposit,4569.86
+2023-06-25,Example Student Loan,-19430.0
+2023-06-25,Example Personal Loan,-7080.0
+2023-06-26,Example Broker One,19606.63
+2023-06-26,Example Broker Two,16487.96
+2023-06-26,Example Crypto Exchange,2700.35
+2023-06-26,Example Managed Portfolio,15095.28
+2023-06-26,Demo Bank Current Account,1885.24
+2023-06-26,Demo Travel Card,445.6
+2023-06-26,Emergency Savings,8591.21
+2023-06-26,Fixed Deposit,4572.56
+2023-06-26,Example Student Loan,-19426.1
+2023-06-26,Example Personal Loan,-7076.1
+2023-06-27,Example Broker One,19618.14
+2023-06-27,Example Broker Two,16497.64
+2023-06-27,Example Crypto Exchange,2701.93
+2023-06-27,Example Managed Portfolio,15104.15
+2023-06-27,Demo Bank Current Account,1886.35
+2023-06-27,Demo Travel Card,445.86
+2023-06-27,Emergency Savings,8596.25
+2023-06-27,Fixed Deposit,4575.25
+2023-06-27,Example Student Loan,-19422.2
+2023-06-27,Example Personal Loan,-7072.2
+2023-06-28,Example Broker One,19629.57
+2023-06-28,Example Broker Two,16507.25
+2023-06-28,Example Crypto Exchange,2703.51
+2023-06-28,Example Managed Portfolio,15112.95
+2023-06-28,Demo Bank Current Account,1887.45
+2023-06-28,Demo Travel Card,446.12
+2023-06-28,Emergency Savings,8601.26
+2023-06-28,Fixed Deposit,4577.91
+2023-06-28,Example Student Loan,-19418.3
+2023-06-28,Example Personal Loan,-7068.3
+2023-06-29,Example Broker One,19640.9
+2023-06-29,Example Broker Two,16516.79
+2023-06-29,Example Crypto Exchange,2705.07
+2023-06-29,Example Managed Portfolio,15121.67
+2023-06-29,Demo Bank Current Account,1888.54
+2023-06-29,Demo Travel Card,446.38
+2023-06-29,Emergency Savings,8606.23
+2023-06-29,Fixed Deposit,4580.56
+2023-06-29,Example Student Loan,-19414.4
+2023-06-29,Example Personal Loan,-7064.4
+2023-06-30,Example Broker One,19652.15
+2023-06-30,Example Broker Two,16526.25
+2023-06-30,Example Crypto Exchange,2706.62
+2023-06-30,Example Managed Portfolio,15130.34
+2023-06-30,Demo Bank Current Account,1889.62
+2023-06-30,Demo Travel Card,446.64
+2023-06-30,Emergency Savings,8611.16
+2023-06-30,Fixed Deposit,4583.18
+2023-06-30,Example Student Loan,-19410.5
+2023-06-30,Example Personal Loan,-7060.5
