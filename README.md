@@ -17,6 +17,8 @@ Open **http://127.0.0.1:8051**. The demo uses a different port from the personal
 
 On first launch, the demo generates dated sample data from a fixed seed in `.demo-runtime/`. It copies the same application code into that isolated folder. Your demo edits are kept between launches. Restart after changing code to load the changes.
 
+If a first launch was interrupted, retry the start file. The launcher preserves the incomplete folder in `backups/` and finishes a fresh setup automatically. It builds new data in a temporary folder before putting the runtime into place.
+
 If port 8051 is busy: `python demo.py --port 8052`.
 
 ## What's included

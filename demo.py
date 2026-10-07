@@ -3,6 +3,7 @@ import argparse
 import json
 import shutil
 import sys
+import uuid
 from datetime import datetime
 from pathlib import Path
 
@@ -12,24 +13,40 @@ MODULES = ['app.py', 'ai.py', 'cloud.py', 'db.py', 'extras.py', 'ideas.py', 'loc
 DATA_FILES = ['portfolio.json', 'spending.json', 'notes.md', 'history.csv', 'history_accounts.csv',
               'inbox.json', 'imports.json', 'ui.json', 'chats.json', 'settings.json']
 
+def copy_code(destination):
+    for name in MODULES + ['DATA.md']:
+        shutil.copy2(ROOT / name, destination / name)
+    # Offline mode needs no packages; a missing optional dependency list must not prevent it.
+    if (ROOT / 'requirements.txt').is_file():
+        shutil.copy2(ROOT / 'requirements.txt', destination / 'requirements.txt')
+    shutil.copytree(ROOT / 'web', destination / 'web', dirs_exist_ok=True)
+
 def prepare(reset=False):
     marker = RUNTIME / 'manifest.json'
-    if RUNTIME.exists() and not marker.exists():
-        raise RuntimeError('The demo runtime already exists without a demo marker. Move it aside before starting.')
-    if reset and marker.exists():
-        backup = ROOT / 'backups' / ('demo-reset-' + datetime.now().strftime('%Y%m%d-%H%M%S-%f'))
-        backup.mkdir(parents=True)
-        for name in DATA_FILES:
-            if (RUNTIME / name).exists():
-                shutil.copy2(RUNTIME / name, backup / name)
-        print('Previous demo data backed up to', backup)
-    RUNTIME.mkdir(exist_ok=True)
-    for name in MODULES + ['DATA.md', 'requirements.txt']:
-        shutil.copy2(ROOT / name, RUNTIME / name)
-    shutil.copytree(ROOT / 'web', RUNTIME / 'web', dirs_exist_ok=True)
-    if not marker.exists() or reset:
-        from generate_demo import generate
-        generate(RUNTIME)  # A fixed seed, with dates relative to today.
+    if marker.exists():
+        metadata = json.loads(marker.read_text(encoding='utf-8'))
+        if metadata.get('synthetic') is not True:
+            raise RuntimeError('This runtime is not marked as a synthetic demo. Its files were left unchanged.')
+        if not reset:
+            copy_code(RUNTIME)
+            return RUNTIME
+
+    # Build a complete runtime before switching it into place. A failed first launch can be retried.
+    pending = ROOT / ('.demo-runtime-init-' + uuid.uuid4().hex)
+    pending.mkdir()
+    copy_code(pending)
+    from generate_demo import generate
+    generate(pending)
+    if RUNTIME.exists():
+        backup = ROOT / 'backups' / ('demo-recovered-' + datetime.now().strftime('%Y%m%d-%H%M%S-%f'))
+        project = ROOT.resolve()
+        source, destination = RUNTIME.resolve(), backup.resolve()
+        if not source.is_relative_to(project) or not destination.is_relative_to(project):
+            raise RuntimeError('The runtime or backup points outside this demo folder. Existing files were left unchanged.')
+        backup.parent.mkdir(exist_ok=True)
+        RUNTIME.rename(backup)
+        print('Previous demo folder preserved at', backup)
+    pending.rename(RUNTIME)
     return RUNTIME
 
 def main():

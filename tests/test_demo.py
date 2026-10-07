@@ -76,6 +76,33 @@ class DemoFixtures(unittest.TestCase):
                 self.assertEqual(json.loads((isolated / 'manifest.json').read_text())['synthetic'], True)
                 self.assertNotEqual(isolated, ROOT)
 
+    def test_fresh_download_starts_without_optional_requirements(self):
+        import demo, shutil
+        with tempfile.TemporaryDirectory() as folder:
+            project = Path(folder)
+            for name in demo.MODULES + ['DATA.md']:
+                shutil.copy2(ROOT / name, project / name)
+            shutil.copytree(ROOT / 'web', project / 'web')
+            runtime = project / '.demo-runtime'
+            with patch.object(demo, 'ROOT', project), patch.object(demo, 'RUNTIME', runtime):
+                demo.prepare()
+            self.assertTrue(json.loads((runtime / 'manifest.json').read_text())['synthetic'])
+            self.assertTrue((runtime / 'spending.json').is_file())
+
+    def test_interrupted_setup_is_preserved_and_recovers(self):
+        import demo
+        with tempfile.TemporaryDirectory() as folder:
+            project = Path(folder)
+            runtime = project / '.demo-runtime'
+            runtime.mkdir()
+            (runtime / 'keep.txt').write_text('Preserve this incomplete setup')
+            with patch.object(demo, 'ROOT', project), patch.object(demo, 'RUNTIME', runtime), patch.object(demo, 'copy_code'):
+                demo.prepare()
+            self.assertTrue((runtime / 'manifest.json').exists())
+            recovered = list((project / 'backups').glob('demo-recovered-*/keep.txt'))
+            self.assertEqual(len(recovered), 1)
+            self.assertEqual(recovered[0].read_text(), 'Preserve this incomplete setup')
+
     def test_public_fixtures_do_not_contain_credentials(self):
         data = ROOT / 'demo_data'
         self.assertEqual(json.loads((data / 'settings.json').read_text()), {})

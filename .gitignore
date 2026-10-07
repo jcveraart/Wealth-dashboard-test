@@ -12,6 +12,7 @@
 /backups/
 /cache/
 /.demo-runtime/
+/.demo-runtime-init-*/
 /.venv/
 **/__pycache__/
 *.pyc
@@ -23,6 +24,7 @@
 Transaction_export*.csv
 *_export*.csv
 *.TXT
+!/requirements.txt
 *.xlsx
 *.xls
 *.pdf
