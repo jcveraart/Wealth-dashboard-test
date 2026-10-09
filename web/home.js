@@ -36,7 +36,7 @@ function overview() {
         <div class="big" data-count="${t.net_worth}">${eur(t.net_worth)}</div>
         <div class="day">${dayc(t.day_change, allPositions().filter(p => p.live).reduce((x, p) => x + p.value, 0))} today on listed investments</div>
         ${tileDelta('net_worth', t.net_worth).replace('tile-delta', 'tile-delta hero-delta')}
-        <div class="hero-foot muted small">${m.mode === 'positions' ? 'Managed portfolio priced live' : m.mode === 'proxy' ? `Managed portfolio estimated since ${fdate(m.last_real_date)}` : `Managed portfolio as of ${fdate(m.last_real_date)}`}${errs ? ` · <a href="#settings">${errs} pricing issue${errs > 1 ? 's' : ''}</a>` : ''}</div>
+        <div class="hero-foot muted small">${S.status?.demo ? 'Fictional managed portfolio' : m.mode === 'positions' ? 'Managed portfolio priced live' : m.mode === 'proxy' ? `Managed portfolio estimated since ${fdate(m.last_real_date)}` : `Managed portfolio as of ${fdate(m.last_real_date)}`}${errs ? ` · <a href="#settings">${errs} pricing issue${errs > 1 ? 's' : ''}</a>` : ''}</div>
       </section>
       ${briefOff ? '' : `<section class="card brief no-tools" id="brief">${briefHtml()}</section>`}
     </div>
@@ -101,7 +101,7 @@ function accountGroups() {
     `<span class="muted">${rate(s) || asOf(s.snapshot_date)}</span>`, 'account:' + s.name));
   const inv = [
     ...S.accounts.map(a => row(a.name, a.value, `${a.positions} investment${a.positions === 1 ? '' : 's'}`, a.positions ? dayc(a.day_change, a.value) : '', 'account:' + a.name)),
-    row(m.name, m.value, m.mode === 'positions' ? 'Managed, priced live' : m.mode === 'proxy' ? 'Managed, estimated' : 'Managed', m.mode === 'positions' ? dayc(m.day_change, m.value) : '', 'account:' + m.name),
+    row(m.name, m.value, S.status?.demo ? 'Fictional managed portfolio' : m.mode === 'positions' ? 'Managed, priced live' : m.mode === 'proxy' ? 'Managed, estimated' : 'Managed', m.mode === 'positions' ? dayc(m.day_change, m.value) : '', 'account:' + m.name),
     ...S.savings.filter(s => s.invest).map(s => row(s.name, s.value, [s.kind === 'deposit' ? 'Deposit' : 'Savings', s.maturity ? 'matures ' + fdate(s.maturity) : ''].filter(Boolean).join(' · '), `<span class="muted">${rate(s)}</span>`, 'account:' + s.name)),
   ];
   const by = rows => rows.sort((a, b) => b.value - a.value);
@@ -158,7 +158,7 @@ function renderPins() {
 
 /* ---------- Claude's briefing ---------- */
 function briefHtml() {
-  const b = HOME.brief;
+  const b = HOME.brief || S?.page_briefings?.overview;
   const head = `<div class="brief-head"><span class="claude-mark">${CLAUDE_ICON}</span><b>Claude</b>${b && b.time ? `<span class="ago">${b.updating ? 'thinking' : ago(b.time)}</span>` : ''}
     <button type="button" class="icon-btn sm" id="briefRefresh" title="Look again" aria-label="Look again"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 10-2.3 5.7M20 4v7h-7"/></svg></button></div>`;
   if (!b) return head + '<div class="skel-line"></div><div class="skel-line short"></div>';
@@ -170,13 +170,14 @@ async function loadBrief(force) {
   if (UIS.prefs && UIS.prefs.briefing === 'off') return;
   if (!force && HOME.brief && Date.now() - HOME.briefAt < 5 * 60e3 && !HOME.brief.updating) return wireBrief();
   try {
-    HOME.brief = force ? await post('/api/briefing', {}) : await (await fetch('/api/briefing', {cache: 'no-store'})).json();
+    HOME.brief = force ? await post('/api/briefing', {}) : await cachedJSON('/api/briefing',{ttl:HOME.brief?.updating?0:300e3});
     HOME.briefAt = Date.now();
   } catch { HOME.brief = {items: []}; }
   if ($('#brief')) { $('#brief').innerHTML = briefHtml(); wireBrief(); }
   if (HOME.brief.updating) setTimeout(() => { HOME.brief.updating = false; HOME.briefAt = 0; if (view === 'overview') loadBrief(); }, 9000);
 }
 function wireBrief() {
+  if(!HOME.brief&&S?.page_briefings?.overview)HOME.brief=S.page_briefings.overview;
   if (!$('#brief')) return;
   if (!$('#brief .brief-head')) $('#brief').innerHTML = briefHtml();
   $('#briefRefresh').onclick = () => { HOME.brief = null; $('#brief').innerHTML = briefHtml(); loadBrief(true); };

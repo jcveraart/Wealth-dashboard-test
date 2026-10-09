@@ -3,16 +3,17 @@
 
 const INV = {openList: store.get('hold.open', false), news: null, newsAt: 0, newsFilter: 'all', newsMore: false, newsTimer: null, hist: null, histAt: 0, view: store.get('hold.view', 'table'), group: store.get('hold.group', 'none'), info: {}, acctDaily: null, acctSel: null, hRange: '1y'};
 const posId = p => p.isin || 'n:' + p.name.trim().toLowerCase();
+const proxyWeights = weights => (Array.isArray(weights)?weights:Object.entries(weights||{}).map(([symbol,weight])=>({symbol,weight}))).filter(p=>p?.symbol&&Number.isFinite(p.weight)&&p.weight>0);
 
 async function loadHist(force) {
   if (INV.hist && !force && Date.now() - INV.histAt < 10 * 60e3 && !INV.hist.updating) return INV.hist;
-  try { INV.hist = await (await fetch('/api/prices/history', {cache: 'no-store'})).json(); INV.histAt = Date.now(); } catch { INV.hist = {series: {}, proxy: {}, benchmark: {dates: []}}; }
-  if (INV.hist.updating) setTimeout(() => { INV.histAt = 0; if (['holdings', 'account'].includes(view)) loadHist(true).then(() => renderView()); }, 15000);
+  try { INV.hist = await cachedJSON('/api/prices/history',{ttl:600e3,force:!!force}); INV.histAt = Date.now(); } catch { INV.hist = {series: {}, proxy: {}, benchmark: {dates: []}}; }
+  if (INV.hist.updating && !INV.histTimer) INV.histTimer=setTimeout(() => { INV.histTimer=null;INV.histAt=0;if(['holdings','account'].includes(view))loadHist(true).then(()=>quietInvestmentCharts()); },15000);
   return INV.hist;
 }
 async function loadAcctDaily() {
   if (INV.acctDaily) return INV.acctDaily;
-  try { INV.acctDaily = await (await fetch('/api/account-history?name=*', {cache: 'no-store'})).json(); } catch { INV.acctDaily = {}; }
+  try { INV.acctDaily = await cachedJSON('/api/account-history?name=*',{ttl:300e3}); } catch { INV.acctDaily = {}; }
   return INV.acctDaily;
 }
 const closeAt = (h, iso) => { // last close on or before a date
@@ -36,7 +37,7 @@ function mixSeries(H, accountName) {
   let managed = null;
   const m = S.managed;
   if ((!accountName || accountName === m.name) && !S.positions.some(p => p.managed) && Object.keys(H.proxy || {}).length) {
-    const w = m.proxy.map(p => ({h: H.proxy[p.symbol], w: p.weight})).filter(x => x.h && x.h.dates.length);
+    const w = proxyWeights(m.proxy).map(p => ({h: H.proxy[p.symbol], w: p.weight})).filter(x => x.h && x.h.dates.length);
     if (w.length) managed = iso => m.value * w.reduce((s, x) => s + x.w * closeAt(x.h, iso) / x.h.close[x.h.close.length - 1], 0) / w.reduce((s, x) => s + x.w, 0);
   } else if (accountName === m.name && !S.positions.some(p => p.managed)) return [];
   const ids = Object.keys(units);
@@ -49,7 +50,7 @@ const inRange = (pts, r) => pts.filter(([t]) => t >= tOf(r.from === '0000-01-01'
    Everything that is not day to day money: brokers, the managed portfolio, bonds, and the savings accounts and
    deposits you count as investments. A lens (asset class) and an account pick drive every number below.
    Top to bottom: today, then how it went over time, then what you hold, then the deeper numbers in one card. */
-const INVF = {cls: store.get('inv.cls', 'all'), acct: store.get('inv.acct', ''), q: '', chart: store.get('inv.chart', 'value'), deep: store.get('inv.deep', 'returns')};
+const INVF = {mode:store.get('inv.mode','daily'), compare:[], cls: store.get('inv.cls', 'all'), acct: store.get('inv.acct', ''), q: '', chart: store.get('inv.chart', 'value'), deep: store.get('inv.deep', 'returns')};
 const CLASSES = [['all', 'All'], ['shares', 'Shares & funds'], ['bonds', 'Bonds'], ['cash', 'Savings & deposits'], ['crypto', 'Crypto'], ['other', 'Gold & other']];
 const className = c => (CLASSES.find(x => x[0] === c) || [0, 'Other'])[1];
 function classOf(it) {
@@ -66,109 +67,116 @@ function investItems() {
   const m = S.managed, managed = S.positions.some(p => p.managed) ? [] : [{name: m.name, account: m.name, category: 'Managed portfolio', type: 'Managed', kind: 'managed',
     value: m.value, day_change: m.day_change || 0, profit: m.profit, since_buy_pct: m.start_value ? (m.value / m.start_value - 1) * 100 : null, live: false, units: null}];
   const sav = S.savings.filter(s => s.invest).map(s => ({name: s.name, account: s.name, bank: s.bank, category: s.maturity ? 'Deposit' : 'Savings account', type: s.maturity ? 'Deposits' : 'Savings',
-    value: s.value, day_change: 0, profit: s.accrued || 0, since_buy_pct: null, rate: s.rate_pct, maturity: s.maturity, live: false, kind: 'savings', units: null, price: null}));
+    value: s.value, region:s.region||s.country||null, day_change: 0, profit: s.accrued || 0, since_buy_pct: null, rate: s.rate_pct, maturity: s.maturity, live: false, kind: 'savings', units: null, price: null}));
   return [...pos, ...managed, ...sav].map(it => ({...it, cls: classOf(it)}));
 }
-const invAccounts = () => [...S.accounts.map(a => a.name), S.managed.name, ...S.savings.filter(s => s.invest).map(s => s.name)];
+const invAccounts = () => INVF.cls === 'all' ? [...new Set([...S.accounts.filter(a=>a.value || a.cash).map(a=>a.name), S.managed.name, ...S.savings.filter(s=>s.invest).map(s=>s.name)])] : [...new Set(investItems().filter(it=>it.cls===INVF.cls).map(accountOfItem))];
 const accountOfItem = it => it.managed ? S.managed.name : it.account;
 const itemOpen = it => it.kind === 'position' ? 'holding:' + posId(it) : 'account:' + accountOfItem(it);
+const holdingLiveKey = p => JSON.stringify([itemOpen(p),accountOfItem(p)]);
 function invFiltered(items = investItems(), {cls = INVF.cls, acct = INVF.acct} = {}) {
   const q = INVF.q.toLowerCase();
   return items.filter(it => (cls === 'all' || it.cls === cls) && (!acct || accountOfItem(it) === acct)
     && (!q || it.name.toLowerCase().includes(q) || (it.isin || '').toLowerCase().includes(q)));
 }
 const BENCHES = [['IWDA.AS', 'MSCI World'], ['VWCE.DE', 'FTSE All-World'], ['CSPX.AS', 'S&P 500'], ['^AEX', 'AEX'], ['EUNA.AS', 'Global bonds']];
-const DEEP = [['returns', 'Monthly returns'], ['income', 'Dividends'], ['coming', 'Coming up'], ['costs', 'Costs'], ['money', 'Money put in'], ['plans', 'Savings plans']];
+const DEEP = [['returns', 'Monthly returns'], ['income', 'Dividends'], ['coming', 'Coming up'], ['costs', 'Costs'], ['money', 'Money put in']];
 
 function holdings() {
-  const items = investItems();
-  if (INVF.cls !== 'all' && !items.some(i => i.cls === INVF.cls)) INVF.cls = 'all';
-  if (INVF.acct && !invAccounts().includes(INVF.acct)) INVF.acct = '';
-  const list = invFiltered(items);
-  const brokerCash = INVF.cls === 'all' ? S.accounts.filter(a => !INVF.acct || INVF.acct === a.name).reduce((s, a) => s + a.cash, 0) : 0;
-  const total = list.reduce((s, p) => s + p.value, 0), day = list.reduce((s, p) => s + (p.day_change || 0), 0);
-  const profit = list.reduce((s, p) => s + (p.profit || 0), 0);
-  const classes = CLASSES.filter(([c]) => c === 'all' || items.some(i => i.cls === c));
-  const unknown = S.savings.filter(s => s.invest_unknown);
-  const tips = (S.advice || []).filter(r => r.topic === 'investing');
-  // only what has something to say for this selection
-  const showToday = INVF.cls !== 'cash' && list.some(p => p.live || (p.kind === 'managed' && p.day_change));
-  const showSpread = list.length >= 3;
-  // account level numbers (costs, money put in, plans) only make sense without a lens
-  const deepTabs = ['cash', 'bonds'].includes(INVF.cls) ? [] : DEEP.filter(([k]) => k === 'returns' || (k === 'income' && list.some(p => p.kind === 'position'))
-    || (k === 'coming' && list.some(p => p.maturity)) || (['costs', 'money', 'plans'].includes(k) && INVF.cls === 'all'));
-  // with one account, today per account says the same as the movers: then one card does both
-  const liveAccts = new Set(list.filter(p => p.live || (p.kind === 'managed' && p.day_change)).map(accountOfItem)).size;
-  if (deepTabs.length && !deepTabs.some(([k]) => k === INVF.deep)) INVF.deep = deepTabs[0][0];
-  if (!['all', 'shares'].includes(INVF.cls)) tips.length = 0;
-  const lensCard = INVF.cls === 'bonds' ? ['Bond ladder', 'What matures when'] : INVF.cls === 'cash' ? ['Interest rates', 'What each account pays'] : ['Results per year', ''];
-  $('#view').innerHTML = `<div class="stack-y inv">
-    ${unknown.length ? `<section class="card ask-card no-tools"><div class="ask-q"><span class="claude-mark">${CLAUDE_ICON}</span><div><b>Do these count as investments?</b><div class="muted small">Then they show here and in your investment totals. You can change it any time, also by telling Claude.</div></div></div>
-      ${unknown.map(s => `<div class="ask-row"><span><b>${esc(s.name)}</b> <span class="muted small">${esc(s.bank || '')}, ${eur(s.value)}${s.rate_pct ? `, ${s.rate_pct}%` : ''}</span></span>
-        <span class="ask-btns"><button type="button" class="btn sm" data-inv-yes="${esc(s.name)}">Investment</button><button type="button" class="btn ghost sm" data-inv-no="${esc(s.name)}">Cash</button></span></div>`).join('')}</section>` : ''}
-    <div class="inv-bar">${classes.length > 2 ? seg('invCls', classes, INVF.cls) : '<span></span>'}
-      <select id="invAcct" aria-label="Account"><option value="">All accounts</option>${invAccounts().map(n => `<option ${INVF.acct === n ? 'selected' : ''} value="${esc(n)}">${esc(n)}</option>`).join('')}</select></div>
-
-    <section class="card inv-hero" data-card="inv-hero">
-      <div class="ih-main"><div class="label">${INVF.cls === 'all' ? 'Investments' : esc(className(INVF.cls))}${INVF.acct ? ` in ${esc(INVF.acct)}` : ''}</div>
-        <div class="big" data-count="${total + brokerCash}">${eur(total + brokerCash)}</div>
-        <div class="day">${INVF.cls === 'cash' ? `<span class="muted">Interest, no daily prices</span>` : `${dayc(day, total)} today`}</div>
-        <div class="ih-sub muted small">${profit ? `${sgn(profit)} profit${total - profit > 0 ? ` (${pct(profit / (total - profit) * 100)})` : ''} since you started` : ''}${brokerCash ? ` · ${eur(brokerCash)} cash at brokers` : ''}<span id="incomeLine"></span></div></div>
-      <div class="ih-rets" id="invRets"></div>
-    </section>
-
-    ${!showToday ? '' : liveAccts < 2 ? `<section class="card" data-card="inv-moving"><div class="card-head"><h2>Today</h2><span class="muted small" id="todayNote"></span></div><div id="movers"></div><div id="moverNews"></div></section>` : `<div class="grid g2">
-      <section class="card" data-card="inv-today"><div class="card-head"><h2>Today</h2><span class="muted small" id="todayNote"></span></div><div id="todayBox"></div></section>
-      <section class="card" data-card="inv-moving"><div class="card-head"><h2>Moving today</h2></div><div id="movers"></div><div id="moverNews"></div></section>
-    </div>`}
-
-    <section class="card inv-main" data-card="inv-chart">
-      <div class="card-head"><h2>${{value: 'Value over time', market: 'Against the market', drawdown: 'Drawdown'}[INVF.chart]}</h2>
-        <div class="controls" style="margin:0">${seg('invChart', [['value', 'Value'], ['market', 'Vs market'], ['drawdown', 'Drawdown']], INVF.chart)}
-          ${INVF.chart === 'market' ? `<select id="benchSel" aria-label="Benchmark">${BENCHES.map(([v, l]) => `<option value="${v}" ${((S.profile || {}).benchmark || 'IWDA.AS') === v ? 'selected' : ''}>${l}</option>`).join('')}</select>` : ''}</div></div>
-      <div id="invChart"><div class="skel-card" style="height:240px"></div></div><div class="muted small" id="invChartNote"></div></section>
-
-    <div class="grid ${showSpread ? 'g2' : ''}">
-      ${showSpread ? '' : '<!--'}<section class="card" data-card="inv-spread"><div class="card-head"><h2>How it is spread</h2>
-        <select id="hgroup" aria-label="Group by">${[['class', 'By asset class'], ['account', 'By account'], ['region', 'By region'], ['sector', 'By sector'], ['currency', 'By currency']].map(([v, l]) => `<option value="${v}" ${INV.group === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
-        <div id="spread"></div></section>${showSpread ? '' : '-->'}
-      <section class="card" data-card="inv-lens"><div class="card-head"><h2>${lensCard[0]}</h2><span class="muted small" id="lensNote">${lensCard[1]}</span></div><div id="lensBox"></div></section>
-    </div>
-
-    ${tips.length ? `<section class="card" data-card="inv-tips"><div class="card-head"><div><h2>Worth looking at</h2><p class="sub">About your investments. More on <a href="#advice">Advice</a>.</p></div></div>
-      ${tips.map((r, i) => `<div class="rec"><div><div class="rec-t">${esc(r.title)}</div><div class="muted small">${esc(r.detail || '')}</div></div>
-        <div class="rec-act"><button class="btn ghost sm" data-italk="${i}">Talk about it</button>${r.todo ? `<button class="btn sm" data-itip="${i}">Add to do</button>` : ''}</div></div>`).join('')}</section>` : ''}
-
-    <section class="card" id="allHold" data-card="inv-list">
-      <div class="card-head"><div><h2>What you hold</h2><p class="sub">${list.length} of ${items.length}</p></div>
-        <div class="controls" style="margin:0"><input type="search" id="hq" placeholder="Search" value="${esc(INVF.q)}" aria-label="Search investments">
-          <select id="hgroup2" aria-label="Group the list">${[['class', 'By asset class'], ['account', 'By account'], ['region', 'By region'], ['none', 'No groups']].map(([v, l]) => `<option value="${v}" ${(INV.listGroup || 'class') === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
-          <label class="check"><input type="checkbox" id="hcomb" ${ui.hold.combine ? 'checked' : ''}> Combine accounts</label></div></div>
-      <div id="hbody"></div>
-    </section>
-
-    ${deepTabs.length ? `<section class="card" data-card="inv-deep"><div class="card-head"><h2>Deeper</h2>${deepTabs.length > 1 ? seg('invDeep', deepTabs, INVF.deep) : `<span class="muted small">${deepTabs[0][1]}</span>`}</div><div id="deepBox"></div></section>` : ''}
+  const items=investItems();
+  if (INVF.cls!=='all' && !items.some(i=>i.cls===INVF.cls)) INVF.cls='all';
+  const accounts=invAccounts();
+  if(INVF.acct && !accounts.includes(INVF.acct)) { INVF.acct=''; store.set('inv.acct',''); }
+  const list=invFiltered(items), daily=!['cash','bonds'].includes(INVF.cls) && INVF.mode!=='history';
+  const brokerCash=INVF.cls==='all' ? S.accounts.filter(a=>!INVF.acct || a.name===INVF.acct).reduce((s,a)=>s+a.cash,0):0;
+  const total=list.reduce((s,p)=>s+p.value,0), day=list.reduce((s,p)=>s+(p.day_change||0),0), profit=list.reduce((s,p)=>s+(p.profit||0),0);
+  const classes=CLASSES.filter(([c])=>c==='all' || items.some(i=>i.cls===c));
+  const deepTabs=['cash','bonds'].includes(INVF.cls)?[]:DEEP.filter(([k])=>k!=='returns' && (k==='income' && list.some(p=>p.kind==='position') || k==='coming' && list.some(p=>p.maturity) || ['costs','money','plans'].includes(k)&&INVF.cls==='all'));
+  if(deepTabs.length && !deepTabs.some(([k])=>k===INVF.deep)) INVF.deep=deepTabs[0][0];
+  const lensCard=INVF.cls==='bonds'?'Bond ladder':INVF.cls==='cash'?'Interest rates':'Year by year';
+  const unknown=S.savings.filter(s=>s.invest_unknown);
+  $('#view').innerHTML=`<div class="stack-y inv">
+    ${unknown.length?`<details class="card inv-unclear"><summary>${unknown.length===1?`Does ${esc(unknown[0].name)} count as an investment?`:`Do these ${unknown.length} savings accounts count as investments?`}</summary>${unknown.map(s=>`<div class="list-row"><span>${esc(s.name)} ${eur(s.value)}</span><span><button class="btn ghost sm" data-inv-yes="${esc(s.name)}">Investment</button> <button class="btn ghost sm" data-inv-no="${esc(s.name)}">Cash</button></span></div>`).join('')}</details>`:''}
+    <div class="inv-bar"><div class="fchips investment-filter-chips" role="group" aria-label="Investment filters">${classes.map(([c,label])=>`<button type="button" data-invest-class="${c}" aria-pressed="${INVF.cls===c}">${esc(label)}</button>`).join('')}<span class="chip-divider" aria-hidden="true"></span>${[['','All accounts'],...accounts.map(n=>[n,n])].map(([n,label])=>`<button type="button" data-invest-account="${esc(n)}" aria-pressed="${INVF.acct===n}">${esc(label)}</button>`).join('')}</div></div>
+    <section class="card inv-hero" data-card="inv-hero"><div class="ih-main"><div class="label">${INVF.cls==='all'?'Investments':esc(className(INVF.cls))}${INVF.acct?' · '+esc(INVF.acct):''}</div>
+      <div class="big" data-count="${total+brokerCash}">${eur(total+brokerCash)}</div><div class="day">${INVF.cls==='cash'?'Interest, no daily prices':dayc(day,total)+' today'}</div>
+      <div class="ih-sub muted small">${profit?`${sgn(profit)} profit since you started`:''}${brokerCash?' · '+eur(brokerCash)+' cash':''}<span id="incomeLine"></span></div></div><div class="ih-rets" id="invRets"></div></section>
+    ${!['cash','bonds'].includes(INVF.cls)?`<div class="inv-viewbar" data-mode-controls>${seg('invMode',[['daily','Daily'],['history','History']],daily?'daily':'history')}</div>`:''}
+    ${daily?`<section class="card" data-card="inv-recent"><div class="card-head"><h2>Last 20 trading days</h2></div><div id="dailyTrend"></div></section>
+      <div class="grid g2 inv-daily-bottom"><section class="card" data-card="inv-moving"><div class="card-head"><h2>Movers</h2><span class="muted small" id="todayNote"></span></div><div id="movers"></div></section>
+        <section class="card" id="dailyNewsCard" data-card="inv-news"><div class="card-head"><h2>News</h2></div><div id="dailyNews"></div></section></div>
+      <section class="card" id="dailyIdeasCard" data-card="inv-opportunities"><div class="card-head"><h2>Worth a look</h2><a class="linkish small" href="#explore">All opportunities →</a></div><div id="dailyIdeas"></div></section>`:
+      `<section class="card inv-main" data-card="inv-chart"><div class="card-head"><h2>${{value:'Value over time',market:'Against the market',drawdown:'Below the high'}[INVF.chart]}</h2><div class="controls" style="margin:0">${seg('invChart',[['value','Value'],['market','Vs market'],['drawdown','Drawdown']],INVF.chart)}${INVF.chart==='market'?`<select id="benchSel" aria-label="Benchmark">${BENCHES.map(([v,l])=>`<option value="${v}" ${((S.profile||{}).benchmark||'IWDA.AS')===v?'selected':''}>${l}</option>`).join('')}</select>`:''}</div></div><div id="invChart"></div><div class="muted small" id="invChartNote"></div></section>
+      ${!['cash','bonds'].includes(INVF.cls)?`<section class="card" data-card="inv-statistics"><div id="historyStats" class="inv-stats"></div><p class="sub">Price-based analysis at today’s holdings; deposits, earlier sales and fees are not investment returns.</p></section>`:''}
+      <div class="grid ${!['cash','bonds'].includes(INVF.cls)?'g2':''}"><section class="card" data-card="inv-lens"><div class="card-head"><h2>${lensCard}</h2><span class="muted small" id="lensNote"></span></div><div id="lensBox"></div></section>
+        ${!['cash','bonds'].includes(INVF.cls)?'<section class="card" data-card="inv-months"><div class="card-head"><h2>Monthly returns</h2></div><div id="historyMonthly"></div></section>':''}</div>
+      ${!['cash','bonds'].includes(INVF.cls)?`<details class="card inv-more"><summary>Compare holdings & explore monthly moves</summary><div id="compareChoices" class="fchips"></div><div id="historyCompare"></div><p class="sub">Changes from each series’ first available closing price in the selected period.</p><h4>Monthly price moves</h4><div id="historyDistribution"></div></details>`:''}`}
+    <details class="card inv-more" data-card="inv-spread"><summary>How it is spread</summary><select id="hgroup" aria-label="Group allocation">${[['class','By asset class'],['account','By account'],['region','By region'],['sector','By sector'],['currency','By currency']].map(([v,l])=>`<option value="${v}" ${INV.group===v?'selected':''}>${l}</option>`).join('')}</select><div id="spread"></div></details>
+    <details class="card inv-more" id="allHold" data-card="inv-list" ${!daily?'open':''}><summary>What you hold <span class="muted small">${list.length} investments</span></summary><div class="controls"><input type="search" id="hq" placeholder="Search investments" value="${esc(INVF.q)}" aria-label="Search investments"><select id="hgroup2" aria-label="Group holdings">${[['class','By asset class'],['account','By account'],['region','By region'],['none','No groups']].map(([v,l])=>`<option value="${v}" ${(INV.listGroup||'class')===v?'selected':''}>${l}</option>`).join('')}</select><label class="check"><input type="checkbox" id="hcomb" ${ui.hold.combine?'checked':''}> Combine accounts</label></div><div id="hbody"></div></details>
+    ${deepTabs.length?`<details class="card inv-more" data-card="inv-deep"><summary>Income & account details</summary>${seg('invDeep',deepTabs,INVF.deep)}<div id="deepBox"></div></details>`:''}
   </div>`;
-  const setF = (k, v) => { INVF[k] = v; store.set('inv.' + k, v); holdings(); };
-  onSeg('invCls', v => setF('cls', v));
-  $('#invAcct').onchange = e => setF('acct', e.target.value);
-  const setInvest = (name, yes) => { const i = S.savings.findIndex(x => x.name === name); edit({section: 'savings', index: i, fields: {invest: yes}}, yes ? `${name} now counts as an investment` : `${name} stays cash`); };
-  $$('[data-inv-yes]').forEach(b => b.onclick = () => setInvest(b.dataset.invYes, true));
-  $$('[data-inv-no]').forEach(b => b.onclick = () => setInvest(b.dataset.invNo, false));
-  onSeg('invChart', v => { INVF.chart = v; store.set('inv.chart', v); holdings(); });
-  onSeg('invDeep', v => { INVF.deep = v; store.set('inv.deep', v); $$('[data-seg="invDeep"] button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === v)); drawDeep(list); });
-  if ($('#benchSel')) $('#benchSel').onchange = e => { INV.hist = null; edit({section: 'profile', fields: {benchmark: e.target.value}}, 'Benchmark changed. Fetching its prices.'); };
-  if ($('#hgroup')) $('#hgroup').onchange = e => { INV.group = e.target.value; store.set('hold.group', INV.group); drawSpread(list); };
-  $('#hgroup2').onchange = e => { INV.listGroup = e.target.value; holdingsBody(); };
-  $('#hq').oninput = e => { INVF.q = e.target.value; holdingsBody(); };
-  $('#hcomb').onchange = e => { ui.hold.combine = e.target.checked; store.set('combine', ui.hold.combine); holdingsBody(); };
-  $$('[data-itip]').forEach(b => b.onclick = () => edit({section: 'todos', action: 'add', fields: {text: tips[+b.dataset.itip].todo}}, 'Added to your list'));
-  $$('[data-italk]').forEach(b => b.onclick = () => talkAbout(tips[+b.dataset.italk]));
-  holdingsBody();
-  drawSpread(list);
-  drawToday(list);
-  drawMovers(list);
+  const setF=(k,v)=>{INVF[k]=v;store.set('inv.'+k,v);holdings();};
+  onSeg('invCls',v=>setF('cls',v));onSeg('invMode',v=>setF('mode',v));onSeg('invChart',v=>setF('chart',v));
+  $$('[data-invest-class]').forEach(b=>b.onclick=()=>setF('cls',b.dataset.investClass));$$('[data-invest-account]').forEach(b=>b.onclick=()=>setF('acct',b.dataset.investAccount));
+  $$('[data-inv-yes],[data-inv-no]').forEach(b=>b.onclick=()=>{const yes=!!b.dataset.invYes,name=b.dataset.invYes||b.dataset.invNo;edit({section:'savings',index:S.savings.findIndex(s=>s.name===name),fields:{invest:yes}});});
+  if($('#benchSel')) $('#benchSel').onchange=e=>{INV.hist=null;edit({section:'profile',fields:{benchmark:e.target.value}});};
+  $('#hgroup').onchange=e=>{INV.group=e.target.value;store.set('hold.group',INV.group);drawSpread(list);};
+  $('#hgroup2').onchange=e=>{INV.listGroup=e.target.value;holdingsBody();};
+  $('#hq').oninput=e=>{INVF.q=e.target.value;holdingsBody();};
+  $('#hcomb').onchange=e=>{ui.hold.combine=e.target.checked;store.set('combine',ui.hold.combine);holdingsBody();};
+  onSeg('invDeep',v=>{INVF.deep=v;store.set('inv.deep',v);drawDeep(list);});
+  holdingsBody();drawSpread(list);drawDeep(list);
+  if(daily) {drawMovers(list);drawDailyNews(list);}
   investCharts(list);
+}
+
+function drawDailyCharts(H,list) {
+  const all=mixOf(H,list), recent=all.slice(-20), trend=$('#dailyTrend');
+  if(trend) timeChart(trend,{series:[{name:'Selected investments',pts:recent,color:'var(--s1)',area:true}],pct:'index',height:180,sync:true,label:'Last 20 closing prices'});
+  const slot=$('#dailyContributions');
+  if(slot){const ps=combined(list.filter(p=>p.kind==='position' && p.live)).sort((a,b)=>Math.abs(b.day_change)-Math.abs(a.day_change)).slice(0,8);
+    slot.closest('.card').hidden=!ps.length;
+    slot.innerHTML=ps.length?chartHtml({type:'hbar',unit:'€',labels:ps.map(p=>p.name),series:[{name:'Today',values:ps.map(p=>Math.round(p.day_change*100)/100)}]},Math.max(280,slot.clientWidth||500)):'';}
+}
+async function drawDailyNews(list) {
+  const selection=JSON.stringify([INVF.cls,INVF.acct]);
+  const N=await loadNews(), slot=$('#dailyNews');if(!slot || INVF.mode==='history' || selection!==JSON.stringify([INVF.cls,INVF.acct])) return;
+  const ids=new Set(list.filter(p=>p.kind==='position' && /stock/i.test(p.category)).map(posId));
+  const seen=new Set(), items=(N.items||[]).filter(n=>ids.has(n.pid) && !seen.has(n.id) && seen.add(n.id));
+  if(!items.length){$('#dailyNewsCard').hidden=true;$('#dailyNewsCard').parentElement.classList.remove('g2');return;}
+  slot.innerHTML=items.slice(0,3).map(newsRow).join('')+(items.length>3?`<details class="opp-more news-fold"><summary>More headlines</summary>${items.slice(3,15).map(newsRow).join('')}</details>`:'');
+}
+async function drawDailyIdeas(list) {
+  try{const data=await (await fetch('/api/opportunities',{cache:'no-store'})).json(), slot=$('#dailyIdeas');if(!slot || INVF.mode==='history')return;
+    const ids=new Set(list.filter(p=>p.kind==='position').map(posId));
+    const signals=(data.signals||[]).filter(r=>r.open?.startsWith('holding:')?ids.has(r.open.slice(8)):INVF.cls==='all').slice(0,3);
+    const ideas=INVF.cls==='shares' && !INVF.acct?(data.ideas?.ideas||[]).filter(r=>['ETF','Stock'].includes(r.type)).slice(0,Math.max(0,3-signals.length)):[];
+    if(!signals.length && !ideas.length){$('#dailyIdeasCard').hidden=true;return;}
+    slot.innerHTML=[...signals,...ideas].map((r,i)=>`<div class="list-row"><div><b>${esc(r.title)}</b><div class="muted small">${esc(r.detail||r.why||'')}</div></div><button type="button" class="linkish small" data-daily-idea="${i}">Discuss</button></div>`).join('');
+    const rows=[...signals,...ideas];$$('[data-daily-idea]',slot).forEach(b=>b.onclick=()=>talkAbout({...rows[+b.dataset.dailyIdea],id:rows[+b.dataset.dailyIdea].id||'idea-'+b.dataset.dailyIdea}));
+  }catch{if($('#dailyIdeasCard')) $('#dailyIdeasCard').hidden=true;}
+}
+async function drawHistoricalAnalysis(H,list,pts) {
+  const identity=JSON.stringify([INVF.cls,INVF.acct,INVF.mode,INVF.chart,RANGE.p,RANGE.from,RANGE.to]);
+  const analysis=await post('/api/intelligence/history_metrics',{points:pts});
+  if(!$('#historyCompare') || identity!==JSON.stringify([INVF.cls,INVF.acct,INVF.mode,INVF.chart,RANGE.p,RANGE.from,RANGE.to]))return;
+  if($('#historyMonthly')) drawMonthly(pts,$('#historyMonthly'),analysis);
+  const stats=$('#historyStats');
+  if(stats){if(pts.length<2){stats.innerHTML='<div class="empty">More closing-price history is needed for this selection.</div>';return;}
+    const positive=analysis.positive_months;
+    stats.innerHTML=`<div><span class="muted small">Period price change</span><b>${pct(analysis.period_change_pct,1)}</b></div><div><span class="muted small">Largest drawdown</span><b>${pct(analysis.drawdown,1)}</b></div><div><span class="muted small">Annualised volatility</span><b>${analysis.vol==null?'Not enough daily data':analysis.vol.toFixed(1)+'%'}</b></div><div><span class="muted small">Positive months</span><b>${positive} / ${analysis.monthly.length}</b></div>`;
+  }
+  const distribution=$('#historyDistribution');if(distribution){const edges=[-Infinity,-10,-5,0,5,10,Infinity], labels=['Below −10%','−10 to −5%','−5 to 0%','0 to 5%','5 to 10%','Above 10%'];
+    const counts=labels.map((_,i)=>analysis.monthly.filter(m=>m.value>=edges[i] && m.value<edges[i+1]).length);
+    distribution.innerHTML=analysis.monthly.length?chartHtml({type:'bar',labels,unit:'months',series:[{name:'Months',values:counts}]},Math.max(280,distribution.clientWidth||800)):'<div class="empty">At least two months of history are needed.</div>';}
+  const choices=$('#compareChoices'), chart=$('#historyCompare');if(!choices || !chart)return;
+  const unique=[...new Map(list.filter(p=>p.kind==='position' && H.series[posId(p)]?.dates?.length).map(p=>[posId(p),p])).values()].sort((a,b)=>b.value-a.value);
+  INVF.compare=(INVF.compare||[]).filter(id=>unique.some(p=>posId(p)===id));if(!INVF.compare.length)INVF.compare=unique.slice(0,3).map(posId);
+  const draw=()=>{const r=rangeFor(), series=unique.filter(p=>INVF.compare.includes(posId(p))).map((p,i)=>({name:p.name,pts:inRange(H.series[posId(p)].dates.map((d,n)=>[tOf(d),H.series[posId(p)].close[n]]),r),color:col(i)}));
+    timeChart(chart,{series,pct:'index',height:260,sync:true,select:true,label:'Compare closing-price performance'});};
+  choices.innerHTML=`<select id="compareAdd" aria-label="Add an investment to compare"><option value="">Compare up to 3 investments</option>${unique.filter(p=>!INVF.compare.includes(posId(p))).map(p=>`<option value="${esc(posId(p))}">${esc(p.name)}</option>`).join('')}</select>`+unique.filter(p=>INVF.compare.includes(posId(p))).map(p=>`<button type="button" data-remove-compare="${esc(posId(p))}" aria-label="Remove ${esc(p.name)}">${esc(p.name)} ×</button>`).join('');
+  $('#compareAdd').onchange=e=>{if(e.target.value){if(INVF.compare.length===3)INVF.compare.shift();INVF.compare.push(e.target.value);drawHistoricalAnalysis(H,list,pts);}};
+  $$('[data-remove-compare]',choices).forEach(b=>b.onclick=()=>{INVF.compare=INVF.compare.filter(id=>id!==b.dataset.removeCompare);drawHistoricalAnalysis(H,list,pts);});draw();
 }
 
 /* today: what each account did, or each investment when there is only one account with prices */
@@ -198,23 +206,13 @@ function drawMovers(list) {
   if (!$('#todayBox') && $('#todayNote')) { const when = S.status.last_refresh ? new Date(S.status.last_refresh).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'}) : ''; $('#todayNote').textContent = when ? 'Prices of ' + when : ''; }
   const rel = p => p.value - p.day_change ? p.day_change / (p.value - p.day_change) * 100 : 0;
   const movers = combined(list.filter(p => p.kind === 'position' && p.live && Math.abs(p.day_change) >= 0.5)).sort((a, b) => Math.abs(rel(b)) - Math.abs(rel(a))).slice(0, 6);
+  box.closest('.card').hidden=!list.some(p=>p.live);
   const top = Math.max(1, ...movers.map(p => Math.abs(rel(p))));
   box.innerHTML = movers.map(p => `<button type="button" class="list-row row-btn mover" data-open="holding:${esc(posId(p))}" data-ctx="holding:${esc(posId(p))}">
       <div><b>${esc(p.name)}</b><div class="muted small">${eur(p.value)} · ${sgn(p.day_change)}</div></div>
       <div class="mv-bar"><i class="${rel(p) < 0 ? 'neg' : 'pos'}" style="width:${(Math.abs(rel(p)) / top * 100).toFixed(0)}%"></i></div>
       <div class="num">${pct(rel(p), 2)}</div></button>`).join('') || '<div class="empty">Nothing has moved much today.</div>';
-  // news only where it explains something: a headline from the last few days for what moved two percent or more
-  const big = movers.filter(p => Math.abs(rel(p)) >= 2).map(posId);
-  loadNews().then(N => {
-    const slot = $('#moverNews'); if (!slot) return;
-    const cut = Date.now() - 4 * 864e5;
-    const why = big.map(id => N.items.find(n => n.pid === id && (!n.date || Date.parse(n.date) >= cut))).filter(Boolean).slice(0, 3);
-    const count = N.items.length;
-    slot.innerHTML = (why.length ? `<div class="why-moved"><div class="muted small">Perhaps why</div>${why.map(newsRow).join('')}</div>` : '')
-      + (count ? `<details class="opp-more news-fold"><summary>All headlines about what you own (${count})</summary><div id="newsSlot"></div></details>` : '');
-    const d = $('.news-fold', slot);
-    if (d) d.ontoggle = () => { if (d.open) newsCard($('#newsSlot')); };
-  });
+
 }
 
 /* the period returns under the big number: as if you had held today's investments, so money you add doesn't count */
@@ -236,7 +234,7 @@ function drawReturns(all, list) {
     if (v == null) return '';
     return `<button type="button" class="ret ${r && RANGE.p === r.p && (r.p !== 'custom' || RANGE.from === r.from) ? 'on' : ''}" ${r ? `data-rng="${esc(JSON.stringify(r))}"` : 'disabled'}><span class="k">${l}</span><span class="v">${pct(v, Math.abs(v) < 10 ? 2 : 1)}</span></button>`;
   }).join('');
-  $$('[data-rng]', box).forEach(b => b.onclick = () => { const r = JSON.parse(b.dataset.rng); setRange(r.p, {from: r.from || '', to: ''}); });
+  $$('[data-rng]', box).forEach(b => b.onclick = () => { const r = JSON.parse(b.dataset.rng); INVF.mode='history'; store.set('inv.mode','history'); setRange(r.p, {from: r.from || '', to: ''}); });
 }
 
 function drawSpread(list) {
@@ -311,10 +309,11 @@ function holdRows() {
   return rows;
 }
 const groupName = (p, g) => g === 'class' ? className(p.cls || classOf(p)) : g === 'type' ? (p.type || TYPE_OF(p.category)) : g === 'account' ? accountOfItem(p)
-  : p.kind === 'savings' ? (g === 'currency' ? 'EUR' : g === 'region' ? 'Netherlands and EU' : 'Savings') : (p[g] || 'Not filled in');
+  : p.kind === 'savings' ? (g === 'currency' ? 'EUR' : g === 'region' ? (p.region || 'Bank jurisdiction unclassified') : 'Savings') : (!p[g] || /^(other|unknown)$/i.test(p[g]) ? 'Unclassified' : p[g]);
 function holdingsBody() {
   const box = $('#hbody'); if (!box) return;
   holdingsTable(box, holdRows());
+  if(typeof intBind==='function')intBind(box);
 }
 function holdingsTable(box, rows) {
   const h = ui.hold, T = S.targets || {}, totalAll = rows.reduce((s, p) => s + p.value, 0) || 1, grp = INV.listGroup || 'class';
@@ -324,9 +323,9 @@ function holdingsTable(box, rows) {
   const th = (k, l, num = true) => `<th class="sortable ${num ? 'num' : ''}" data-k="${k}">${l}${h.sort === k ? (h.dir < 0 ? ' ↓' : ' ↑') : ''}</th>`;
   const H = INV.hist || {series: {}};
   const trend = p => { const s = p.kind === 'position' && H.series[posId(p)]; return s && s.close.length > 20 ? spark(s.close.slice(-66), {w: 72, h: 22}) : ''; };
-  const row = p => `<tr ${p.kind === 'position' ? `data-ctx="holding:${esc(posId(p))}"` : ''}>
+  const row = p => `<tr data-live-id="${esc(holdingLiveKey(p))}" ${p.kind === 'position' ? `data-ctx="holding:${esc(posId(p))}"` : ''}>
     <td><button type="button" class="nm linkish" data-open="${esc(itemOpen(p))}">${p.kind === 'position' ? `<span class="dot ${p.live ? '' : 'off'}"></span> ` : ''}${esc(p.name)}</button>
-      <div class="meta"><span class="tag">${esc(p.category)}</span>${planFor(p) ? '<span class="tag plan">plan</span>' : ''}${esc(p.kind === 'savings' ? p.bank || '' : p.kind === 'managed' ? (S.managed.mode === 'proxy' ? 'estimated from similar funds' : 'value of ' + fdate(S.managed.last_real_date)) : p.account)}${T[posId(p)] != null ? ` · target ${T[posId(p)]}%` : ''}</div></td>
+      <div class="meta"><span class="tag">${esc(p.category)}</span>${p.classification_note?`<span class="tag" title="${esc(p.classification_note)} · ${esc(p.classification_date)}">Region: ${esc(p.region||'unknown')} · AI</span>`:''}${typeof investmentBadge==='function'?investmentBadge(p):''}${planFor(p) ? '<span class="tag plan">plan</span>' : ''}${esc(p.kind === 'savings' ? p.bank || '' : p.kind === 'managed' ? (S.managed.mode === 'proxy' ? 'estimated from similar funds' : 'value of ' + fdate(S.managed.last_real_date)) : p.account)}${T[posId(p)] != null ? ` · target ${T[posId(p)]}%` : ''}</div></td>
     <td class="num"><b>${eur(p.value)}</b><div class="wbar"><i style="width:${Math.max(1, p.value / totalAll * 100).toFixed(1)}%"></i></div><div class="meta">${(p.value / totalAll * 100).toFixed(1)}%</div></td>
     <td class="num">${p.kind === 'savings' ? '<span class="muted">·</span>' : p.live === false ? sgn(p.day_change) : dayc(p.day_change, p.value)}</td>
     <td class="num">${sgn(p.profit)}<div class="meta">${p.kind === 'savings' ? `${p.rate || 0}% a year` : pct(p.since_buy_pct)}</div></td>
@@ -338,7 +337,7 @@ function holdingsTable(box, rows) {
     for (const p of rows) (groups[groupName(p, grp)] = groups[groupName(p, grp)] || []).push(p);
     body = Object.entries(groups).sort((a, b) => b[1].reduce((s, p) => s + p.value, 0) - a[1].reduce((s, p) => s + p.value, 0)).map(([g, ps]) => {
       const v = ps.reduce((s, p) => s + p.value, 0);
-      return `<tr class="grp-row"><td>${esc(g)}</td><td class="num">${eur(v)}<div class="meta">${(v / totalAll * 100).toFixed(1)}%</div></td><td class="num">${dayc(ps.reduce((s, p) => s + (p.day_change || 0), 0), v)}</td><td class="num">${sgn(ps.reduce((s, p) => s + (p.profit || 0), 0))}</td><td></td></tr>${ps.map(row).join('')}`;
+      return `<tr class="grp-row" data-live-group="${esc(g)}"><td>${esc(g)}</td><td class="num">${eur(v)}<div class="meta">${(v / totalAll * 100).toFixed(1)}%</div></td><td class="num">${dayc(ps.reduce((s, p) => s + (p.day_change || 0), 0), v)}</td><td class="num">${sgn(ps.reduce((s, p) => s + (p.profit || 0), 0))}</td><td></td></tr>${ps.map(row).join('')}`;
     }).join('');
   }
   box.innerHTML = `<div class="table-wrap" data-cap="tall"><table id="htable" class="compact"><thead><tr>${th('name', 'Investment', false)}${th('value', 'Value')}${th('day_change', 'Today')}${th('profit', 'Profit')}<th class="num trend-col">3 months</th></tr></thead>
@@ -367,7 +366,7 @@ function mixOf(H, items) {
   }
   if (hasManaged) {
     // the managed portfolio follows the funds it resembles; without their prices it counts at today's value
-    const w = (m.proxy || []).map(p => ({h: (H.proxy || {})[p.symbol], w: p.weight})).filter(x => x.h && x.h.dates.length);
+    const w = proxyWeights(m.proxy).map(p => ({h: (H.proxy || {})[p.symbol], w: p.weight})).filter(x => x.h && x.h.dates.length);
     if (w.length) managed = iso => m.value * w.reduce((s, x) => s + x.w * closeAt(x.h, iso) / x.h.close[x.h.close.length - 1], 0) / w.reduce((s, x) => s + x.w, 0);
     else fixed += m.value;
   }
@@ -393,8 +392,12 @@ async function actualValue(r) {
   return inRange(pts, r);
 }
 async function investCharts(list) {
+  const identity=JSON.stringify([INVF.cls,INVF.acct,INVF.mode,INVF.chart,RANGE.p,RANGE.from,RANGE.to]);
   const H = await loadHist();
-  if (view !== 'holdings') return;
+  if (view !== 'holdings' || INT.tab!=='overview' || identity!==JSON.stringify([INVF.cls,INVF.acct,INVF.mode,INVF.chart,RANGE.p,RANGE.from,RANGE.to])) return;
+  const all = mixOf(H,list);
+  drawReturns(all,list); incomeLine(H,list);
+  if ($('#dailyTrend')) { drawDailyCharts(H,list); return; }
   const r = rangeFor(), box = $('#invChart'), note = $('#invChartNote');
   if (!box) return;
   const W = Math.max(300, box.clientWidth || 900);
@@ -404,18 +407,19 @@ async function investCharts(list) {
   const noHist = H.updating ? 'Fetching five years of prices. This takes a minute the first time.' : offline ? 'Price history needs an internet connection. It is fetched once a day.' : 'Not enough price history for this period.';
   if (INVF.chart === 'value') {
     const typed = INVF.cls !== 'all', pts = typed ? mix : await actualValue(r);
+    if (!box.isConnected || identity!==JSON.stringify([INVF.cls,INVF.acct,INVF.mode,INVF.chart,RANGE.p,RANGE.from,RANGE.to])) return;
     if (pts.length > 1) {
-      timeChart(box, {series: [{name: typed ? 'Value as if held all along' : 'Value', pts, color: 'var(--s1)', area: true}], sync: true, select: true, height: 250, label: 'Value over time'});
+      timeChart(box, {series: [{name: typed ? 'Value as if held all along' : 'Value', pts, color: 'var(--s1)', area: true}], sync: true, select: true, height: 200, label: 'Value over time'});
       const ch = pts[pts.length - 1][1] - pts[0][1];
       note.innerHTML = `${sgn(ch)} (${pct(ch / pts[0][1] * 100, 1)}) over ${esc(rangeLabel().toLowerCase())}${typed ? ', at today\'s units' : ', including money you added'}. Drag across the chart to read any stretch.`;
-    } else if (typed) { box.closest('section').hidden = true; }
+    } else if (typed) { box.innerHTML = none(noHist); note.innerHTML = ''; }
     else { box.innerHTML = none('No history yet for this selection. Every day the app runs adds a point, and yearly statements fill in the past.'); note.innerHTML = ''; }
   } else if (INVF.chart === 'market') {
     const b = H.benchmark && H.benchmark.dates.length ? H.benchmark : null;
     if (mix.length > 2 && b) {
       const bpts = inRange(b.dates.map((d, i) => [tOf(d), b.close[i]]), r), base = mix[0][1] / (bpts[0] || [0, 1])[1];
       timeChart(box, {series: [{name: 'Your investments', pts: mix, color: 'var(--s1)'}, {name: H.benchmark_name || 'Benchmark', pts: bpts.map(([t, v]) => [t, v * base]), color: 'var(--muted)'}],
-        pct: 'index', sync: true, select: true, height: 250, label: 'Your investments against the market'});
+        pct: 'index', sync: true, select: true, height: 200, label: 'Your investments against the market'});
       const me = mix[mix.length - 1][1] / mix[0][1] - 1, mk = bpts.length ? bpts[bpts.length - 1][1] / bpts[0][1] - 1 : 0;
       note.innerHTML = `You ${pct(me * 100, 1)}, ${esc(H.benchmark_name || 'the benchmark')} ${pct(mk * 100, 1)}, ${esc(rangeLabel().toLowerCase())}. As if you had held today's investments the whole time.`;
     } else { box.innerHTML = none(noHist); note.innerHTML = ''; }
@@ -423,10 +427,11 @@ async function investCharts(list) {
     if (mix.length > 2) {
       let peak = -Infinity, worst = 0;
       const dd = mix.map(([t, v]) => { peak = Math.max(peak, v); const x = (v / peak - 1) * 100; worst = Math.min(worst, x); return [t, x]; });
-      timeChart(box, {series: [{name: 'Below the previous high', pts: dd, area: true, color: 'var(--loss)'}], unit: '%', sync: true, height: 250, zero: true, label: 'Drawdown'});
+      timeChart(box, {series: [{name: 'Below the previous high', pts: dd, area: true, color: 'var(--loss)'}], unit: '%', sync: true, height: 200, zero: true, label: 'Drawdown'});
       note.innerHTML = `Deepest fall from a high: <b>${worst.toFixed(1)}%</b>. A drawdown is how far your investments sat below their best point.`;
     } else { box.innerHTML = none(noHist); note.innerHTML = ''; }
   }
+  drawHistoricalAnalysis(H,list,mix);
   drawReturns(mixAll, list);
   drawLens(mixAll, list);
   drawDeep(list);
@@ -458,18 +463,17 @@ function drawResults(all, list, box) {
   box.innerHTML = chartHtml({type: 'bar', unit: '€', labels, series: [{name: 'Result', values: vals.map(v => Math.round(v))}]}, Math.max(280, box.clientWidth || 480))
     + `<div class="muted small">${thisYear} so far is an estimate from prices${interest ? ' and interest' : ''}.</div>`;
 }
-function drawMonthly(all, box) {
+async function drawMonthly(all, box, cached) {
   if (!box) return;
   if (all.length < 40) { box.innerHTML = '<div class="empty">Not enough price history yet.</div>'; return; }
-  const me = {};
-  for (const [t, v] of all) me[monthKey(t)] = v;
-  const ms = Object.keys(me).sort(), ret = {};
-  for (let i = 1; i < ms.length; i++) ret[ms[i]] = (me[ms[i]] / me[ms[i - 1]] - 1) * 100;
-  const years = [...new Set(ms.slice(1).map(m => m.slice(0, 4)))].sort().reverse().slice(0, INV.allYears ? 99 : 3);
-  const yr = y => { const m = ms.filter(x => x.startsWith(y)); const prev = ms[ms.indexOf(m[0]) - 1]; return prev ? (me[m[m.length - 1]] / me[prev] - 1) * 100 : null; };
+  const calculated=cached||await post('/api/intelligence/history_metrics',{points:all});
+  if(!box.isConnected)return;
+  const ret=Object.fromEntries(calculated.monthly.map(m=>[m.month,m.value]));
+  const years=Object.keys(calculated.yearly).sort().reverse().slice(0,INV.allYears?99:3);
+  const yr=y=>calculated.yearly[y];
   box.innerHTML = heatTable(years, [...MONTHS, 'Year'], (ri, ci) => ci === 12 ? yr(years[ri]) : ret[`${years[ri]}-${String(ci + 1).padStart(2, '0')}`] ?? null, {diverging: true, fmt: v => `${v < 0 ? '−' : '+'}${Math.abs(v).toFixed(1)}%`, max: 6})
     + `<button type="button" class="linkish small" id="allYears">${INV.allYears ? 'Last three years' : 'All years'}</button>`;
-  $('#allYears').onclick = () => { INV.allYears = !INV.allYears; drawMonthly(all, box); };
+  $('#allYears').onclick = () => { INV.allYears = !INV.allYears; drawMonthly(all, box, calculated); };
 }
 function dividendData(H, list) {
   const divs = {}, names = {}, cut = isoD(new Date(Date.now() - 365 * 864e5));
@@ -613,9 +617,9 @@ async function openHolding(id) {
 /* ---------- news about what you own ---------- */
 async function loadNews(force) {
   if (!force && INV.news && Date.now() - INV.newsAt < 120000) return INV.news;
-  try { INV.news = await (await fetch('/api/news', {cache: 'no-store'})).json(); } catch { INV.news = {items: [], picks: {}}; }
+  try { INV.news = await cachedJSON('/api/news',{ttl:120000,force:!!force}); } catch { INV.news = {items: [], picks: {}}; }
   INV.newsAt = Date.now();
-  if (INV.news.updating && !INV.newsTimer) INV.newsTimer = setTimeout(() => { INV.newsTimer = null; loadNews(true).then(() => newsCard($('#newsSlot'))); }, 8000);
+  if (INV.news.updating && !INV.newsTimer) INV.newsTimer=setTimeout(()=>{INV.newsTimer=null;loadNews(true).then(()=>{if($('#dailyNews'))drawDailyNews(invFiltered());else if($('#newsSlot'))newsCard($('#newsSlot'));});},8000);
   return INV.news;
 }
 const newsRow = n => `<a class="news-row" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">

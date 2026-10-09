@@ -1,2 +1,10 @@
 yfinance>=0.2.50
 anthropic==0.125.0
+
+PyJWT[crypto]>=2.10,<3
+
+# Local evidence search, exports and optional Windows tray
+pypdf>=5,<7
+openpyxl>=3.1.5,<4
+Pillow>=10.4,<12
+pystray>=0.19.5,<0.20; sys_platform == "win32"

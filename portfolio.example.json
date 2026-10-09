@@ -1,102 +1,1273 @@
 {
-  "_readme": "Made up data so the app can run without the real portfolio.json. Copy to portfolio.json to try it out.",
+  "_demo": true,
+  "_readme": "Every balance, holding, payment, person and price here is invented.",
   "refresh_minutes": 5,
   "accounts": [
     {
-      "name": "Example Broker",
-      "since": "2021-03",
-      "cash_eur": 125.4,
-      "closed_cashflow_eur": 310.0,
-      "profit_extra_eur": 45.0,
-      "note": "Example account.",
+      "name": "Example Broker One",
+      "since": "2021-10",
+      "cash_eur": 485,
+      "profit_extra_eur": 240,
+      "closed_cashflow_eur": 0,
+      "note": "Invented ETF and stock account.",
+      "updated": "2026-10-09",
       "positions": [
         {
-          "name": "iShares Core MSCI World",
-          "isin": "IE00B4L5Y983",
+          "name": "World Equity ETF",
+          "isin": "DEMO-WORLD",
           "category": "Broad ETF",
-          "units": 20.5,
-          "cost_eur": 2400.0,
-          "net_cashflow_eur": -2400.0,
-          "ref_price_eur": 130.0,
-          "tickers": ["IWDA.AS"]
+          "units": 140,
+          "cost_eur": 11300,
+          "net_cashflow_eur": -11300,
+          "ref_price_eur": 96.8,
+          "tickers": [
+            "IWDA.AS"
+          ],
+          "region": "Global",
+          "sector": "Diversified",
+          "currency": "EUR",
+          "trades": [
+            {
+              "date": "2021-10-09",
+              "type": "Buy",
+              "units": 140,
+              "amount_eur": -11300
+            }
+          ]
+        },
+        {
+          "name": "Europe Equity ETF",
+          "isin": "DEMO-EUROPE",
+          "category": "Broad ETF",
+          "units": 80,
+          "cost_eur": 3560,
+          "net_cashflow_eur": -3560,
+          "ref_price_eur": 52.4,
+          "tickers": [
+            "IMEU.AS"
+          ],
+          "region": "Europe",
+          "sector": "Diversified",
+          "currency": "EUR",
+          "trades": [
+            {
+              "date": "2021-10-09",
+              "type": "Buy",
+              "units": 80,
+              "amount_eur": -3560
+            }
+          ]
+        },
+        {
+          "name": "Technology ETF",
+          "isin": "DEMO-TECH",
+          "category": "Tech ETF",
+          "units": 32,
+          "cost_eur": 3750,
+          "net_cashflow_eur": -3750,
+          "ref_price_eur": 143.1,
+          "tickers": [
+            "QDVE.DE"
+          ],
+          "region": "North America",
+          "sector": "Technology",
+          "currency": "EUR",
+          "trades": [
+            {
+              "date": "2021-10-09",
+              "type": "Buy",
+              "units": 32,
+              "amount_eur": -3750
+            }
+          ]
         },
         {
           "name": "ASML",
-          "isin": "NL0010273215",
+          "isin": "DEMO-ASML",
           "category": "Stock",
-          "units": 1.0,
-          "cost_eur": 1200.0,
-          "net_cashflow_eur": -1200.0,
-          "ref_price_eur": 1650.0,
-          "tickers": ["ASML.AS"]
+          "units": 5,
+          "cost_eur": 3200,
+          "net_cashflow_eur": -3200,
+          "ref_price_eur": 712,
+          "tickers": [
+            "ASML.AS"
+          ],
+          "region": "Europe",
+          "sector": "Technology",
+          "currency": "EUR",
+          "trades": [
+            {
+              "date": "2021-10-09",
+              "type": "Buy",
+              "units": 5,
+              "amount_eur": -3200
+            }
+          ]
         },
         {
-          "name": "Example bond 2029",
-          "isin": "XS0000000000",
-          "category": "Bond",
-          "units": 1000.0,
-          "cost_eur": 1000.0,
-          "net_cashflow_eur": -1000.0,
-          "manual_price_eur": 0.97,
-          "ref_price_eur": 0.97,
-          "maturity": "2029-12",
-          "tickers": []
+          "name": "Unilever",
+          "isin": "DEMO-UNILEVER",
+          "category": "Stock",
+          "units": 45,
+          "cost_eur": 2390,
+          "net_cashflow_eur": -2390,
+          "ref_price_eur": 49.6,
+          "tickers": [
+            "UNA.AS"
+          ],
+          "region": "Europe",
+          "sector": "Consumer staples",
+          "currency": "EUR",
+          "trades": [
+            {
+              "date": "2021-10-09",
+              "type": "Buy",
+              "units": 45,
+              "amount_eur": -2390
+            }
+          ]
         }
-      ]
+      ],
+      "cash_rate_pct": 0,
+      "cash_role": "investing",
+      "cash_access": "transfer",
+      "withdrawal_days": 2
+    },
+    {
+      "name": "Example Broker Two",
+      "since": "2023-01",
+      "cash_eur": 210,
+      "profit_extra_eur": 160,
+      "closed_cashflow_eur": 0,
+      "note": "Invented second broker with bonds and stocks.",
+      "updated": "2026-10-09",
+      "positions": [
+        {
+          "name": "Apple",
+          "isin": "DEMO-APPLE",
+          "category": "Stock",
+          "units": 14,
+          "cost_eur": 2100,
+          "net_cashflow_eur": -2100,
+          "ref_price_eur": 184,
+          "tickers": [
+            "AAPL"
+          ],
+          "region": "North America",
+          "sector": "Technology",
+          "currency": "EUR",
+          "trades": [
+            {
+              "date": "2021-10-09",
+              "type": "Buy",
+              "units": 14,
+              "amount_eur": -2100
+            }
+          ]
+        },
+        {
+          "name": "Japan Equity ETF",
+          "isin": "DEMO-JAPAN",
+          "category": "Broad ETF",
+          "units": 50,
+          "cost_eur": 2480,
+          "net_cashflow_eur": -2480,
+          "ref_price_eur": 56.3,
+          "tickers": [
+            "SJPA.AS"
+          ],
+          "region": "Asia",
+          "sector": "Diversified",
+          "currency": "EUR",
+          "trades": [
+            {
+              "date": "2021-10-09",
+              "type": "Buy",
+              "units": 50,
+              "amount_eur": -2480
+            }
+          ]
+        },
+        {
+          "name": "Emerging Markets ETF",
+          "isin": "DEMO-EM",
+          "category": "Broad ETF",
+          "units": 110,
+          "cost_eur": 3210,
+          "net_cashflow_eur": -3210,
+          "ref_price_eur": 31.7,
+          "tickers": [
+            "EMIM.AS"
+          ],
+          "region": "Emerging markets",
+          "sector": "Diversified",
+          "currency": "EUR",
+          "trades": [
+            {
+              "date": "2021-10-09",
+              "type": "Buy",
+              "units": 110,
+              "amount_eur": -3210
+            }
+          ]
+        },
+        {
+          "name": "World Equity ETF",
+          "isin": "DEMO-WORLD",
+          "category": "Broad ETF",
+          "units": 35,
+          "cost_eur": 2780,
+          "net_cashflow_eur": -2780,
+          "ref_price_eur": 96.8,
+          "tickers": [
+            "IWDA.AS"
+          ],
+          "region": "Global",
+          "sector": "Diversified",
+          "currency": "EUR",
+          "trades": [
+            {
+              "date": "2021-10-09",
+              "type": "Buy",
+              "units": 35,
+              "amount_eur": -2780
+            }
+          ]
+        },
+        {
+          "name": "Example Euro Bond 2028",
+          "isin": "DEMO-BOND-1",
+          "category": "Bond",
+          "units": 4000,
+          "cost_eur": 3980,
+          "net_cashflow_eur": -3980,
+          "ref_price_eur": 0.985,
+          "tickers": [
+            "DEMO.BOND"
+          ],
+          "region": "Europe",
+          "sector": "Government",
+          "currency": "EUR",
+          "trades": [
+            {
+              "date": "2021-10-09",
+              "type": "Buy",
+              "units": 4000,
+              "amount_eur": -3980
+            }
+          ],
+          "manual_price_eur": 0.985,
+          "maturity": "2028-06-30"
+        },
+        {
+          "name": "Euro Corporate Bond Fund",
+          "isin": "DEMO-CORP",
+          "category": "Bond fund",
+          "units": 75,
+          "cost_eur": 7450,
+          "net_cashflow_eur": -7450,
+          "ref_price_eur": 101.8,
+          "tickers": [
+            "IEAC.AS"
+          ],
+          "region": "Europe",
+          "sector": "Bonds",
+          "currency": "EUR",
+          "trades": [
+            {
+              "date": "2021-10-09",
+              "type": "Buy",
+              "units": 75,
+              "amount_eur": -7450
+            }
+          ]
+        }
+      ],
+      "cash_rate_pct": 0,
+      "cash_role": "investing",
+      "cash_access": "transfer",
+      "withdrawal_days": 2
+    },
+    {
+      "name": "Example Crypto Exchange",
+      "since": "2024-04",
+      "cash_eur": 95,
+      "profit_extra_eur": 0,
+      "closed_cashflow_eur": 0,
+      "updated": "2026-10-09",
+      "positions": [
+        {
+          "name": "Bitcoin",
+          "isin": "DEMO-BTC",
+          "category": "Crypto",
+          "units": 0.035,
+          "cost_eur": 1580,
+          "net_cashflow_eur": -1580,
+          "ref_price_eur": 58200,
+          "tickers": [
+            "BTC-EUR"
+          ],
+          "region": "Global",
+          "sector": "Digital assets",
+          "currency": "EUR",
+          "trades": [
+            {
+              "date": "2021-10-09",
+              "type": "Buy",
+              "units": 0.035,
+              "amount_eur": -1580
+            }
+          ]
+        },
+        {
+          "name": "Ethereum",
+          "isin": "DEMO-ETH",
+          "category": "Crypto",
+          "units": 0.65,
+          "cost_eur": 2030,
+          "net_cashflow_eur": -2030,
+          "ref_price_eur": 2780,
+          "tickers": [
+            "ETH-EUR"
+          ],
+          "region": "Global",
+          "sector": "Digital assets",
+          "currency": "EUR",
+          "trades": [
+            {
+              "date": "2021-10-09",
+              "type": "Buy",
+              "units": 0.65,
+              "amount_eur": -2030
+            }
+          ]
+        }
+      ],
+      "cash_rate_pct": 0,
+      "cash_role": "investing",
+      "cash_access": "transfer",
+      "withdrawal_days": 2
     }
   ],
   "managed": {
-    "name": "Example managed portfolio",
-    "value_eur": 25000.0,
-    "value_date": "2026-09-01",
-    "start_value_eur": 20000.0,
+    "name": "Example Managed Portfolio",
+    "value_eur": 22019.5,
+    "value_date": "2026-10-09",
+    "start_value_eur": 19000,
     "start_date": "2022-01-01",
-    "profit_at_value_date_eur": 5000.0,
-    "fees_paid_eur": 900.0,
+    "profit_at_value_date_eur": 3019.5,
+    "fees_paid_eur": 290,
+    "cash_eur": 350,
+    "positions": [
+      {
+        "name": "Managed Global Equity Fund",
+        "isin": "DEMO-MWORLD",
+        "category": "Broad ETF",
+        "units": 125,
+        "cost_eur": 10740,
+        "net_cashflow_eur": -10740,
+        "ref_price_eur": 112.3,
+        "tickers": [
+          "VWRL.AS"
+        ],
+        "region": "Global",
+        "sector": "Diversified",
+        "currency": "EUR",
+        "trades": [
+          {
+            "date": "2021-10-09",
+            "type": "Buy",
+            "units": 125,
+            "amount_eur": -10740
+          }
+        ]
+      },
+      {
+        "name": "Managed Euro Bond Fund",
+        "isin": "DEMO-MBOND",
+        "category": "Bond fund",
+        "units": 80,
+        "cost_eur": 7650,
+        "net_cashflow_eur": -7650,
+        "ref_price_eur": 95.4,
+        "tickers": [
+          "AGGH.AS"
+        ],
+        "region": "Europe",
+        "sector": "Bonds",
+        "currency": "EUR",
+        "trades": [
+          {
+            "date": "2021-10-09",
+            "type": "Buy",
+            "units": 80,
+            "amount_eur": -7650
+          }
+        ]
+      }
+    ],
     "proxy": [
-      {"symbol": "IWDA.AS", "weight": 0.8},
-      {"symbol": "D5BG.DE", "weight": 0.2}
+      {
+        "symbol": "IWDA.AS",
+        "weight": 0.65
+      },
+      {
+        "symbol": "AGGH.AS",
+        "weight": 0.35
+      }
     ]
   },
   "savings": [
     {
-      "name": "Savings account",
-      "bank": "Example Bank",
-      "principal_eur": 8000.0,
-      "rate_pct": 2.5,
-      "accrued_at_snapshot_eur": 0.0,
-      "snapshot_date": "2026-10-01",
-      "maturity": null
+      "name": "Demo Bank Current Account",
+      "bank": "Demo Bank",
+      "kind": "payment",
+      "principal_eur": 2750,
+      "rate_pct": 0,
+      "snapshot_date": "2026-10-09",
+      "accrued_at_snapshot_eur": 0,
+      "maturity": null,
+      "invest": false,
+      "cash_role": "spending",
+      "cash_access": "instant",
+      "platform": "",
+      "withdrawal_days": 0
     },
     {
-      "name": "Current account",
-      "bank": "Example Bank",
-      "principal_eur": 1500.0,
-      "rate_pct": 0.0,
-      "accrued_at_snapshot_eur": 0.0,
-      "snapshot_date": "2026-10-01",
-      "maturity": null
+      "name": "Demo Travel Card",
+      "bank": "Demo Travel Bank",
+      "kind": "payment",
+      "principal_eur": 650,
+      "rate_pct": 0,
+      "snapshot_date": "2026-10-09",
+      "accrued_at_snapshot_eur": 0,
+      "maturity": null,
+      "invest": false,
+      "cash_role": "spending",
+      "cash_access": "instant",
+      "platform": "",
+      "withdrawal_days": 0
+    },
+    {
+      "name": "Emergency Savings",
+      "bank": "Example Savings Bank",
+      "kind": "savings",
+      "principal_eur": 12400,
+      "rate_pct": 2.2,
+      "snapshot_date": "2026-10-09",
+      "accrued_at_snapshot_eur": 132,
+      "maturity": null,
+      "invest": false,
+      "cash_role": "emergency",
+      "cash_access": "transfer",
+      "platform": "Example savings platform",
+      "withdrawal_days": 1
+    },
+    {
+      "name": "Fixed Deposit",
+      "bank": "Example Deposit Bank",
+      "kind": "deposit",
+      "principal_eur": 6500,
+      "rate_pct": 3.1,
+      "snapshot_date": "2026-10-09",
+      "accrued_at_snapshot_eur": 170,
+      "maturity": "2027-06-06",
+      "invest": true,
+      "cash_role": "unallocated",
+      "cash_access": "transfer",
+      "platform": "Example savings platform",
+      "withdrawal_days": 1
     }
   ],
   "debts": [
     {
-      "name": "Student loan",
-      "balance_eur": 12000.0,
-      "rate_pct": 2.56,
-      "snapshot_date": "2026-10-01",
-      "expected_gift": false
+      "name": "Example Student Loan",
+      "balance_eur": 14750,
+      "rate_pct": 2.35,
+      "monthly_payment_eur": 125,
+      "snapshot_date": "2026-10-09",
+      "expected_gift": false,
+      "repayment_regime": "SF35",
+      "rate_fixed_until": "2028-09-08"
+    },
+    {
+      "name": "Example Personal Loan",
+      "balance_eur": 2400,
+      "rate_pct": 4.5,
+      "monthly_payment_eur": 100,
+      "snapshot_date": "2026-10-09",
+      "expected_gift": false,
+      "repayment_regime": null,
+      "rate_fixed_until": "2028-09-08"
+    }
+  ],
+  "profile": {
+    "birth_year": 1994,
+    "household": "single",
+    "risk": "medium",
+    "home_country": "NL",
+    "benchmark": "IWDA.AS",
+    "retire_age": 60,
+    "horizon_years": 20,
+    "buffer_months": 6,
+    "monthly_invest_eur": 550,
+    "compare_rate_pct": 2.5,
+    "goals_text": "Example home deposit and a comfortable buffer."
+  },
+  "pots": [
+    {
+      "name": "Holiday",
+      "target_eur": 2500,
+      "saved_eur": 1600,
+      "account": "Emergency Savings"
+    },
+    {
+      "name": "Laptop",
+      "target_eur": 1800,
+      "saved_eur": 1050,
+      "account": "Emergency Savings"
+    }
+  ],
+  "goals": [
+    {
+      "name": "Home deposit",
+      "target_eur": 40000,
+      "date": "2029-10-13",
+      "source": "savings"
+    },
+    {
+      "name": "Holiday fund",
+      "target_eur": 2500,
+      "date": "2027-05-17",
+      "source": "pot",
+      "pot": "Holiday"
+    }
+  ],
+  "savings_plans": [
+    {
+      "account": "Example Broker One",
+      "instrument": "World Equity ETF",
+      "isin": "DEMO-WORLD",
+      "amount_eur": 400,
+      "frequency": "monthly",
+      "day": 15,
+      "active": true,
+      "since": "2024-01",
+      "last_execution": "2026-09-15",
+      "source": "synthetic demo"
+    },
+    {
+      "account": "Example Broker Two",
+      "instrument": "Emerging Markets ETF",
+      "isin": "DEMO-EM",
+      "amount_eur": 150,
+      "frequency": "monthly",
+      "day": 15,
+      "active": true,
+      "source": "synthetic demo"
+    },
+    {
+      "account": "Example Broker One",
+      "instrument": "ASML",
+      "isin": "DEMO-ASML",
+      "amount_eur": 25,
+      "frequency": "weekly",
+      "active": true,
+      "starts_on": "2026-10-09",
+      "source": "manual",
+      "note": "Fictional plan for testing"
     }
   ],
   "todos": [
-    {"text": "Example to do", "done": false}
+    {
+      "text": "Compare savings rates (example task)",
+      "done": false
+    },
+    {
+      "text": "Review annual account fees (example task)",
+      "done": true
+    }
   ],
+  "targets": {
+    "DEMO-WORLD": 40,
+    "DEMO-EM": 15
+  },
+  "tax": {
+    "partner": false
+  },
+  "watchlist": [
+    {
+      "name": "Example watched ETF",
+      "symbol": "VWRL.AS",
+      "buy_below": 100,
+      "added": "2026-07-11",
+      "note": "Invented watchlist entry."
+    }
+  ],
+  "advice_dismissed": [],
+  "advice_done": [],
   "account_history": [
-    {"date": "2024-12-31", "account": "Example Broker", "value_eur": 3200, "source": "example"},
-    {"date": "2025-12-31", "account": "Example Broker", "value_eur": 4100, "source": "example"}
+    {
+      "date": "2021-12-31",
+      "account": "Example Broker One",
+      "value_eur": 15355.5,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2021-12-31",
+      "account": "Example Broker Two",
+      "value_eur": 12913.03,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2021-12-31",
+      "account": "Example Crypto Exchange",
+      "value_eur": 2114.86,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2021-12-31",
+      "account": "Example Managed Portfolio",
+      "value_eur": 11822.31,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2021-12-31",
+      "account": "Demo Bank Current Account",
+      "value_eur": 1476.48,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2021-12-31",
+      "account": "Demo Travel Card",
+      "value_eur": 348.99,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2021-12-31",
+      "account": "Emergency Savings",
+      "value_eur": 6728.46,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2021-12-31",
+      "account": "Fixed Deposit",
+      "value_eur": 3581.14,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2021-12-31",
+      "account": "Example Student Loan",
+      "value_eur": -21547.7,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2021-12-31",
+      "account": "Example Personal Loan",
+      "value_eur": -9197.7,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2022-12-31",
+      "account": "Example Broker One",
+      "value_eur": 16995.11,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2022-12-31",
+      "account": "Example Broker Two",
+      "value_eur": 14291.84,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2022-12-31",
+      "account": "Example Crypto Exchange",
+      "value_eur": 2340.67,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2022-12-31",
+      "account": "Example Managed Portfolio",
+      "value_eur": 13084.66,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2022-12-31",
+      "account": "Demo Bank Current Account",
+      "value_eur": 1634.13,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2022-12-31",
+      "account": "Demo Travel Card",
+      "value_eur": 386.25,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2022-12-31",
+      "account": "Emergency Savings",
+      "value_eur": 7446.9,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2022-12-31",
+      "account": "Fixed Deposit",
+      "value_eur": 3963.52,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2022-12-31",
+      "account": "Example Student Loan",
+      "value_eur": -20124.2,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2022-12-31",
+      "account": "Example Personal Loan",
+      "value_eur": -7774.2,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2023-12-31",
+      "account": "Example Broker One",
+      "value_eur": 20319.83,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2023-12-31",
+      "account": "Example Broker Two",
+      "value_eur": 17087.72,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2023-12-31",
+      "account": "Example Crypto Exchange",
+      "value_eur": 2798.58,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2023-12-31",
+      "account": "Example Managed Portfolio",
+      "value_eur": 15644.38,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2023-12-31",
+      "account": "Demo Bank Current Account",
+      "value_eur": 1953.82,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2023-12-31",
+      "account": "Demo Travel Card",
+      "value_eur": 461.81,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2023-12-31",
+      "account": "Emergency Savings",
+      "value_eur": 8903.72,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2023-12-31",
+      "account": "Fixed Deposit",
+      "value_eur": 4738.89,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2023-12-31",
+      "account": "Example Student Loan",
+      "value_eur": -18700.7,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2023-12-31",
+      "account": "Example Personal Loan",
+      "value_eur": -6350.7,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2024-12-31",
+      "account": "Example Broker One",
+      "value_eur": 23931.6,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2024-12-31",
+      "account": "Example Broker Two",
+      "value_eur": 20125.0,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2024-12-31",
+      "account": "Example Crypto Exchange",
+      "value_eur": 3296.01,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2024-12-31",
+      "account": "Example Managed Portfolio",
+      "value_eur": 18425.11,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2024-12-31",
+      "account": "Demo Bank Current Account",
+      "value_eur": 2301.1,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2024-12-31",
+      "account": "Demo Travel Card",
+      "value_eur": 543.9,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2024-12-31",
+      "account": "Emergency Savings",
+      "value_eur": 10486.32,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2024-12-31",
+      "account": "Fixed Deposit",
+      "value_eur": 5581.21,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2024-12-31",
+      "account": "Example Student Loan",
+      "value_eur": -17273.3,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2024-12-31",
+      "account": "Example Personal Loan",
+      "value_eur": -4923.3,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2025-12-31",
+      "account": "Example Broker One",
+      "value_eur": 25627.38,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2025-12-31",
+      "account": "Example Broker Two",
+      "value_eur": 21551.04,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2025-12-31",
+      "account": "Example Crypto Exchange",
+      "value_eur": 3529.56,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2025-12-31",
+      "account": "Example Managed Portfolio",
+      "value_eur": 19730.7,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2025-12-31",
+      "account": "Demo Bank Current Account",
+      "value_eur": 2464.15,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2025-12-31",
+      "account": "Demo Travel Card",
+      "value_eur": 582.44,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2025-12-31",
+      "account": "Emergency Savings",
+      "value_eur": 11229.37,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2025-12-31",
+      "account": "Fixed Deposit",
+      "value_eur": 5976.69,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2025-12-31",
+      "account": "Example Student Loan",
+      "value_eur": -15849.8,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2025-12-31",
+      "account": "Example Personal Loan",
+      "value_eur": -3499.8,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2026-10-09",
+      "account": "Example Broker One",
+      "value_eur": 28600.2,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2026-10-09",
+      "account": "Example Broker Two",
+      "value_eur": 24051.0,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2026-10-09",
+      "account": "Example Crypto Exchange",
+      "value_eur": 3939.0,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2026-10-09",
+      "account": "Example Managed Portfolio",
+      "value_eur": 22019.5,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2026-10-09",
+      "account": "Demo Bank Current Account",
+      "value_eur": 2750.0,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2026-10-09",
+      "account": "Demo Travel Card",
+      "value_eur": 650.0,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2026-10-09",
+      "account": "Emergency Savings",
+      "value_eur": 12532.0,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2026-10-09",
+      "account": "Fixed Deposit",
+      "value_eur": 6670.0,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2026-10-09",
+      "account": "Example Student Loan",
+      "value_eur": -14750.0,
+      "source": "synthetic demo"
+    },
+    {
+      "date": "2026-10-09",
+      "account": "Example Personal Loan",
+      "value_eur": -2400.0,
+      "source": "synthetic demo"
+    }
   ],
   "yearly_flows": [
-    {"year": 2025, "account": "Example Broker", "deposits_eur": null, "withdrawals_eur": null, "invested_eur": 900,
-     "dividends_eur": 42.5, "interest_received_eur": null, "interest_paid_eur": null, "fees_eur": 12.0,
-     "taxes_eur": null, "profit_eur": 310, "return_pct": 9, "note": "example"}
+    {
+      "year": 2022,
+      "account": "Example Broker One",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 156,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": 3192.2,
+      "return_pct": -1.0,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2022,
+      "account": "Example Broker Two",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 208,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": 2552.96,
+      "return_pct": 11.6,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2022,
+      "account": "Example Crypto Exchange",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 231,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": 77.18,
+      "return_pct": 7.6,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2022,
+      "account": "Example Managed Portfolio",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 203,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": -1220.74,
+      "return_pct": 9.3,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2023,
+      "account": "Example Broker One",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 239,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": 169.06,
+      "return_pct": -2.4,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2023,
+      "account": "Example Broker Two",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 170,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": 881.08,
+      "return_pct": -4.6,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2023,
+      "account": "Example Crypto Exchange",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 215,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": 352.39,
+      "return_pct": -0.3,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2023,
+      "account": "Example Managed Portfolio",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 111,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": -63.51,
+      "return_pct": 7.2,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2024,
+      "account": "Example Broker One",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 161,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": 1049.33,
+      "return_pct": -3.0,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2024,
+      "account": "Example Broker Two",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 171,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": 637.46,
+      "return_pct": 3.3,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2024,
+      "account": "Example Crypto Exchange",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 157,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": -74.01,
+      "return_pct": 5.1,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2024,
+      "account": "Example Managed Portfolio",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 184,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": 1148.99,
+      "return_pct": -0.9,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2025,
+      "account": "Example Broker One",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 171,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": -1678.14,
+      "return_pct": 7.8,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2025,
+      "account": "Example Broker Two",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 180,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": 1855.94,
+      "return_pct": 6.1,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2025,
+      "account": "Example Crypto Exchange",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 190,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": -0.81,
+      "return_pct": 6.8,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2025,
+      "account": "Example Managed Portfolio",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 174,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": 108.37,
+      "return_pct": 9.4,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2026,
+      "account": "Example Broker One",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 150,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": -613.25,
+      "return_pct": 7.9,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2026,
+      "account": "Example Broker Two",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 146,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": -810.67,
+      "return_pct": 10.9,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2026,
+      "account": "Example Crypto Exchange",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 182,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": -61.63,
+      "return_pct": 11.5,
+      "note": "Invented yearly statement; not an actual account."
+    },
+    {
+      "year": 2026,
+      "account": "Example Managed Portfolio",
+      "deposits_eur": 5000,
+      "withdrawals_eur": 500,
+      "invested_eur": 4500,
+      "dividends_eur": 165,
+      "interest_received_eur": 35,
+      "interest_paid_eur": 0,
+      "fees_eur": 45,
+      "taxes_eur": 0,
+      "profit_eur": -288.33,
+      "return_pct": 1.8,
+      "note": "Invented yearly statement; not an actual account."
+    }
   ]
 }

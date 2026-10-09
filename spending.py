@@ -211,7 +211,7 @@ def by_direction(t):
 def parts(t):
     """A transaction as the pieces that count in the analytics: a split payment counts once per category."""
     if t.get("splits"):
-        return [{**t, "amount": p["amount"], "category": p["category"], "split": True} for p in t["splits"]]
+        return [{**t, "amount": p["amount"], "category": p["category"], "split": True, "product":p.get("description"), "receipt_adjustment":bool(t["amount"]<0 and p["amount"]>0)} for p in t["splits"]]
     return [t]
 
 
@@ -538,6 +538,14 @@ def run_ai(prompt, system, exe=None, api_key=None, files=None, tools="", kind="s
     of the wrong shape, which would otherwise be written to the data as if it were an answer."""
     import ai
     import local
+    import providers
+    target = "chat" if kind == "note" else "import"
+    if kind in ("spending","categorise","places","note") and providers.selected(target) == "openai":
+        uploaded = None
+        if files:
+            import base64, mimetypes
+            uploaded = [{"name":n,"media_type":mimetypes.guess_type(n)[0] or "text/plain","data":base64.b64encode(raw).decode()} for n,raw in files.items()]
+        return providers.response([{"role":"user","content":prompt}],system,kind=target,files=uploaded,level=level or "quick")
     model = None if files else local.wanted(kind)
     if model:
         try:
@@ -557,8 +565,13 @@ def run_ai(prompt, system, exe=None, api_key=None, files=None, tools="", kind="s
         with tempfile.TemporaryDirectory(prefix="spend-", dir=HERE / "cache") as tmp:
             tmp = Path(tmp).resolve()
             (tmp / "system.md").write_text(system, encoding="utf-8")
-            for fname, data in (files or {}).items():
-                (tmp / fname).write_bytes(data)
+            uploaded = tmp / "uploads"
+            uploaded.mkdir()
+            for index, (fname, data) in enumerate((files or {}).items()):
+                safe = re.sub(r'[<>:"/\\|?*]', '_', str(fname).replace("\\", "/").split("/")[-1])[:150] or "document"
+                path = uploaded / (str(index+1) + "_" + safe)
+                path.write_bytes(data)
+                prompt += "\nUploaded file name " + str(fname) + " is at " + str(path) + ". Use the original file name in source_name."
             args = [exe, "-p", "--output-format", "json", "--system-prompt-file", str(tmp / "system.md"),
                     "--no-session-persistence", "--tools", tools or ""]
             if tools:
@@ -749,7 +762,7 @@ def places_in_background(exe, api_key):
             status["error"] = f"Placing payments stopped: {e}"
         finally:
             status["ai"] = None
-    if exe or api_key:
+    if exe or api_key or __import__("providers").openai_available("import"):
         status["ai"] = "Finding where you spent money"
         threading.Thread(target=work, daemon=True).start()
         return True
@@ -911,7 +924,7 @@ def unclear_question():
     more = len(worth) - 8
     return ("I imported your transactions, but I couldn't tell what these are:\n\n" + "\n".join(lines)
             + (f"\n\nAnd {more} smaller ones." if more > 0 else "")
-            + "\n\nTell me in a few words what they are (for example \"Example Household Payment is rent, that's rent\") "
+            + "\n\nTell me in a few words what they are (for example \"C example-owner is board money to my parents, that's rent\") "
               "and I'll categorise them and remember it for next time. Anything you skip stays under To review on the Spending page.")
 
 
@@ -928,7 +941,7 @@ def categorize_in_background(exe, api_key):
             status["error"] = f"Categorising stopped: {e}"
         finally:
             status["ai"] = None
-    if exe or api_key:
+    if exe or api_key or __import__("providers").openai_available("import"):
         threading.Thread(target=work, daemon=True).start()
 
 
@@ -941,7 +954,7 @@ def same_merchant(a, b):
     return len(short) >= 4 and short in long
 
 
-def import_transactions(name, rows):
+def import_transactions(name, rows, source_id=None):
     """Add parsed rows to spending.json, skipping ones already there. Returns a summary dict."""
     with lock:
         d = load()
@@ -962,6 +975,8 @@ def import_transactions(name, rows):
             k = key_of(merchant)
             seen_same[(r["date"], round(r["amount"], 2), k)] += 1
             if tid in existing:
+                found = next(t for t in d["transactions"] if t["id"] == tid)
+                found["source_ids"] = list(dict.fromkeys(found.get("source_ids", []) + r.get("source_ids", []) + ([source_id] if source_id else [])))
                 dup += 1
                 continue
             same = sum(1 for other in by_day[(r["date"], round(r["amount"], 2))] if same_merchant(k, other))
@@ -971,7 +986,7 @@ def import_transactions(name, rows):
             d["transactions"].append({"id": tid, "date": r["date"], "amount": r["amount"], "description": r["description"][:300],
                                       "merchant": merchant, "key": key_of(merchant), "counter_iban": r.get("counter_iban", ""),
                                       "account": r["account"], "category": None, "category_source": None, "note": "",
-                                      "import": imp_id, **({"country_raw": r["country"]} if r.get("country") else {})})
+                                      "import": imp_id, "source_ids":r.get("source_ids", []) + ([source_id] if source_id else []), **({"country_raw": r["country"]} if r.get("country") else {})})
             existing.add(tid)
             added += 1
         own = set(d.get("own_accounts", [])) | {r["account"] for r in rows if re.match(r"^[A-Z]{2}\d{2}|^\d{9,10}$", r["account"])}
@@ -1115,7 +1130,7 @@ def note_in_background(tx_id, exe, api_key):
                 save(d)
         finally:
             status["ai"], status["note_tx"] = None, None
-    if exe or api_key:
+    if exe or api_key or __import__("providers").openai_available("chat"):
         status["note_tx"] = tx_id
         threading.Thread(target=work, daemon=True).start()
     else:
@@ -1293,7 +1308,7 @@ def summary_text():
             continue
         k = kind.get(t.get("category"), "expense")
         # money coming in is never spending, unless it is linked to the payment it pays back
-        if k == "expense" and t["amount"] > 0 and not t.get("linked_to"):
+        if k == "expense" and t["amount"] > 0 and not t.get("linked_to") and not t.get("receipt_adjustment"):
             k = "income"
         if t.get("category") is None:
             unc += 1

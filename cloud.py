@@ -180,3 +180,29 @@ def sync(url, key, state, cfg, history_rows):
         _request(url, key, "POST", "yearly_flows", list(yf.values()), prefer="return=minimal")
     return {"positions": len(holdings), "accounts": len(accounts), "institutions": len(institutions),
             "instruments": len(instruments)}
+
+def sync_receipts(url, key, data, transactions):
+    """Metadata only; raw statements, images and invoices never leave the laptop in this sync."""
+    try:
+        _request(url,key,"GET","receipt_documents?select=id&limit=1")
+    except CloudError as e:
+        if "tables don't exist" in str(e) or 'does not exist' in str(e) or 'Could not find' in str(e):
+            return {'ready':False,'message':'Invoice metadata stays local until supabase-receipts.sql is run.'}
+        raise
+    now=datetime.now(timezone.utc).isoformat()
+    docs=[]; items=[]; links=[]
+    for d in data.get('documents',[]):
+        docs.append({k:None if d.get(k)=='' else d.get(k) for k in ('id','supplier','invoice_number','order_number','date','currency','total','uploaded')})
+        docs[-1].update(reconciled=d['reconciled'],attachments=[{k:a.get(k) for k in ('id','name','media_type')} for a in d['attachments']],active=True,updated_at=now)
+        for item in d['items']: items.append({**item,'receipt_id':d['id']})
+        for link in d['links']: links.append({**link,'receipt_id':d['id'],'active':True,'updated_at':now})
+    sources=[{k:s.get(k) for k in ('id','name','media_type','kind')} for s in data.get('sources',[])]
+    source_links=[{'transaction_id':t['id'],'source_id':sid,'active':True,'updated_at':now}
+                  for t in transactions for sid in t.get('source_ids',[]) if any(s['id']==sid for s in sources)]
+    _upsert(url,key,'receipt_documents',docs)
+    _upsert(url,key,'receipt_items',items)
+    _upsert(url,key,'receipt_payment_links',links,'receipt_id,transaction_id')
+    _upsert(url,key,'payment_document_sources',sources)
+    _upsert(url,key,'payment_source_links',source_links,'transaction_id,source_id')
+    for table in ('receipt_documents','receipt_payment_links','payment_source_links'): _retire(url,key,table,now)
+    return {'ready':True,'documents':len(docs),'links':len(links)}

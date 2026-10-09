@@ -1,0 +1,4 @@
+DEMO ONLY: Example invoice DEMO-INV-100
+Example keyboard EUR 54
+Example cable EUR 30
+Total EUR 84

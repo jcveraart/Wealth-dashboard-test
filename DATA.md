@@ -4,7 +4,7 @@ The dashboard is built entirely from `portfolio.json`. Anything you add here (ne
 
 ## accounts (self directed investment accounts: brokers, crypto exchanges)
 ```json
-{"name": "DEGIRO", "since": "2020-02", "cash_eur": -570.43, "closed_cashflow_eur": 547.88, "profit_extra_eur": 167.02,
+{"name": "DEGIRO", "since": "2020-02", "cash_eur": 0, "closed_cashflow_eur": 0, "profit_extra_eur": 0,
  "note": "...", "positions": [ ...position... ]}
 ```
 - `cash_eur`: cash balance in the account (negative means borrowing).
@@ -14,8 +14,8 @@ The dashboard is built entirely from `portfolio.json`. Anything you add here (ne
 
 ## position (inside accounts[].positions or managed.positions)
 ```json
-{"name": "Intel", "isin": "US4581401001", "category": "Stock", "units": 25, "cost_eur": 591.88,
- "net_cashflow_eur": -591.88, "ref_price_eur": 106.02, "tickers": ["INTC"]}
+{"name": "Intel", "isin": "US4581401001", "category": "Stock", "units": 25, "cost_eur": 500,
+ "net_cashflow_eur": -500, "ref_price_eur": 110, "tickers": ["INTC"]}
 ```
 - `category`: Stock, Broad ETF, Tech ETF, Bond, Bond fund, Crypto, Commodity, Other (a new category is allowed and gets its own group on the site).
 - `isin`: only when known. Crypto has no ISIN: leave the key out.
@@ -31,7 +31,7 @@ The dashboard is built entirely from `portfolio.json`. Anything you add here (ne
 
 ## savings (savings, deposits, current accounts)
 ```json
-{"name": "Coop Pank", "bank": "Coop Pank", "principal_eur": 11037.35, "rate_pct": 2.92, "accrued_at_snapshot_eur": 1.77,
+{"name": "Coop Pank", "bank": "Coop Pank", "principal_eur": 10000, "rate_pct": 2.92, "accrued_at_snapshot_eur": 1.77,
  "snapshot_date": "2026-10-04", "maturity": "2027-07-02"}
 ```
 - Update `principal_eur` and `snapshot_date` (today) when a balance changes; reset `accrued_at_snapshot_eur` to 0 unless known.
@@ -39,7 +39,7 @@ The dashboard is built entirely from `portfolio.json`. Anything you add here (ne
 
 ## debts
 ```json
-{"name": "DUO student loan", "balance_eur": 34454.97, "rate_pct": 2.56, "snapshot_date": "2026-10-01", "expected_gift": false}
+{"name": "DUO student loan", "balance_eur": 6000, "rate_pct": 2.56, "snapshot_date": "2026-10-01", "expected_gift": false}
 ```
 - `expected_gift: true` means shown but not counted in net worth.
 - `monthly_payment_eur` (optional): what is repaid each month. With it the balance goes down month by month and the Savings & debt page shows when it is paid off.
@@ -80,7 +80,7 @@ The transactions themselves live elsewhere; this file controls how they are cate
 {"categories": [{"id": "groceries", "name": "Groceries", "group": "Food and drink", "kind": "expense"}],
  "rules": [{"match": "albertheijn", "type": "merchant", "category": "groceries", "label": "Albert Heijn"},
            {"match": "tikkie", "type": "contains", "category": "gifts"}],
- "accounts": {"NL12ABNA0123456789": {"name": "ABN AMRO current account"}}}
+ "accounts": {"DEMO-ACCOUNT": {"name": "ABN AMRO current account"}}}
 ```
 - `kind`: expense, income or transfer. Transfers (between own accounts, saving and investing, loan repayments) are left out of spending and income.
 - `group`: the larger group a category belongs to (Housing, Food and drink, Transport ...). A new group name is fine.
@@ -98,7 +98,7 @@ Starts as `[]`. Write the payments you find in uploaded documents here:
 - PayPal: his bank shows one line per payment to "PayPal Europe" with no shop behind it. When a document lists what he actually bought through PayPal, use `"account": "PayPal"` for those purchases and leave out rows that only move money from his bank into PayPal (topping up, withdrawals, currency conversions), because the bank line already covers that. The app then books the bank's PayPal debits as a transfer for every month the PayPal data covers.
 
 ## Planning and profile
-- `profile`: `{"birth_year": 1996, "retire_age": 60, "horizon_years": 15, "buffer_months": 4, "monthly_invest_eur": 300, "household": "Single", "risk": "low|medium|high", "home_country": "NL", "benchmark": "IWDA.AS", "compare_rate_pct": 2.9, "goals_text": "..."}`. Facts about the owner used by the Plan page, the advice and the chat. Update when the owner tells you something new about himself.
+- `profile`: `{"birth_year": 1994, "retire_age": 60, "horizon_years": 15, "buffer_months": 4, "monthly_invest_eur": 300, "household": "Single", "risk": "low|medium|high", "home_country": "NL", "benchmark": "IWDA.AS", "compare_rate_pct": 2.9, "goals_text": "..."}`. Facts about the owner used by the Plan page, the advice and the chat. Update when the owner tells you something new about himself.
 - `goals`: `[{"name": "House deposit", "target_eur": 40000, "date": "2029-06-01", "source": "savings"}]`. `source` says what counts toward it: `net_worth`, `savings`, `investments`, `pot` (with `"pot": "<pot name>"`) or `manual` (with `"saved_eur"`).
 - `pots`: `[{"name": "Holiday", "saved_eur": 1800, "target_eur": 3000, "account": "Savings account"}]`. Money set aside inside savings.
 - `targets`: `{"<position id>": 20}`. Target share in percent of the self directed investments; the position id is the ISIN, or "n:" plus the lower case name when there is no ISIN.
@@ -117,3 +117,12 @@ Starts as `[]`. Write the payments you find in uploaded documents here:
 - Moving money between accounts: lower one balance and raise the other by the same amount.
 - Selling a position completely: remove it, add its realised result to that account's `closed_cashflow_eur`, and add the proceeds to cash (or to the account the money moved to).
 - An account that is completely emptied and closed can be removed after its result is kept in yearly_flows or account_history.
+
+## Invoices are evidence, not another payment
+
+`receipts.json` stores version 1: documents, source references, product items and confirmed allocations to existing `spending.json` transaction IDs. Originals are stored under `attachments/receipts/` by SHA-256. Never add invoice products as bank transactions. In an agent import, write only extracted documents to `receipts_new.json`, using the schema supplied by the app and the exact uploaded `source_name`. Leave payment matching and confirmation to the owner. A payment can cover multiple receipts, but confirmed allocations cannot exceed its amount. Unknown totals and currencies remain unknown. Receipt files, attachments and settings must never be committed to Git.
+
+
+## Cash-account metadata (optional; owner-confirmed only)
+
+Flexible savings and broker/managed cash can carry `cash_role` (`spending`, `emergency`, `goal`, `investing`, `unallocated`), `cash_access` (`instant`, `transfer`, `notice`, `restricted`, `unknown`), `cash_note`, `platform`, `payment_account_id`, `cash_product_id`, `rate_effective_date`, `withdrawal_days`, `legal_bank`, and `guarantee_limit_eur`. Broker/managed cash uses `cash_rate_pct`; savings retains its existing `rate_pct`. `cash_debit_rate_pct` is a separate borrowing rate for negative cash. Leave unknown rates, timing and protection limits null. Linking a public product does not overwrite a saved rate or imply eligibility. Never add a second account balance merely to represent a platform or interest payment.

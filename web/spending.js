@@ -8,7 +8,7 @@ const SP = {d: null, geo: null, rows: [], tab: 'overview',
   tx: {q: '', cat: 'all', month: 'all', country: 'all', status: 'all', tag: 'all', group: 'all', limit: 150}, learn: store.get('sp.learn', true), timer: null,
   pop: null, check: {queue: null, pos: 0, key: '', order: store.get('sp.checkOrder', 'big'), dir: 1, review: null, log: []}, map: null, budMonth: null, subOpen: null};
 const SP_TABS = [['overview', 'Overview'], ['spending', 'Spending'], ['income', 'Income'], ['transactions', 'Transactions'],
-  ['subscriptions', 'Subscriptions'], ['trips', 'Trips'], ['countries', 'Countries'],
+  ['receipts', 'Receipts'], ['subscriptions', 'Subscriptions'], ['trips', 'Trips'], ['countries', 'Countries'],
   ['check', 'Quick check'], ['review', 'To review'], ['categories', 'Categories']];
 const MON = MONTHS;
 const mLabel = m => `${MON[+m.slice(5, 7) - 1]} ${m.slice(2, 4)}`;
@@ -16,9 +16,9 @@ const SRC = {user: 'set by you', rule: 'rule', auto: 'automatic', ai: 'AI', unsu
 const TICK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 const FIXED_GROUPS = ['Housing', 'Fixed costs'];
 
-async function loadSpending() {
-  const [r] = await Promise.all([fetch('/api/spending', {cache: 'no-store'}), loadGeo()]);
-  SP.d = await r.json();
+async function loadSpending(force = true) {
+  const [data] = await Promise.all([cachedJSON('/api/spending',{ttl:300e3,force}), loadGeo()]);
+  SP.d = structuredClone(data);
   SP.geo = window.GEO;
   SP.d.subscriptions = SP.d.subscriptions || {};
   SP.cat = Object.fromEntries(SP.d.categories.map(c => [c.id, c]));
@@ -27,7 +27,7 @@ async function loadSpending() {
   SP.allTx = SP.d.transactions;
   SP.d.transactions = SP.d.transactions.filter(t => !SP.invest.has(t.account));
   // what the analytics count: split payments once per category, payments left out of totals not at all
-  SP.rows = SP.d.transactions.filter(t => !t.excluded).flatMap(t => t.splits ? t.splits.map(p => ({...t, amount: p.amount, category: p.category, split: true})) : [t]);
+  SP.rows = SP.d.transactions.filter(t => !t.excluded).flatMap(t => t.splits ? t.splits.map(p => ({...t, amount: p.amount, category: p.category, split: true, product:p.description, receipt_adjustment:t.amount<0 && p.amount>0})) : [t]);
   for (const t of SP.rows) { const m = /\d\d\.\d\d\.\d\d\/(\d\d):\d\d/.exec(t.description); t.hour = m ? +m[1] : null; }
   // each spending group keeps one colour on every chart, the biggest groups first
   const gt = {};
@@ -43,7 +43,7 @@ async function loadSpending() {
   if (SP.d.status.ai) SP.timer = setTimeout(async () => {
     await loadSpending();
     const busy = document.activeElement && /SELECT|INPUT|TEXTAREA/.test(document.activeElement.tagName);
-    if (view === 'spending' && !busy && !$('#dlg').open) spendingPage();
+    if (view === 'spending') showQuietUpdate('Categories updated');
   }, 5000);
 }
 const acctName = id => (SP.d.accounts[id] || {}).name || id;
@@ -58,7 +58,7 @@ function toggleFocus(g) {
 const kindOf = t => {
   const k = t.category && SP.cat[t.category] ? SP.cat[t.category].kind : (t.amount > 0 ? 'income' : 'expense');
   // money coming in is never spending. Linked to the payment it pays back, it still lowers that payment.
-  return k === 'expense' && t.amount > 0 && !t.linked_to ? 'income' : k;
+  return k === 'expense' && t.amount > 0 && !t.linked_to && !t.receipt_adjustment ? 'income' : k;
 };
 const groupColor = g => { const i = (SP.gOrder || []).indexOf(g); return g === 'Other' || g === 'Rest' || i < 0 ? 'var(--muted)' : col(i % SERIES.length); };
 function spBuckets(list, from, to) {
@@ -135,7 +135,7 @@ async function spendingPage() {
   const accts = Object.keys(count).sort((a, b) => count[b] - count[a]);
   $('#view').innerHTML = `<div class="stack-y" id="sp">
     <div class="sp-head">
-      <div class="seg tabs" data-seg="sptab">${SP_TABS.map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${v === SP.tab}">${l}${v === 'review' && review ? ` (${review})` : ''}</button>`).join('')}</div>
+      <div class="seg tabs" data-seg="sptab">${SP_TABS.map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${v === SP.tab}">${l}${v === 'review' && review ? ` <span class="tab-n">${review}</span>` : ''}</button>`).join('')}</div>
       ${accts.length > 1 ? `<div class="fchips" role="group" aria-label="Payment accounts, choose one or more">${[['all', 'All accounts'], ...accts.map(a => [a, acctName(a)])].map(([v, l]) =>
         `<button type="button" data-acct-f="${esc(v)}" aria-pressed="${v === 'all' ? !SP.accts.length : SP.accts.includes(v)}">${esc(l)}</button>`).join('')}</div>` : ''}
       ${SP.focus.length && ['overview', 'spending'].includes(SP.tab) ? `<div class="fchips focus-chips" role="group" aria-label="Spending groups shown"><span class="muted small">Only</span>${SP.focus.map(g =>
@@ -155,7 +155,8 @@ async function spendingPage() {
   $$('[data-unfocus]').forEach(b => b.onclick = () => toggleFocus(b.dataset.unfocus));
   if ($('#focusClear')) $('#focusClear').onclick = () => { SP.focus = []; store.set('sp.focus', []); spendingPage(); };
   if ($('#spInbox')) $('#spInbox').onclick = () => openChat();
-  if (!SP.d.transactions.length && SP.tab !== 'categories') spEmpty();
+  if (SP.tab === 'receipts') receiptsPage();
+  else if (!SP.d.transactions.length && SP.tab !== 'categories') spEmpty();
   else ({overview: spOverview, spending: spSpending, income: spIncome, transactions: spTransactions,
     subscriptions: spSubs, trips: spTrips, check: spCheck, countries: spCountries, review: spReview,
     categories: spCategories})[SP.tab]();
@@ -196,6 +197,7 @@ function renderPop() {
   try { spec = p.make(); } catch { spec = null; }
   if (!spec) return closePop();
   const keep = p.el.querySelector('.pop-list'), top = keep ? keep.scrollTop : 0;
+  const sorting=p.sorting||(p.sorting={key:'date',direction:'desc'});
   let sub, rows;
   if (spec.rows) {
     // anything that is not a payment: accounts, holdings, savings
@@ -203,21 +205,27 @@ function renderPop() {
     sub = `${spec.rows.length} item${spec.rows.length === 1 ? '' : 's'}, ${spec.rows.some(r => r.sign) ? sgn(tot) : eur(tot)}`;
     rows = spec.rows.map(r => `<button type="button" class="mini rowx" ${r.open ? `data-open="${esc(r.open)}"` : ''} ${r.ctx ? `data-ctx="${esc(r.ctx)}"` : ''}><span class="m"><b>${esc(r.t)}</b><span>${esc(r.s || '')}</span></span><span class="a num">${r.sign ? sgn(r.v) : eur(r.v)}</span></button>`).join('');
   } else {
-    const list = [...spec.list].sort((a, b) => b.date.localeCompare(a.date)), total = list.reduce((s, t) => s + t.amount, 0);
+    const list = sortPaymentRows(spec.list,sorting), total = list.reduce((s, t) => s + t.amount, 0);
     sub = `${list.length} payment${list.length === 1 ? '' : 's'}, ${sgn(total, 2)}`;
     rows = list.slice(0, 400).map(miniRow).join('');
   }
   p.el.innerHTML = `<div class="pop-head"><div style="min-width:0"><div class="pop-t">${esc(spec.title)}</div>
-      <div class="muted small">${sub}</div></div>
+      <div class="muted small" data-popup-total aria-live="polite">${sub}</div></div>
       <button type="button" class="x-btn" data-x aria-label="Close">×</button></div>
     ${spec.top || ''}
+    ${!spec.rows?`<div class="pop-sort" role="group" aria-label="Sort payments"><span class="muted small">Sort</span><select data-popup-sort="key" aria-label="Sort by"><option value="date" ${sorting.key==='date'?'selected':''}>Date</option><option value="price" ${sorting.key==='price'?'selected':''}>Amount</option></select><select data-popup-sort="direction" aria-label="Sort direction"><option value="desc" ${sorting.direction==='desc'?'selected':''}>Descending</option><option value="asc" ${sorting.direction==='asc'?'selected':''}>Ascending</option></select></div>`:''}
     <div class="pop-list">${rows || '<div class="empty">Nothing here.</div>'}</div>
     ${spec.filter ? '<div class="pop-foot"><button type="button" class="btn ghost" data-all>Open in Transactions</button></div>' : ''}`;
   p.el.querySelector('.pop-list').scrollTop = top;
   p.el.querySelector('[data-x]').onclick = closePop;
   p.el.onclick = e => { const r = e.target.closest('[data-open-tx]'); if (r) txSheet(r.dataset.openTx); };
+  if (!spec.rows) {
+    const paint=()=>{const list=sortPaymentRows(spec.list,sorting);$('.pop-list',p.el).innerHTML=list.slice(0,400).map(miniRow).join('')||'<div class="empty">Nothing here.</div>';$('.pop-list',p.el).scrollTop=0;};
+    $$('[data-popup-sort]',p.el).forEach(input=>input.onchange=()=>{sorting[input.dataset.popupSort]=input.value;paint();});
+  }
   if (spec.filter) p.el.querySelector('[data-all]').onclick = () => {
-    Object.assign(SP.tx, {q: '', cat: 'all', month: 'all', country: 'all', status: 'all', tag: 'all', group: 'all', from: null, to: null, limit: 150}, spec.filter);
+    Object.assign(SP.tx, {q: '', cat: 'all', month: 'all', country: 'all', status: 'all', tag: 'all', group: 'all', from: null, to: null, popupSelection:null, limit: 150}, spec.filter);
+    if(!spec.rows){SP.tx.popupSelection={ids:[...new Set(spec.list.map(t=>t.id))],title:spec.title};}
     SP.tab = 'transactions'; closePop();
     if (view === 'spending') { spendingPage(); scrollTo(0, 0); } else location.hash = '#spending';
   };
@@ -626,6 +634,7 @@ function spTransactions() {
   const ctys = [...new Set(mine.map(t => t.country).filter(Boolean))];
   const tags = [...new Set(mine.flatMap(t => t.tags || []))].sort();
   let list = mine;
+  if(f.popupSelection){const ids=new Set(f.popupSelection.ids);list=list.filter(t=>ids.has(t.id));}
   if (f.from) list = list.filter(t => t.date >= f.from && t.date <= f.to);
   if (f.month !== 'all') list = list.filter(t => t.date.startsWith(f.month));
   const cats = asList(f.cat), ctySel = asList(f.country), tagSel = asList(f.tag);
@@ -645,6 +654,7 @@ function spTransactions() {
       ${mselBtn('txcty', 'All countries', [...ctys.map(c => [c, ctyName(c)]).sort((a, b) => a[1].localeCompare(b[1])), ['none', 'Not known']], ctySel)}
       ${tags.length ? mselBtn('txtag', 'All tags', tags.map(t => [t, '#' + t]), tagSel) : ''}
       <select id="txstat" aria-label="Checked"><option value="all">Checked or not</option><option value="open" ${f.status === 'open' ? 'selected' : ''}>Not checked</option><option value="checked" ${f.status === 'checked' ? 'selected' : ''}>Checked</option><option value="excluded" ${f.status === 'excluded' ? 'selected' : ''}>Left out of totals</option></select>
+      ${f.popupSelection?`<button type="button" class="btn ghost" id="txPopupClear" title="Date and amount filters from the payment popup">${esc(f.popupSelection.title)} · popup selection ×</button>`:''}
       ${f.from ? `<button class="btn ghost" id="txclear">${esc(periodLabel(f.from, f.to))} ×</button>` : ''}
       ${f.group && f.group !== 'all' ? `<button class="btn ghost" id="txgroup">${esc(f.group)} ×</button>` : ''}
     </div>
@@ -668,6 +678,7 @@ function spTransactions() {
   wireMsel('txcty', [...ctys.map(c => [c, ctyName(c)]).sort((a, b) => a[1].localeCompare(b[1])), ['none', 'Not known']], 'country');
   wireMsel('txtag', tags.map(t => [t, '#' + t]), 'tag');
   $('#txstat').onchange = e => { f.status = e.target.value; f.limit = 150; spTransactions(); };
+  if($('#txPopupClear'))$('#txPopupClear').onclick=()=>{f.popupSelection=null;spTransactions();};
   if ($('#txclear')) $('#txclear').onclick = () => { f.from = f.to = null; spTransactions(); };
   if ($('#txgroup')) $('#txgroup').onclick = () => { f.group = 'all'; spTransactions(); };
   $('#txlearn').onchange = e => { SP.learn = e.target.checked; store.set('sp.learn', SP.learn); };
@@ -736,13 +747,14 @@ function drawSheet() {
       ${t.excluded_by === 'merchant' ? '' : `<button type="button" class="linkish small" id="shExcl">${t.excluded ? 'Count it again' : 'Leave out of totals'}</button>`}
       <button type="button" class="linkish small" id="shExclM">${(SP.d.excluded_keys || []).includes(t.key) ? `Count ${esc(t.merchant)} again` : `Always leave out ${esc(t.merchant)}`}</button>
       ${(t.tags || []).map(x => `<span class="tag">#${esc(x)} <button type="button" class="x-btn" data-untag="${esc(x)}" aria-label="Remove tag">×</button></span>`).join('')}</div>`}
-    <div class="sh-link">${linkNote(t)}</div>
+    <div id="paymentReceipts" class="payment-receipts"></div><div class="sh-link">${linkNote(t)}</div>
     <div class="thread" id="shThread">${thread.length || thinking ? thread.map(m => `<div class="bubble ${m.role === 'you' ? 'you' : 'claude'}">${esc(m.text)}</div>`).join('') +
       (thinking ? '<div class="bubble claude typing" aria-label="Claude is answering"><i></i><i></i><i></i></div>' : '')
       : '<div class="thread-empty">Tell Claude what this was. For example: shared this dinner, a friend paid me back half. Add #tags to group payments.</div>'}</div>
     <div class="reply"><textarea id="shMsg" rows="1" placeholder="${thread.length ? 'Reply to Claude' : 'Message Claude about this payment'}" aria-label="Message">${esc(keep)}</textarea>
       <button class="send" aria-label="Send" ${thinking ? 'disabled' : ''}>${ICON.up}</button></div>
     <div class="dialog-actions">${thread.length ? '<button type="button" class="btn ghost" id="shClear" style="margin-right:auto">Clear conversation</button>' : ''}<button type="button" class="btn" id="shDone">Done</button></div>`;
+  paymentReceipts(t);
   const box = $('#shThread'); box.scrollTop = box.scrollHeight;
   const q = $('#shMsg');
   const fit = () => { q.style.height = 'auto'; q.style.height = Math.min(q.scrollHeight, 140) + 'px'; };

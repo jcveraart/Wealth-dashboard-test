@@ -1,8 +1,8 @@
 """
-the owner's wealth dashboard.
+Local wealth dashboard.
 
-Run:      python app.py              (opens http://wealth.localhost)
-Import:   python app.py import-tr Transaction_export.csv
+Run:      python app.py              (starts the fictional demo on http://127.0.0.1:8051)
+Import:   Use Import in a personal workspace for your own records.
 Offline:  python app.py --offline    (no price fetching, uses last known prices)
 """
 import csv
@@ -10,6 +10,8 @@ import json
 import math
 import shutil
 import sys
+if __name__ == "__main__":
+    sys.modules["app"] = sys.modules[__name__]
 import threading
 import time
 import webbrowser
@@ -29,12 +31,17 @@ HISTORY = HERE / "history.csv"
 HISTORY_FIELDS = ["date", "net_worth", "gross", "managed", "savings", "self_directed", "debt",
                   "etf", "stocks", "bonds", "other_inv", "cash", "invest_profit"]
 ACCOUNT_HISTORY = HERE / "history_accounts.csv"  # value per account per day, for the account pages
-PORT = 80
-HOSTNAME = "wealth.localhost"  # browsers send any *.localhost name to this computer
+PORT = 8051
+HOSTNAME = "127.0.0.1"  # loopback only
+try:
+    _profile = json.loads((HERE / "runtime-profile.json").read_text(encoding="utf-8"))
+    PORT = int(_profile.get("port", PORT))
+except (OSError, ValueError):
+    _profile = {}
 TOLERANCE = 0.35  # a ticker is accepted if its EUR price is within 35% of the last known price
 MAX_UPLOAD = 60 * 1024 * 1024
 
-OFFLINE = False
+OFFLINE = bool(_profile) and (_profile.get("mode")=="demo" or not json.loads(SETTINGS.read_text(encoding="utf-8") if SETTINGS.exists() else "{}").get("public_data_enabled"))
 lock = threading.Lock()
 cfg_lock = threading.Lock()
 wake = threading.Event()
@@ -57,7 +64,7 @@ def save(path, data):
 NOTES = HERE / "notes.md"
 SPENDING = HERE / "spending.json"
 # files covered by backups and Undo: (live file, backup prefix, suffix)
-BACKED_UP = [(CONFIG, "portfolio", ".json"), (NOTES, "notes", ".md"), (SPENDING, "spending", ".json")]
+BACKED_UP = [(CONFIG, "portfolio", ".json"), (NOTES, "notes", ".md"), (SPENDING, "spending", ".json"), (HERE / "receipts.json", "receipts", ".json")]
 
 
 def backup_now():
@@ -72,6 +79,8 @@ def backup_now():
     for _, prefix, suffix in BACKED_UP:
         for f in sorted(BACKUPS.glob(f"{prefix}-*{suffix}"))[:-100]:
             f.unlink()
+    from workspace.undo import snapshot
+    snapshot(bid)
     return bid
 
 
@@ -157,13 +166,13 @@ def agent_files():
     import spending
     return {"portfolio.json": CONFIG.read_text(encoding="utf-8"), "notes.md": read_notes(),
             "spending_rules.json": spending.rules_file_text(), "spending_new.json": "[]\n",
-            "spending_transactions.csv": spending.transactions_csv()}  # read only: changes to it are ignored
+            "receipts_new.json": "[]\n", "receipt_records.json":json.dumps(__import__("receipts").view()), "spending_transactions.csv": spending.transactions_csv()}  # read only: changes to it are ignored
 
 
-def commit_ai_changes(originals, changed):
+def commit_ai_changes(originals, changed, uploads=None):
     """Save what the AI changed, after checking it. Returns the backup id for Undo, or None if nothing changed."""
     import spending
-    editable = ("portfolio.json", "notes.md", "spending_rules.json", "spending_new.json")
+    editable = ("portfolio.json", "notes.md", "spending_rules.json", "spending_new.json", "receipts_new.json")
     changed = {k: v for k, v in changed.items() if k in editable and v.strip() != originals[k].strip()}
     if not changed:
         return None
@@ -179,7 +188,14 @@ def commit_ai_changes(originals, changed):
             new_tx = spending_rows_from_ai(changed["spending_new.json"]) if "spending_new.json" in changed else []
         except Exception as e:
             raise ValueError(f"The AI made a change that would break the dashboard ({e}). Nothing was saved.")
+        if "receipts_new.json" in changed:
+            import receipts
+            extracted = json.loads(changed["receipts_new.json"])
+            for document in extracted: receipts.validate(document)
+            if extracted and not uploads: raise ValueError("Invoice changes need their original uploaded files.")
+        else: extracted = []
         bid = backup_now()
+        if extracted: receipts.add(extracted, uploads)
         if cfg is not None:
             save(CONFIG, cfg)
         if "notes.md" in changed:
@@ -187,6 +203,12 @@ def commit_ai_changes(originals, changed):
         if "spending_rules.json" in changed:
             spending.apply_rules_file(changed["spending_rules.json"])
         if new_tx:
+            import receipts
+            original_uploads = {f["name"]:f for f in (uploads or [])}
+            for row in new_tx:
+                source = original_uploads.get(row.get("source_name"))
+                if not source and len(original_uploads)==1: source=next(iter(original_uploads.values()))
+                if source: row["source_ids"]=[receipts.store_source(source)["id"]]
             for acc, rows in group_by(new_tx, "account").items():
                 spending.import_transactions(f"from a document ({acc})", rows)
             spending.categorize_in_background(ai_claude_code(), api_key())
@@ -208,27 +230,34 @@ def spending_rows_from_ai(text):
     rows = []
     for r in json.loads(text):
         d, amt = spending.parse_date(str(r.get("date", ""))), r.get("amount")
-        if not d or not isinstance(amt, (int, float)):
+        if not d or isinstance(amt,bool) or not isinstance(amt, (int, float)) or not math.isfinite(amt):
             raise ValueError("every new transaction needs a date and a numeric amount")
         rows.append({"date": d, "amount": round(float(amt), 2), "description": str(r.get("description", ""))[:300],
                      "counterparty": str(r.get("counterparty", "")), "counter_iban": "",
-                     "account": str(r.get("account") or "Other payment account")})
+                     "account": str(r.get("account") or "Other payment account"), "source_name":str(r.get("source_name") or "")})
     return rows
 
 
 def undo(bid):
     import spending
+    from workspace.undo import path,restore
+    path(bid)
     if not any((BACKUPS / f"{prefix}-{bid}{suffix}").exists() for _, prefix, suffix in BACKED_UP):
         raise ValueError("That change can no longer be undone.")
     with cfg_lock, spending.lock:
+        from workspace.undo import restore_chat
+        restore_chat(bid,check_only=True)
         backup_now()
         for live, prefix, suffix in BACKED_UP:
             src = BACKUPS / f"{prefix}-{bid}{suffix}"
             if src.exists():
                 shutil.copy2(src, live)
+            elif prefix == "receipts":
+                save(live, {"version":1,"documents":[],"sources":[]})
             elif live is SPENDING and live.exists():
                 live.unlink()  # there was no spending data yet at that point
         spending.status["changed"] = time.time()
+        restore(bid)
     wake.set()
     cloud_sync_soon()
 
@@ -237,7 +266,7 @@ INBOX = HERE / "inbox.json"
 inbox_lock = threading.Lock()
 
 
-def ask_jan(source, text):
+def ask_owner(source, text):
     """Queue a question for the owner; it appears in Ask Claude. An unanswered question from the same source is replaced.
 
     Under the lock, because ten imports at once each read, change and write this file, and without it
@@ -252,6 +281,7 @@ def ask_jan(source, text):
 
 
 def api_key():
+    if _profile and (_profile.get("mode")=="demo" or not load(SETTINGS,{}).get("ai_enabled")):return None
     import os
     return load(SETTINGS, {}).get("anthropic_api_key") or os.environ.get("ANTHROPIC_API_KEY")
 
@@ -260,6 +290,7 @@ _claude_code = []
 
 
 def ai_claude_code():
+    if _profile and (_profile.get("mode")=="demo" or not load(SETTINGS,{}).get("ai_enabled")):return None
     """Cached lookup of the Claude Code program."""
     if not _claude_code:
         import ai
@@ -423,16 +454,17 @@ def price_position(p, account, prices):
     profit = value + p["net_cashflow_eur"] if p.get("net_cashflow_eur") is not None else None
     return {
         "name": p["name"], "isin": p.get("isin"), "account": account, "category": p.get("category", "Other"),
+        "symbol": q.get("symbol") if q else (p.get("tickers") or [None])[0],
         "units": p["units"], "price": px, "value": value, "day_change": value - prev_value,
         "since_buy_pct": (value / p["cost_eur"] - 1) * 100 if p.get("cost_eur") else None,
         "cost": p.get("cost_eur"), "profit": profit, "live": live, "source": src,
         "maturity": p.get("maturity"), "price_time": q.get("time") if q and live else None,
-        "region": p.get("region"), "sector": p.get("sector"), "currency": p.get("currency"), "trades": p.get("trades") or [],
+        "region": p.get("region"), "classification_note": p.get("classification_note"), "classification_date": p.get("classification_date"), "sector": p.get("sector"), "currency": p.get("currency"), "trades": p.get("trades") or [],
         "net_cashflow": p.get("net_cashflow_eur"),
     }
 
 
-def compute_state(cfg, record=True):
+def compute_state(cfg, record=True, include_intelligence=True):
     prices = load(PRICES, {})
     today = date.today()
     out = {"accounts": [], "positions": [], "generated": datetime.now().isoformat(timespec="seconds")}
@@ -453,6 +485,7 @@ def compute_state(cfg, record=True):
             "name": acc["name"], "value": a_val, "cash": cash, "day_change": a_val - a_prev,
             "profit": a_profit if acc.get("track_profit", True) else None, "positions": len(acc["positions"]),
             "since": acc.get("since"), "note": acc.get("note", ""), "updated": acc.get("updated"), "source": acc.get("source"),
+            **{k:acc.get(k) for k in ('cash_rate_pct','cash_debit_rate_pct','cash_role','cash_access','cash_note','platform','cash_product_id','payment_account_id','rate_effective_date','withdrawal_days','legal_bank','guarantee_limit_eur','bank')},
             "money_in": -sum(p.get("net_cashflow_eur") or 0 for p in acc["positions"]) - acc.get("closed_cashflow_eur", 0.0),
         })
         total_invest_value += a_val + cash
@@ -484,6 +517,7 @@ def compute_state(cfg, record=True):
         "mode": mode, "profit": m["profit_at_value_date_eur"] + managed_value - m["value_eur"],
         "start_value": m["start_value_eur"], "start_date": m["start_date"], "fees_paid": m["fees_paid_eur"],
         "cash": m.get("cash_eur", 0.0), "day_change": m_day, "proxy": m["proxy"],
+        **{k:m.get(k) for k in ("cash_rate_pct","cash_debit_rate_pct","cash_access","cash_role","cash_note","bank","legal_bank","guarantee_limit_eur","cash_product_id","platform","withdrawal_days")},
         "positions": len(m.get("positions", [])),
     }
     total_day += m_day
@@ -530,9 +564,11 @@ def compute_state(cfg, record=True):
     out["status"]["live_positions"] = sum(1 for p in out["positions"] if p["live"])
     out["status"]["total_positions"] = len(out["positions"])
     out["status"]["has_api_key"] = bool(api_key())
+    import providers
+    out["status"]["ai"] = providers.status()
     import spending
     out["status"]["spending"] = dict(spending.status)
-    spending.on_unclear = ask_jan
+    spending.on_unclear = ask_owner
     out["inbox"] = [i for i in load(INBOX, []) if not i["seen"]]
     out["status"]["ai_mode"] = "api" if api_key() else "claude_code" if ai_claude_code() else None
     conf = cloud_config()
@@ -549,6 +585,19 @@ def compute_state(cfg, record=True):
     out["advice_dismissed"] = cfg.get("advice_dismissed", [])
     for k, empty in (("profile", {}), ("goals", []), ("pots", []), ("targets", {}), ("tax", {}), ("advice_done", []), ("watchlist", [])):
         out[k] = cfg.get(k, empty)
+    if include_intelligence:
+        try:
+            from intelligence import service
+            out['intelligence']=service.summary()
+        except Exception:
+            out['intelligence']={'unread':0,'signals':[],'badges':{},'risks':[],'status':'unavailable'}
+    # Ready observations travel with the page data; opening a page never waits for a model.
+    import cash_notes, portfolio_notes, page_notes, extras
+    out['page_briefings']={'cash':cash_notes.peek(out),'investments':portfolio_notes.peek(out),
+                           'advice':page_notes.peek('advice',out),'opportunities':page_notes.peek('opportunities',out)}
+    home=extras.read(extras.BRIEFING,{})
+    if home.get('items'):out['page_briefings']['overview']=home
+
     return out
 
 
@@ -799,20 +848,29 @@ def num_or_none(x):
     return float(x)
 
 
+CASH_METADATA = {
+    "cash_role": lambda x: x if x in ('spending','emergency','goal','investing','unallocated') else 'unallocated',
+    "cash_access": lambda x: x if x in ('instant','transfer','notice','restricted','unknown') else 'unknown',
+    "cash_debit_rate_pct": num_or_none, "cash_note": str, "platform": str, "bank": str, "cash_product_id": str, "payment_account_id": str,
+    "rate_effective_date": lambda x: x or None, "withdrawal_days": num_or_none,
+    "legal_bank": str, "guarantee_limit_eur": num_or_none,
+}
 EDITABLE = {
     "savings": {"name": str, "bank": str, "principal_eur": float, "rate_pct": num_or_none,
                 "accrued_at_snapshot_eur": float, "snapshot_date": str, "maturity": lambda x: x or None,
                 "invest": lambda x: None if x in (None, "", "auto") else bool(x) if not isinstance(x, str) else x == "true",
-                "kind": lambda x: x if x in ("payment", "savings", "deposit") else None},
+                "kind": lambda x: x if x in ("payment", "savings", "deposit") else None, **CASH_METADATA},
     "debts": {"name": str, "balance_eur": float, "rate_pct": num_or_none, "snapshot_date": str,
-              "expected_gift": bool, "monthly_payment_eur": num_or_none},
+              "expected_gift": bool, "monthly_payment_eur": num_or_none,
+              "repayment_regime": lambda x: x if x in ('SF35','SF15','SF15-old') else None,
+              "rate_fixed_until": lambda x: x or None},
     "todos": {"text": str, "done": bool},
     "advice_dismissed": {"id": str, "title": str, "reason": str},
     "savings_plans": {"account": str, "instrument": str, "isin": str, "amount_eur": float, "frequency": str,
-                      "day": lambda x: int(x) if x not in (None, "") else None, "active": bool},
+                      "day": lambda x: int(x) if x not in (None, "") else None, "second_day": lambda x: int(x) if x not in (None, "") else None, "active": bool, "starts_on": lambda x: x or None, "asset_class": str, "execution_fee_eur": num_or_none, "note": str},
     "managed": {"value_eur": float, "value_date": str, "profit_at_value_date_eur": float, "fees_paid_eur": float,
-                "cash_eur": float},
-    "account": {"cash_eur": float, "profit_extra_eur": float},
+                "cash_eur": float, "cash_rate_pct": num_or_none, **CASH_METADATA},
+    "account": {"cash_eur": float, "profit_extra_eur": float, "cash_rate_pct": num_or_none, **CASH_METADATA},
     "goals": {"name": str, "target_eur": float, "date": str, "source": str, "pot": str, "saved_eur": num_or_none},
     "pots": {"name": str, "target_eur": num_or_none, "saved_eur": float, "account": str},
     "advice_done": {"id": str, "title": str, "impact_eur": num_or_none, "date": str},
@@ -828,11 +886,23 @@ LISTS = ("savings", "debts", "todos", "advice_dismissed", "savings_plans", "goal
 
 def clean(section, fields):
     spec = EDITABLE[section]
-    return {k: spec[k](v) for k, v in fields.items() if k in spec}
+    result = {k: spec[k](v) for k, v in fields.items() if k in spec}
+    if section in ('savings','account','managed'):
+        import math
+        for name,maximum in (('cash_rate_pct',100),('cash_debit_rate_pct',100),('withdrawal_days',365),('guarantee_limit_eur',1e9)):
+            value=result.get(name)
+            if value is not None and (not math.isfinite(value) or value<0 or value>maximum):raise ValueError('Enter a valid '+name.replace('_',' ')+'.')
+        if result.get('rate_effective_date'):
+            effective=date.fromisoformat(result['rate_effective_date'])
+            if effective>date.today():raise ValueError('The saved cash rate must already be effective. Record future notices separately.')
+    return result
 
 
 def apply_edit(cfg, e):
     section, action = e["section"], e.get("action", "update")
+    if section=='savings_plans' and action!='delete':
+        from workspace.plans import validate
+        e={**e,'fields':validate(e['fields'],cfg.get(section,[])[int(e['index'])] if action=='update' else {},cfg)}
     if section in LISTS:
         items = cfg.setdefault(section, [])
         if action == "add":
@@ -844,7 +914,7 @@ def apply_edit(cfg, e):
                 new = {"name": "", "balance_eur": 0.0, "rate_pct": 0.0, "expected_gift": False,
                        "snapshot_date": date.today().isoformat(), **new}
             elif section == "savings_plans":
-                new = {"account": "Trade Republic", "instrument": "", "amount_eur": 0.0, "frequency": "monthly", "day": 1,
+                new = {"account": "Trade Republic", "instrument": "", "amount_eur": 0.0, "frequency": "monthly", "day": None,
                        "active": True, "since": date.today().isoformat()[:7], "source": "manual", **new}
             elif section == "advice_dismissed":
                 new = {"id": "", "title": "", "reason": "", **new}
@@ -1122,7 +1192,7 @@ def import_tr_into(cfg, rows):
             "units": round(p["units"], 6), "cost_eur": round(p["cost"], 2), "net_cashflow_eur": round(p["cash"], 2),
             "ref_price_eur": ref, "tickers": o.get("tickers", []), "trades": p["trades"][-200:],
         }
-        for k in ("region", "sector", "currency"):
+        for k in ("region", "sector", "currency", "classification_note", "classification_date"):
             if o.get(k):
                 entry[k] = o[k]
         if o.get("maturity"):
@@ -1156,7 +1226,8 @@ FREQ_DAYS = {"weekly": 7, "biweekly": 14, "monthly": 30.4, "quarterly": 91.3}
 
 
 def monthly_amount(plan):
-    return plan["amount_eur"] * 30.4 / FREQ_DAYS.get(plan.get("frequency"), 30.4)
+    from workspace.plans import monthly
+    return monthly(plan)
 
 
 def detect_savings_plans(rows, names):
@@ -1193,28 +1264,8 @@ def detect_savings_plans(rows, names):
 
 
 def next_execution(plan, today=None):
-    today = today or date.today()
-    if not plan.get("active"):
-        return None
-    if plan.get("frequency") in ("monthly", "quarterly") and plan.get("day"):
-        step = 1 if plan["frequency"] == "monthly" else 3
-        y, m = today.year, today.month
-        for _ in range(13):
-            import calendar
-            d = date(y, m, min(plan["day"], calendar.monthrange(y, m)[1]))
-            if d > today and (step == 1 or not plan.get("last_execution") or
-                              (d.year * 12 + d.month - int(plan["last_execution"][:4]) * 12 - int(plan["last_execution"][5:7])) % 3 == 0):
-                return d.isoformat()
-            m += 1
-            if m > 12:
-                y, m = y + 1, 1
-        return None
-    if plan.get("last_execution"):
-        d = date.fromisoformat(plan["last_execution"])
-        while d <= today:
-            d += timedelta(days=round(FREQ_DAYS.get(plan["frequency"], 30.4)))
-        return d.isoformat()
-    return None
+    from workspace.plans import next_date
+    return next_date(plan,today)
 
 
 def default_category(asset_class):
@@ -1230,6 +1281,10 @@ class Handler(SimpleHTTPRequestHandler):
         pass
 
     def send_json(self, data, code=200):
+        if self.path == "/api/chat" and isinstance(data,dict) and "reply" in data:
+            data.setdefault("provider","claude")
+            reply=data['reply']
+            if getattr(reply,'undo',None):data['undo']=reply.undo;data['changes']=reply.changes
         body = json.dumps(data).encode()
         self.send_response(code)
         self.send_header("Content-Type", "application/json")
@@ -1254,7 +1309,20 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_header("Cache-Control", "no-cache")
         super().end_headers()
 
+    def local_request(self):
+        from urllib.parse import urlparse
+        host = urlparse('http://' + self.headers.get('Host', '')).hostname
+        origin = self.headers.get('Origin', '')
+        allowed = ('127.0.0.1', 'localhost', HOSTNAME)
+        if self.client_address[0] != '127.0.0.1' or host not in allowed: return False
+        if origin:
+            parsed = urlparse(origin)
+            if parsed.scheme != 'http' or parsed.hostname not in allowed or (parsed.port or 80) != self.server.server_port: return False
+        return True
+
     def do_GET(self):
+        if self.path.startswith('/api/') and not self.local_request():
+            return self.send_json({'error':'forbidden'},403)
         if self.path.startswith("/api/state"):
             return self.send_json(compute_state(load(CONFIG, None)))
         from urllib.parse import parse_qs, urlparse
@@ -1281,12 +1349,80 @@ class Handler(SimpleHTTPRequestHandler):
     def extra_get(self, path, q):
         """The read endpoints of the newer pages. Returns None for paths that are not theirs."""
         import extras
+        if path.startswith('/api/workspace/'):
+            from workspace import service
+            name = path.rsplit('/',1)[-1]
+            if name == 'health':
+                import os,hashlib
+                return self.send_json({'ok':True,'pid':os.getpid(),'instance':hashlib.sha256(str(HERE).encode()).hexdigest()[:20],'version':'2026.10-quiet-views'})
+            if name == 'export':
+                from workspace.exports import export
+                body,filename,content_type = export(q.get('what','digest'),q)
+                return self.send_download(body,filename,content_type)
+            return self.send_json(service.get(name,q))
+        if path.startswith("/api/intelligence/"):
+            origin=self.headers.get('Origin','');host=self.headers.get('Host','').split(':')[0]
+            from urllib.parse import urlparse
+            if self.client_address[0]!='127.0.0.1' or host not in ('127.0.0.1','localhost',HOSTNAME) or origin and urlparse(origin).hostname not in ('127.0.0.1','localhost',HOSTNAME):
+                return self.send_json({'error':'forbidden'},403)
+            from intelligence import service
+            return self.send_json(service.get(path.rsplit("/",1)[-1], q))
+        if path == "/api/chatgpt/status":
+            import chatgpt_auth
+            return self.send_json(chatgpt_auth.status())
+        if path == "/api/chatgpt/models":
+            import chatgpt_auth
+            return self.send_json({"models":chatgpt_auth.models()})
+        if path == "/api/receipts":
+            import receipts
+            return self.send_json(receipts.view())
+        if path == "/api/receipts/source":
+            import receipts
+            from urllib.parse import quote
+            file, info = receipts.source(q.get("id", ""))
+            raw = file.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", info["media_type"])
+            disposition = "inline" if info["media_type"] in ("application/pdf","image/png","image/jpeg","image/webp","image/gif") else "attachment"
+            self.send_header("Content-Disposition", disposition + "; filename*=UTF-8''" + quote(info["name"]))
+            self.send_header("Content-Length", str(len(raw)))
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.end_headers(); self.wfile.write(raw)
+            return True
         if path == "/api/ui":
             return self.send_json(extras.ui_state())
         if path == "/api/chats":
             return self.send_json(extras.chats_list(q.get("q", "")))
         if path == "/api/chats/get":
             return self.send_json(extras.chat_get(q.get("id", "")) or {"error": "That conversation is gone."})
+        if path == "/api/company-price":
+            import company_notes
+            return self.send_json(company_notes.price_history(q.get("symbol"), offline=OFFLINE, force=q.get("force")=="1"))
+        if path == "/api/company-briefing":
+            import company_notes
+            return self.send_json(company_notes.briefing(q.get("symbol"), None if OFFLINE else ai_claude_code(), None if OFFLINE else api_key()))
+        if path == "/api/cash-workspace":
+            import cash_workspace
+            state = compute_state(load(CONFIG, None),record=False,include_intelligence=False)
+            return self.send_json(cash_workspace.report(state,offline=OFFLINE,refresh=q.get('refresh')=='1'))
+        if path == "/api/savings-rates":
+            import savings_rates
+            return self.send_json(savings_rates.snapshot(offline=OFFLINE,force=q.get('refresh')=='1'))
+        if path == "/api/cash-briefing":
+            import cash_notes
+            state = compute_state(load(CONFIG, None),record=False,include_intelligence=False)
+            if q.get('account'):
+                import cash_workspace
+                if q['account'] not in {r['id'] for r in cash_workspace.account_rows(state)}:return self.send_json({'error':'This cash account is no longer available.'},400)
+            return self.send_json(cash_notes.briefing(state, None if OFFLINE else ai_claude_code(), None if OFFLINE else api_key(), account=q.get("account")))
+        if path == "/api/page-briefing":
+            import page_notes
+            state = compute_state(load(CONFIG, None))
+            return self.send_json(page_notes.briefing(q.get('page'),state,None if OFFLINE else ai_claude_code(),None if OFFLINE else api_key()))
+        if path == "/api/investment-briefing":
+            import portfolio_notes
+            state = compute_state(load(CONFIG, None))
+            return self.send_json(portfolio_notes.briefing(state, q.get("account", ""), q.get("asset", "all"), None if OFFLINE else ai_claude_code(), None if OFFLINE else api_key()))
         if path == "/api/briefing":
             state = compute_state(load(CONFIG, None))
             return self.send_json(extras.briefing(state, extras.ui_state()["prefs"], ai_claude_code(), api_key()))
@@ -1334,7 +1470,7 @@ class Handler(SimpleHTTPRequestHandler):
                 return self.send_download(out.getvalue(), f"holdings-{stamp}.csv", "text/csv; charset=utf-8")
             bundle = {"exported": datetime.now().isoformat(timespec="seconds"), "portfolio": load(CONFIG, None),
                       "spending": spending.load(), "notes": read_notes(), "interface": extras.ui_state(),
-                      "chats": extras.read(extras.CHATS, []),
+                      "chats": extras.read(extras.CHATS, []), "receipts":__import__("receipts").read(),
                       "history": HISTORY.read_text(encoding="utf-8") if HISTORY.exists() else ""}
             return self.send_download(json.dumps(bundle, ensure_ascii=False, indent=1), f"wealth-export-{stamp}.json",
                                       "application/json")
@@ -1342,7 +1478,44 @@ class Handler(SimpleHTTPRequestHandler):
 
     def extra_post(self, body):
         """The write endpoints of the newer pages. Returns None for paths that are not theirs."""
+        if self.path.startswith('/api/workspace/'):
+            from workspace import service
+            name = self.path.split('?',1)[0].rsplit('/',1)[-1]
+            if name == 'open-folder':
+                import os
+                from workspace import documents
+                documents.INBOX.mkdir(exist_ok=True)
+                if os.name == 'nt': os.startfile(str(documents.INBOX))
+                return self.send_json({'ok':True,'folder':'import-inbox'})
+            return self.send_json(service.action(name,body))
+        if self.path.startswith("/api/intelligence/"):
+            from urllib.parse import urlparse
+            origin=self.headers.get('Origin','');host=self.headers.get('Host','').split(':')[0]
+            if self.client_address[0]!='127.0.0.1' or host not in ('127.0.0.1','localhost',HOSTNAME) or origin and urlparse(origin).hostname not in ('127.0.0.1','localhost',HOSTNAME):
+                return self.send_json({'error':'forbidden'},403)
+            from intelligence import service
+            return self.send_json(service.action(self.path.rsplit('/',1)[-1],body))
+        if self.path.startswith("/api/chatgpt/"):
+            from urllib.parse import urlparse
+            origin = self.headers.get("Origin", "")
+            request_host = self.headers.get("Host", "").split(":")[0]
+            if self.client_address[0] != "127.0.0.1" or request_host not in ("127.0.0.1", "localhost", HOSTNAME):
+                return self.send_json({"error":"forbidden"}, 403)
+            if origin and urlparse(origin).hostname not in ("127.0.0.1", "localhost", HOSTNAME):
+                return self.send_json({"error":"forbidden"}, 403)
+            import chatgpt_auth
+            if self.path == "/api/chatgpt/start": return self.send_json(chatgpt_auth.begin(body.get("profile_id")))
+            if self.path == "/api/chatgpt/select": return self.send_json(chatgpt_auth.choose(body.get("profile_id")))
+            if self.path == "/api/chatgpt/signout": return self.send_json(chatgpt_auth.sign_out())
+            if self.path == "/api/chatgpt/welcome": return self.send_json(chatgpt_auth.welcome_done())
+            return self.send_json({"error":"Unknown ChatGPT action"}, 404)
         import extras
+        if self.path == "/api/receipts/edit":
+            import receipts
+            bid = backup_now()
+            result = receipts.edit(body)
+            cloud_sync_soon()
+            return self.send_json({**result, "undo":bid})
         if self.path == "/api/ui":
             return self.send_json(extras.ui_update(body))
         if self.path == "/api/chats/save":
@@ -1350,6 +1523,10 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path == "/api/chats/delete":
             extras.chat_delete(body.get("id"))
             return self.send_json({"ok": True})
+        if self.path == "/api/cash-scenario":
+            import cash_workspace
+            try:return self.send_json(cash_workspace.scenario(body))
+            except ValueError as error:return self.send_json({'error':str(error)},400)
         if self.path == "/api/briefing":
             state = compute_state(load(CONFIG, None))
             return self.send_json(extras.briefing(state, extras.ui_state()["prefs"], ai_claude_code(), api_key(), force=True))
@@ -1383,12 +1560,15 @@ class Handler(SimpleHTTPRequestHandler):
                     cfg = load(CONFIG, None)
                     for p in [p for a in cfg["accounts"] for p in a["positions"]] + cfg["managed"].get("positions", []):
                         for k, v in found.get(pid(p), {}).items():
-                            p.setdefault(k, v)
+                            if extras.classification_missing(p.get(k)):
+                                p[k] = v
                     save_config(cfg)
             return self.send_json(info if info is not None else {"done": len(found)})
         return None
 
     def do_POST(self):
+        if not self.local_request():
+            return self.send_json({'error':'forbidden'},403)
         # only accept requests from this computer's own pages
         origin = self.headers.get("Origin", "")
         host = origin.split("//")[-1].split(":")[0]
@@ -1414,12 +1594,14 @@ class Handler(SimpleHTTPRequestHandler):
                     s["anthropic_api_key"] = body["anthropic_api_key"].strip()
                 if "contact_email" in body:
                     s["contact_email"] = str(body["contact_email"]).strip()[:120]
+                import providers
+                providers.update(s, body)
                 save(SETTINGS, s)
-                return self.send_json({"ok": True, "has_api_key": bool(api_key())})
+                return self.send_json({"ok": True, "has_api_key": bool(api_key()), "ai":providers.status()})
             if self.path == "/api/import":
                 pid = str(body.get("progress_id") or "")
                 try:
-                    return self.send_json(import_files(body.get("files") or [], body.get("note", ""), progress_start(pid)))
+                    return self.send_json(import_files(body.get("files") or [], body.get("note", ""), progress_start(pid), provider=body.get("provider"), mode=body.get("mode", "auto")))
                 finally:
                     progress_done(pid)
             if self.path == "/api/spending/categorize":
@@ -1504,7 +1686,39 @@ class Handler(SimpleHTTPRequestHandler):
                 msgs = msgs[-30:]
                 if msgs[0]["role"] != "user":
                     # the conversation can start with Claude's own question after an import
-                    msgs.insert(0, {"role": "user", "content": "(the owner opened the chat. You asked the next question yourself after an import.)"})
+                    msgs.insert(0, {"role": "user", "content": "(Jan opened the chat. You asked the next question yourself after an import.)"})
+                import providers
+                provider = providers.selected("chat", body.get("provider"))
+                from workspace import context as chat_context
+                scope=chat_context.validate(body.get("context_scope") or "all")
+                if scope!="all":
+                    if body.get("files"):return self.send_json({"error":"Use All context for file imports, or upload files through Import."},400)
+                    pid=str(body.get("progress_id") or "");step=progress_start(pid)
+                    try:
+                        if step:step("Reading selected "+scope+" context")
+                        exe=ai_claude_code() if provider=="claude" else None
+                        level=ai.pick_level(msgs[-1]["content"],body.get("effort") or "auto")
+                        reply=ai.chat(msgs,chat_context.system(scope),provider=provider,exe=exe,api_key=None if exe or provider=="openai" else api_key(),level=level,scope=scope)
+                        return self.send_json({"reply":reply,"provider":provider,"level":level,"context_scope":scope})
+                    finally:progress_done(pid)
+                if provider == "openai":
+                    import chatgpt_auth
+                    if not chatgpt_auth.status()["connected"]: return self.send_json({"error":"Continue with ChatGPT to connect your plan. API billing is disabled."}, 400)
+                    pid = str(body.get("progress_id") or "")
+                    step = progress_start(pid)
+                    try:
+                        if step: step("Thinking with OpenAI")
+                        attached = body.get("files") or []
+                        question = msgs[-1]["content"]
+                        files = agent_files()
+                        context = full_system(compute_state(json.loads(files["portfolio.json"])))
+                        if ai.needs_detail(question):
+                            context += "\nRecent payment detail (up to 2000 rows):\n" + "\n".join(files["spending_transactions.csv"].splitlines()[:2001])
+                            context += "\nInvoice products and confirmed bank links:\n" + files["receipt_records.json"][:180000]
+                        level = ai.pick_level(question, body.get("effort") or "auto")
+                        reply = ai.chat(msgs, context, provider="openai", files=attached, level=level)
+                        return self.send_json({"reply":reply, "level":level, "provider":"openai"})
+                    finally: progress_done(pid)
                 key, exe = api_key(), ai_claude_code()
                 attached = body.get("files") or []
                 pid = str(body.get("progress_id") or "")
@@ -1517,13 +1731,13 @@ class Handler(SimpleHTTPRequestHandler):
                             step("Reading your files")
                         parts, rest = route_known_files(attached)
                         names = ", ".join(f.get("name") or "file" for f in attached)
-                        note = f"\n\n(the owner attached: {names}." + (" The app already imported these exactly: " + " ".join(parts)
+                        note = f"\n\n(Jan attached: {names}." + (" The app already imported these exactly: " + " ".join(parts)
                                                                    if parts else "") + ")"
                         msgs[-1] = {"role": "user", "content": msgs[-1]["content"] + note}
                         files = agent_files()
                         reply, changed = ai.agent(msgs, full_system(compute_state(json.loads(files["portfolio.json"]))), exe,
                                                   files, uploads=rest or None, on_step=step)
-                        changed_any = commit_ai_changes(files, changed) or parts
+                        changed_any = commit_ai_changes(files, changed, uploads=rest) or parts
                         if changed_any:
                             import extras
                             extras.log_import(bid, attached, reply, "chat")
@@ -1537,6 +1751,9 @@ class Handler(SimpleHTTPRequestHandler):
                     level = ai.pick_level(question, body.get("effort") or "auto")
                     # the data files and tools only when something has to change, or when the owner asked Claude to dig deep;
                     # a plain answer from the snapshot costs a fraction of that
+                    if ai.workflow_change(question) and (exe or key):
+                        reply=ai.chat(msgs,system,api_key=None if exe else key,exe=exe,level=level)
+                        return self.send_json({'reply':reply,'level':level})
                     if exe and (ai.wants_change(question) or ai.needs_detail(question) or level == "deep"):
                         reply, changed = ai.agent(msgs, system, exe, files, on_step=step, level=level)
                         return self.send_json({"reply": reply, "undo": commit_ai_changes(files, changed), "level": level})
@@ -1772,12 +1989,23 @@ def route_known_files(files):
     for f in expand_archives(files):
         name, mt = f.get("name") or "file", f.get("media_type") or ""
         raw = base64.b64decode(f["data"])
+        if name.lower().endswith(('.html','.xhtml','.xml')):
+            from workspace import research
+            report=research.parse_esef(raw)
+            if report:
+                source=__import__('receipts').store_source(f)
+                result=research.ingest_esef(report,source['id'])
+                parts.append(str(result['facts'])+' inline XBRL facts retained with original units and reporting contexts. Portfolio balances were not changed.')
+                continue
         if mt.startswith("image/") or name.lower().endswith(".pdf"):
             rest.append(f)
             continue
         # a Trade Republic export: trades are calculated exactly, card payments go to Spending
         rows = tr_rows(ai.decode_text(raw)) if name.lower().endswith((".csv", ".txt")) else None
         if rows:
+            from workspace import performance
+            source = __import__('receipts').store_source(f)
+            performance.from_tr(rows,source['id'])
             with cfg_lock:
                 cfg = load(CONFIG, None)
                 done = import_tr_into(cfg, rows)
@@ -1785,16 +2013,29 @@ def route_known_files(files):
             parts.append("**Trade Republic investments** (calculated exactly):\n" + "\n".join("- " + x for x in done))
             card = spending.trade_republic_rows(rows)
             if card:
-                r = spending.import_transactions(name, card)
+                r = spending.import_transactions(name, card, source_id=__import__("receipts").store_source(f)["id"])
                 parts.append(spending_line(r))
                 spent = True
+            continue
+        from workspace import performance,assets
+        fund_rows = assets.parse_fund_csv(raw) if name.lower().endswith(('.csv','.txt')) else None
+        if fund_rows is not None:
+            source = __import__('receipts').store_source(f)
+            result = assets.ingest_funds(fund_rows,source['id'])
+            parts.append(str(result['rows'])+' disclosed underlying fund positions retained with dated original evidence.')
+            continue
+        ledger_rows = performance.parse_csv(raw) if name.lower().endswith(('.csv','.txt')) else None
+        if ledger_rows is not None:
+            source = __import__('receipts').store_source(f)
+            result = performance.ingest(ledger_rows,source['id'])
+            parts.append(str(result['added'])+' broker ledger events retained; current holdings were not replaced.')
             continue
         try:
             bank = spending.parse_known(name, raw)
         except Exception:
             bank = None
         if bank and len(bank) >= 3:
-            r = spending.import_transactions(name, bank)
+            r = spending.import_transactions(name, bank, source_id=__import__("receipts").store_source(f)["id"])
             parts.append(spending_line(r) + update_current_account(r))
             spent = True
             continue
@@ -1804,47 +2045,77 @@ def route_known_files(files):
     return parts, rest
 
 
-def import_files(files, note, step=None):
-    """Import uploaded files straight into the data. One Undo reverts the whole import. Returns {"summary", "undo"}."""
-    import base64
-    import ai
-    import spending
-
-    if not files:
-        raise ValueError("No files.")
+def import_files(files, note, step=None, provider=None, mode="auto"):
+    """Bank imports, portfolio statements and invoice evidence share one Undo snapshot."""
+    import ai, spending, receipts, providers, extras
+    if not files: raise ValueError("No files.")
+    if mode not in ("auto", "receipts"): raise ValueError("Choose automatic or invoice import.")
+    provider = providers.selected("import", provider)
+    files = expand_archives(files)
+    from workspace.documents import layout_instructions
+    learned = layout_instructions(files)
+    if learned: note = (note or "") + "\nSaved document-layout instructions (verify against the actual document):\n" + learned
+    used = set()
+    for f in files:
+        original = str(f.get("name") or "document").replace("\\", "/").split("/")[-1]
+        name = original; counter = 1
+        while name.lower() in used:
+            counter += 1; name = str(counter) + "_" + original
+        used.add(name.lower())
+        if name != f.get("name"): f["original_name"] = original
+        f["name"] = name
+    if step: step("Reading your files")
     bid = backup_now()
-    if step:
-        step("Reading your files")
-    parts, rest = route_known_files(files)
-    if rest:
-        exe, key = ai_claude_code(), api_key()
-        if exe:
-            files_now = agent_files()
-            msg = "Import the uploaded files into my data." + (f" My note about them: {note}" if note else "")
-            reply, changed = ai.agent([{"role": "user", "content": msg}],
-                                      full_system(compute_state(json.loads(files_now["portfolio.json"]), record=False)),
-                                      exe, files_now, uploads=rest, on_step=step, kind="import")
-            commit_ai_changes(files_now, changed)
-            reply, questions = ai.split_questions(reply)
-            if questions:
-                ask_jan("import", "About the files you just imported, a few things weren't clear:\n\n" + questions
-                        + "\n\nAnswer here and I'll update your data.")
-                reply += "\n\n**Claude has a question about this import.** Answer it in Ask Claude."
-            parts.append(reply)
-        elif key:
-            draft = ai.extract(rest, note, load(CONFIG, None), key)
-            with cfg_lock:
-                cfg = load(CONFIG, None)
-                done = apply_import(cfg, auto_import_payload(cfg, draft))
-                save(CONFIG, cfg)
-            parts.append(draft["summary"] + "\n\nChanges:\n" + "\n".join("- " + d for d in done))
-        else:
-            raise ValueError("No AI available. Install Claude Code or add an API key in Settings.")
-    wake.set()
-    cloud_sync_soon()
-    import extras
-    extras.log_import(bid, files, "\n\n".join(parts))
-    return {"summary": "\n\n".join(parts), "undo": bid}
+    exe, key = ai_claude_code(), api_key()
+    parts = []
+    if mode == "receipts":
+        if step: step("Reading product lines")
+        extracted = receipts.extract(files, note, provider, key, exe)
+        if not extracted: raise ValueError("No invoice or receipt was found. Try automatic import for statements.")
+        result = receipts.add(extracted, files)
+        parts.append(str(result["added"]) + " invoices added, " + str(result["duplicates"]) + " already present. Confirm their bank-payment links in Spending, Receipts. No extra bank expense was created.")
+    else:
+        parts, rest = route_known_files(files)
+        if rest:
+            if provider == "claude" and exe:
+                files_now = agent_files()
+                msg = "Import the uploaded files into my data." + (" My note: " + note if note else "")
+                reply, changed = ai.agent([{"role":"user","content":msg}],
+                    full_system(compute_state(json.loads(files_now["portfolio.json"]), record=False)),
+                    exe, files_now, uploads=rest, on_step=step, kind="import")
+                commit_ai_changes(files_now, changed, uploads=rest)
+                reply, questions = ai.split_questions(reply)
+                if questions: ask_owner("import", questions)
+                parts.append(reply)
+            else:
+                draft = ai.extract(rest, note, load(CONFIG,None), key, provider=provider)
+                invoices = draft.get("receipts") or []
+                for doc in invoices: receipts.validate(doc)
+                rows = spending_rows_from_ai(json.dumps(draft.get("transactions") or []))
+                original_rows = draft.get("transactions") or []
+                sources = {f["name"]:f for f in rest}
+                for row, raw_row in zip(rows, original_rows):
+                    if raw_row.get("source_name") in sources:
+                        row["source_ids"] = [receipts.store_source(sources[raw_row["source_name"]])["id"]]
+                has_assets = any(draft.get(k) for k in ("holdings","balances","debts")) or draft.get("cash_eur") is not None or any(v is not None for v in (draft.get("account_totals") or {}).values())
+                if has_assets:
+                    with cfg_lock:
+                        cfg = load(CONFIG,None)
+                        done = apply_import(cfg, auto_import_payload(cfg,draft))
+                        check_config(cfg); save(CONFIG,cfg)
+                    parts.append("\n".join(done))
+                for account, bank_rows in group_by(rows,"account").items():
+                    r = spending.import_transactions("from a document ("+account+")", bank_rows)
+                    parts.append(spending_line(r))
+                if invoices:
+                    result = receipts.add(invoices,rest)
+                    parts.append(str(result["added"]) + " invoices saved. Confirm links in Spending, Receipts; invoices do not add expenses.")
+                parts.insert(0, draft.get("summary") or "Files read.")
+    from workspace import documents
+    documents.index_sources()
+    wake.set(); cloud_sync_soon()
+    extras.log_import(bid,files,"\n\n".join(parts))
+    return {"summary":"\n\n".join(parts),"undo":bid,"provider":provider}
 
 
 def spending_line(r):
@@ -1903,6 +2174,7 @@ CLOUD_EVERY = 15 * 60
 
 
 def cloud_config():
+    if _profile and (_profile.get("mode")=="demo" or not load(SETTINGS,{}).get("cloud_enabled")):return None
     s = load(SETTINGS, {})
     return (s.get("supabase_url"), s.get("supabase_key")) if s.get("supabase_url") and s.get("supabase_key") else None
 
@@ -1927,6 +2199,11 @@ def cloud_sync():
                     d = spending.load()
                 cloud.sync_spending(conf[0], conf[1], d)
                 cloud_status["spending_synced"] = changed
+            import receipts
+            if receipts.FILE.exists():
+                with spending.lock:
+                    result = cloud.sync_receipts(conf[0],conf[1],receipts.read(),spending.load()["transactions"])
+                cloud_status["receipts"] = result
         except Exception as e:
             cloud_status["error"] = str(e)
             raise
@@ -1966,6 +2243,9 @@ def friendly_error(e):
 
 
 def main():
+    if (HERE / "runtime-profile.json").exists():
+        import profile_setup
+        profile_setup.install(sys.modules[__name__])
     args = sys.argv[1:]
     if args[:1] == ["import-tr"]:
         import_tr(args[1])
@@ -1974,7 +2254,7 @@ def main():
     if cfg is None:
         sys.exit("portfolio.json not found or invalid.")
     import spending
-    spending.on_unclear = ask_jan
+    spending.on_unclear = ask_owner
     global OFFLINE
     OFFLINE = "--offline" in args
     if "--offline" not in args:
@@ -1983,6 +2263,10 @@ def main():
         except ImportError:
             sys.exit("yfinance is not installed. Run: pip install -r requirements.txt")
         threading.Thread(target=price_loop, args=(cfg.get("refresh_minutes", 5),), daemon=True).start()
+    from intelligence import service
+    service.start(OFFLINE)
+    from workspace import service as workflows
+    workflows.start()
     srv = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
     url = f"http://{HOSTNAME}" + ("" if PORT == 80 else f":{PORT}")
     print(f"Dashboard running at {url}  (Ctrl+C to stop)")
@@ -1995,4 +2279,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if (HERE / "runtime-profile.json").exists():
+        sys.modules["app"]=sys.modules[__name__]
+        main()
+    else:
+        from launch import main as launch_main
+        launch_main()

@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": "ede5a5601ac26f7752c957ff9d3bb29f616f956aa6ea1aac75b6bc08a89c93bf",
+      "name": "demo-invoice.txt",
+      "path": "attachments\\receipts\\ede5a5601ac26f7752c957ff9d3bb29f616f956aa6ea1aac75b6bc08a89c93bf.txt",
+      "media_type": "text/plain",
+      "size": 98,
+      "kind": "receipt"
+    }
+  ],
+  "documents": [
+    {
+      "id": "demo-receipt",
+      "supplier": "Example Demo Shop",
+      "invoice_number": "DEMO-INV-100",
+      "order_number": "DEMO-ORDER-100",
+      "date": "2026-10-09",
+      "currency": "EUR",
+      "total": 84,
+      "items": [
+        {
+          "id": "demo-keyboard",
+          "description": "Example keyboard",
+          "quantity": 1,
+          "unit_price": 54,
+          "total": 54,
+          "category": "electronics",
+          "sku": "DEMO-KEY"
+        },
+        {
+          "id": "demo-cable",
+          "description": "Example cable",
+          "quantity": 1,
+          "unit_price": 30,
+          "total": 30,
+          "category": "electronics",
+          "sku": "DEMO-CABLE"
+        }
+      ],
+      "attachments": [
+        {
+          "id": "ede5a5601ac26f7752c957ff9d3bb29f616f956aa6ea1aac75b6bc08a89c93bf",
+          "name": "demo-invoice.txt",
+          "path": "attachments\\receipts\\ede5a5601ac26f7752c957ff9d3bb29f616f956aa6ea1aac75b6bc08a89c93bf.txt",
+          "media_type": "text/plain",
+          "size": 98
+        }
+      ],
+      "links": [
+        {
+          "transaction_id": "demo-invoice-payment",
+          "amount_eur": 84,
+          "confirmed": true
+        }
+      ],
+      "reconciled": true,
+      "uploaded": "2026-10-09T09:00:00+00:00"
+    }
+  ]
+}

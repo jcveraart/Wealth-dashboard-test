@@ -19,6 +19,9 @@ class DemoFixtures(unittest.TestCase):
                     for t in json.loads((data / name).read_text(encoding='utf-8'))]
         self.assertEqual(len(payments), manifest['transactions'])
         self.assertEqual(len({t['id'] for t in payments}), len(payments))
+        invoice_payment=next(t for t in payments if t['id']=='demo-invoice-payment')
+        self.assertEqual(invoice_payment['key'],'exampledemoshop')
+        self.assertTrue(invoice_payment['description'].startswith('DEMO ONLY:'))
         for name, expected in (('history.csv', manifest['history_days']),
                                ('history_accounts.csv', manifest['history_days'] * 10)):
             rows = []
@@ -26,7 +29,8 @@ class DemoFixtures(unittest.TestCase):
                 with (data / piece).open(encoding='utf-8') as f:
                     rows.extend(csv.DictReader(f))
             self.assertEqual(len(rows), expected)
-        self.assertEqual(len(list((data / 'sql').glob('*.sql'))), 28)
+        self.assertTrue((data / 'receipts.json').exists())
+        self.assertTrue((data / 'research.json').exists())
 
     def test_json_api_does_not_fall_through_to_a_second_response(self):
         import app, io
@@ -39,6 +43,7 @@ class DemoFixtures(unittest.TestCase):
         handler.requestline = 'GET /api/ui HTTP/1.1'
         handler.client_address = ('127.0.0.1', 0)
         handler.headers = Message()
+        handler.headers['Host'] = '127.0.0.1:' + str(app.PORT)
         handler.wfile = io.BytesIO()
         handler.log_message = lambda *args: None
         handler.do_GET()
@@ -67,7 +72,7 @@ class DemoFixtures(unittest.TestCase):
         import demo
         with tempfile.TemporaryDirectory() as folder:
             isolated = Path(folder) / '.demo-runtime'
-            with patch.object(demo, 'RUNTIME', isolated):
+            with patch.object(demo, 'ROOT', Path(folder)), patch.object(demo, 'RUNTIME', isolated), patch('profiles.copy_code'):
                 demo.prepare()
                 settings = isolated / 'settings.json'
                 settings.write_text('{"demo_test": true}', encoding='utf-8')
@@ -80,9 +85,11 @@ class DemoFixtures(unittest.TestCase):
         import demo, shutil
         with tempfile.TemporaryDirectory() as folder:
             project = Path(folder)
-            for name in demo.MODULES + ['DATA.md']:
-                shutil.copy2(ROOT / name, project / name)
-            shutil.copytree(ROOT / 'web', project / 'web')
+            from profiles import source_files
+            for name in source_files(ROOT):
+                target=project/name;target.parent.mkdir(parents=True,exist_ok=True)
+                shutil.copy2(ROOT / name, target)
+            shutil.copytree(ROOT / 'web', project / 'web', dirs_exist_ok=True)
             runtime = project / '.demo-runtime'
             with patch.object(demo, 'ROOT', project), patch.object(demo, 'RUNTIME', runtime):
                 demo.prepare()
@@ -96,10 +103,10 @@ class DemoFixtures(unittest.TestCase):
             runtime = project / '.demo-runtime'
             runtime.mkdir()
             (runtime / 'keep.txt').write_text('Preserve this incomplete setup')
-            with patch.object(demo, 'ROOT', project), patch.object(demo, 'RUNTIME', runtime), patch.object(demo, 'copy_code'):
+            with patch.object(demo, 'ROOT', project), patch.object(demo, 'RUNTIME', runtime), patch('profiles.copy_code'):
                 demo.prepare()
             self.assertTrue((runtime / 'manifest.json').exists())
-            recovered = list((project / 'backups').glob('demo-recovered-*/keep.txt'))
+            recovered = list((project / 'backups').glob('demo-preserved-*/keep.txt'))
             self.assertEqual(len(recovered), 1)
             self.assertEqual(recovered[0].read_text(), 'Preserve this incomplete setup')
 
@@ -110,4 +117,4 @@ class DemoFixtures(unittest.TestCase):
             text = (data / name).read_text(encoding='utf-8')
             self.assertNotIn('sb_secret_', text)
             self.assertNotIn('sk-ant-', text)
-        self.assertTrue((data / 'supabase-seed.sql').is_file())
+        self.assertTrue((data / 'workflows.json').is_file())

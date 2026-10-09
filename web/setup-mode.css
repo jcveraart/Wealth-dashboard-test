@@ -1,0 +1,5 @@
+.profile-bar{display:flex;gap:12px 22px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:0 0 18px;font-size:12px;color:var(--ink-2);background:var(--surface)}
+.profile-bar.demo{background:color-mix(in srgb,var(--accent-soft) 35%,var(--surface))}.profile-bar a{color:var(--ink);font-weight:600;text-decoration:none}.profile-bar a:hover{text-decoration:underline}
+.setup-page p,.setup-page li{font-size:14px;line-height:1.75}.setup-page li{margin:8px 0}.setup-actions{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.setup-page .card{min-width:0}.setup-page code{font-size:13px}
+#setupPreferences{display:flex;flex-direction:column;align-items:flex-start;gap:18px;margin:20px 0}#setupPreferences label{display:flex;align-items:flex-start;gap:10px;font-size:14px;line-height:1.5}#setupPreferences input{margin-top:3px}#setupMessage{font-size:13px;margin-top:14px;color:var(--ink-2)}
+@media(max-width:640px){.profile-bar{gap:8px 14px;font-size:11px}.profile-bar>span{width:100%}.setup-page .grid.g2{grid-template-columns:1fr}}

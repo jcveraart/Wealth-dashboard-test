@@ -1,0 +1,62 @@
+[
+  {
+    "kind": "budget",
+    "id": "demo-food",
+    "data": {
+      "name": "Example groceries budget",
+      "category": "groceries",
+      "limit_eur": 350,
+      "period": "monthly",
+      "carryover": false,
+      "since": "2026-10-09"
+    }
+  },
+  {
+    "kind": "goal",
+    "id": "demo-travel",
+    "data": {
+      "name": "Example holiday",
+      "saved_eur": 1600,
+      "target_eur": 2500,
+      "due": "2027-05-17",
+      "account": "Emergency Savings",
+      "note": "Fictional planning record"
+    }
+  },
+  {
+    "kind": "decision",
+    "id": "demo-thesis",
+    "data": {
+      "name": "Example fund thesis",
+      "symbol": "IWDA.AS",
+      "date": "2026-10-09",
+      "thesis": "Illustrative diversified long-term holding",
+      "risk": "Market drawdowns",
+      "review_date": "2027-02-06",
+      "status": "held"
+    }
+  },
+  {
+    "kind": "bill",
+    "id": "demo-rent",
+    "data": {
+      "name": "Example rent",
+      "amount_eur": 950,
+      "due": "2026-10-29",
+      "frequency": "monthly",
+      "active": true,
+      "category": "rent",
+      "account": "demo-checking"
+    }
+  },
+  {
+    "kind": "policy",
+    "id": "demo-warranty",
+    "data": {
+      "name": "Example laptop warranty",
+      "expiry": "2027-04-27",
+      "note": "Fictional warranty",
+      "status": "active"
+    }
+  }
+]

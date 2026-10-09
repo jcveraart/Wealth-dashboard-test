@@ -1,53 +1,80 @@
-# Wealth Dashboard Demo
+# Wealth dashboard — try the demo, then make it yours
 
-The full local wealth dashboard, with invented data you can safely share. Includes the latest Investments overhaul: asset-class filters, account drill-downs, performance charts and a grouped holdings list. Overview, spending, savings, debt, history, planning, taxes, advice and imports use the same application as the personal version.
+A local wealth dashboard for investments, spending, flexible cash, debt, recurring investment plans, invoices and research. This public edition includes the current application design and a rich **fictional** dataset. No private database, statements, original financial history or credentials are included.
 
-Every balance, payment, account, profile, conversation and market price in `demo_data/` is synthetic. There are no real bank exports, credentials, personal notes or original Git history in this repository.
+## Start here
 
-## Run it
+1. [Download the ZIP](https://github.com/jcveraart/Wealth-dashboard-test/archive/refs/heads/main.zip), then **Extract All**.
+2. Install [Python 3.11 or 3.12](https://www.python.org/downloads/) if needed. The offline demo supports Python 3.9+.
+3. **Windows:** double-click `start-demo-windows.bat`. **macOS/Linux:** run `python3 demo.py` from the extracted folder.
+4. Open **http://127.0.0.1:8051**. The normal launcher runs in the background, so its terminal can close after startup.
+5. Explore the demo. When ready, choose **Use my own data → Start my personal workspace**. It opens separately on port 8052, with no sample financial records.
 
-Install **Python 3.9 or newer**. The default demo needs no third-party packages, account, API key or Supabase project.
+The demo needs no AI account, API key, bank login, cloud database or package installation. It stays disconnected and labels fictional prices, news, rates and saved chat examples. Real imports and connections belong in the personal profile.
 
-- **Windows:** double-click `start-demo-windows.bat`.
-- **macOS:** run `python3 demo.py` in this folder, or `sh start-demo-mac.command`.
-- **Linux:** run `python3 demo.py`, or `sh start-demo-linux.sh`.
-- **Any terminal:** `python demo.py`.
+## Complete guides
 
-Open **http://127.0.0.1:8051**. The demo uses a different port from the personal dashboard. Keep the terminal running; press Ctrl+C there to stop it.
+- [Installation, personal-mode transition, updates and troubleshooting](docs/INSTALLATION.md)
+- [All optional connections, setup steps, costs and privacy](docs/CONNECTIONS.md)
+- [Screenshot tour of pages and features](docs/SCREENSHOTS.md)
+- [Application walkthrough](docs/APP_GUIDE.md)
+- [Data format](DATA.md), [investment research](INTELLIGENCE.md), [connected workflows](WORKFLOWS.md)
 
-On first launch, the demo generates dated sample data from a fixed seed in `.demo-runtime/`. It copies the same application code into that isolated folder. Your demo edits are kept between launches. Restart after changing code to load the changes.
+The same installation guide is accessible inside the app through **Setup & help**.
 
-If a first launch was interrupted, retry the start file. The launcher preserves the incomplete folder in `backups/` and finishes a fresh setup automatically. It builds new data in a temporary folder before putting the runtime into place.
+## What you can explore
 
-If port 8051 is busy: `python demo.py --port 8052`.
+| Area | Highlights |
+|---|---|
+| Overview | Net worth with an internal sparkline, spending/investment summaries and the soft-blue briefing card |
+| Investments | Asset/account filters, Daily/History charts, comparisons, allocation, risk, holdings and recurring savings plans |
+| Spending & income | Account/category views, transactions, receipts, subscriptions, trips, countries, review and compact payment-popup sorting |
+| Savings & debt | Account purpose/access, known versus idle/unknown rates, earnings evidence, flexible-rate comparisons, reserves and fair repayment scenarios |
+| Explore | Opportunities, watchlist, investor/insider disclosure views, company-price chart, financials and contextual conversation |
+| Documents | Invoice products traced to existing payments; invoices do not create duplicate payments |
+| Plan & Advice | Goals, budgeting, decision records, recommendations, questions and next steps |
+| Import & Review | Document/CSV import, supported previews, duplicate checks, coverage and Undo |
+| Settings | Provider setup, source coverage, data export, optional cloud copy and backups |
 
-## What's included
+The sample includes several years of dated history, hundreds of payments, multiple investment accounts, shares/funds/bonds/crypto, cash, debt, plans, a linked product invoice and an illustrative company dossier. Some disclosure-dependent metrics intentionally stay unavailable rather than inventing evidence.
 
-- Two broker accounts, a crypto account and a managed portfolio, with ETFs, stocks, bonds and crypto.
-- Current and travel accounts, emergency savings, a fixed deposit and two loans.
-- Five years of daily wealth, account and synthetic investment price history.
-- Two years of fictional income and payments, subscriptions, refunds, transfers, Tikkies, split payments, trips, tags and an item to review.
-- Goals, pots, recurring investment plans, an example watchlist, sample conversation and pinned introduction.
-- The original Supabase schema and optional synthetic database seed.
+## A few highlights
 
-The demo is clearly labelled. News and fresh AI answers require their own services; the default demo does not pretend to generate them. Public-data values are also synthetic in offline mode. Default launch disables automatic use of any Claude Code installation, environment API key, Ollama server or Supabase connection.
+![Overview with fictional data](docs/screenshots/01-overview.jpg)
 
-## Reset the demo
+![Investment overview](docs/screenshots/02-investments.jpg)
 
-Stop it, then run `python demo.py --reset`. This backs up the existing demo data into the ignored `backups/` folder before regenerating sample data. The original templates in `demo_data/` remain unchanged.
+![Flexible savings comparisons](docs/screenshots/08-savings-rates.jpg)
 
-To regenerate the versioned fixtures intentionally: `python generate_demo.py --output demo_data --date 2026-10-07`.
+![Company research and stock price](docs/screenshots/14-company-research.jpg)
 
-## Optional connections
+[See all 17 screenshots and what each feature does →](docs/SCREENSHOTS.md)
 
-Install the original optional dependencies with `python -m pip install -r requirements.txt`.
+## Personal use
 
-- **Yahoo prices:** `python demo.py --live-prices` uses genuine quotes for the invented holdings.
-- **AI / Ollama / Supabase:** `python demo.py --connect-services` allows your own separate setup. Use Settings in the demo; credentials stay in `.demo-runtime/settings.json`, excluded from Git. AI replies and AI imports need Claude Code or an Anthropic API key. Known bank CSV formats still import without AI.
-- **Supabase:** use a **new, empty demo project**. Run `supabase-schema.sql`, `supabase-history.sql`, `supabase-spending.sql` and `supabase-plans.sql` in that order. Run `python build_supabase_seed.py` locally, then paste the generated `cache/demo-supabase-seed.sql` into that project's SQL Editor. The first schema resets the dashboard tables, so do not run it against a database containing real data. Row-level security remains enabled; use your own project URL and server secret key locally. The seed includes no credentials.
+Personal data lives in `.personal-runtime/`, not in the versioned sample folder. Start with `personal.py`, enable desired features in **Setup & help**, and configure your own providers in Settings. Install optional dependencies with `python install.py` or `install-optional-windows.bat` first.
 
-## Working on it
+There is no direct bank-login or trade-execution connector: import your own supported exports/statements and confirm the results. Public market and savings data do not access your bank. AI sends the selected question/document/context to the provider you enable. Supabase is an optional copy in your own project, not a requirement. No connection or key is supplied by the author.
 
-Tests: `python -m unittest discover tests`. Additional demo checks cover sample-data generation, isolation and offline APIs. The application guide is in `docs/APP_GUIDE.md`; the data format is documented in `DATA.md`.
+## Day-to-day commands
 
-Keep `.demo-runtime/`, root data files, exports, backups and credentials out of Git. Only the generated fixtures in `demo_data/` should be shared. Versioned transactions are split by month and CSV history by quarter, with indexes in `demo_data/manifest.json`; SQL seed chunks are in `demo_data/sql/`. The runtime regenerates the normal single-file data layout automatically.
+```text
+python demo.py                          # disconnected example workspace
+python personal.py                      # separate empty/persistent workspace
+python launch.py demo --command stop
+python launch.py personal --command stop
+python launch.py personal --command restart
+python demo.py --port 8053               # choose another demo port
+python demo.py --reset                    # preserve old demo, regenerate samples
+python demo.py --foreground --no-browser # development server; keep terminal open
+```
+
+Resetting demo data cannot reset personal data. Updates copy source into each runtime and preserve existing records. Back up your personal workspace before major updates or moving computers.
+
+## Privacy and sharing
+
+Share this repository or its ZIP. **Do not share** personal runtimes, statements, credentials, settings, cache, logs or financial backups. These are ignored by Git. Sample data in `demo_data/` is generated from fictional parameters and is intentionally versioned. The app binds to 127.0.0.1; it is a local, single-user application, not an internet-hosted financial service.
+
+## Development
+
+Run `python -m unittest discover -s tests`; JavaScript checks use Node if installed. CI checks tests and public-file hygiene without provider credentials. Optional provider connections require your own setup and are not validated by publishing this repository. Public source provenance is recorded in `release.json`.

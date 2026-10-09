@@ -1,0 +1,273 @@
+/* The design system: one type scale, one spacing rhythm and one look per component, for every page.
+   Loaded last, so the older page styles keep working while everything ends up looking the same. */
+:root{--hover:var(--surface-2);--bg:var(--surface-2);--gap:16px;--pad:20px;--r-ctl:10px;--claude-bg:color-mix(in srgb,var(--accent-soft) 45%,var(--surface))}
+
+/* ---------- rhythm: one gap between cards, one padding inside them ---------- */
+.stack-y>*+*{margin-top:var(--gap)}
+.grid,.inv .grid,.page-ai-top,.research-primary,.cash-rates,.home-top,.inv-primary{gap:var(--gap)}
+.card,.inv-primary>.card,.page-ai-card.brief,.cash-insights,.research-hero,.research-primary>.card,.company-research>section:not(.research-hero),
+.research-business-news .card,.home-support .card,.inv .compact-chart,.portfolio-brief,.investment-ai-top .inv-hero,.cash-ai-top .tile,.company-ai-top>.research-hero{padding:var(--pad)}
+.card .card{box-shadow:none}
+@media(max-width:640px){:root{--pad:16px;--gap:12px}}
+
+/* ---------- card headings: the same size everywhere, also when a card folds open ---------- */
+.card h2,.card-head h2,.card>h2,.inv-primary .card-head h2,.research-price h2,.research-business-news h2,.home-hub-card h2{font-size:16px;font-weight:650;line-height:1.35;letter-spacing:-.005em;margin:0}
+.card>h2{margin-bottom:2px}
+.card>h2+:not(.sub):not(p){margin-top:14px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;margin-bottom:14px;flex-wrap:wrap;min-width:0}
+.card-head>div:first-child>h2+.sub{margin-top:2px}
+.card .sub,.card-head .sub,.ws-header p,.int-intro p{font-size:13px;color:var(--muted);line-height:1.5}
+.card>.sub{margin:0 0 14px}
+.card h3,.ws-row h3,.decide-card h3{font-size:15px;font-weight:650;margin:0 0 4px}
+details>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;font-weight:600;user-select:none}
+details>summary::-webkit-details-marker{display:none}
+details>summary::after{content:"";flex:none;width:7px;height:7px;margin:0 2px 3px;border-right:1.7px solid var(--muted);border-bottom:1.7px solid var(--muted);transform:rotate(45deg);transition:transform .15s}
+details[open]>summary::after{transform:rotate(-135deg);margin-bottom:-3px}
+details.card>summary,.int-details>summary,.inv-more>summary,details.card[open]>summary{font-size:16px;font-weight:650;padding:0;margin:0}
+details.card>summary::after,.int-details>summary::after,.inv-more>summary::after{margin-left:auto}
+details.card[open]>summary,.int-details[open]>summary,.inv-more[open]>summary{margin-bottom:14px}
+details.card:not([open]){padding-top:16px;padding-bottom:16px}
+.card details:not(.card)>summary{font-size:14px;color:var(--ink-2)}
+.card details:not(.card)[open]>summary{margin-bottom:10px}
+.adv-why>summary,.opp-more>summary,.int-breakdown>summary{font-size:13px;font-weight:600;color:var(--ink-2)}
+.ws-count,.int-details>summary .muted,details.card>summary .muted{font-size:13px;font-weight:500;color:var(--muted)}
+
+/* ---------- sections inside a page, under its tabs ---------- */
+.ws-header,.int-top,.int-intro{margin:0}
+.ws-header h2,.int-intro h2{font-size:18px;font-weight:650;letter-spacing:-.01em;margin:0}
+.ws-header{margin-bottom:0}
+
+/* ---------- tabs: every page uses the same pill bar ---------- */
+.page-tabs,.seg.tabs,.int-nav,.ws-nav{display:flex;width:100%;max-width:100%;gap:2px;padding:3px;margin:0;background:var(--surface-2);border:0;border-radius:999px;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}
+.page-tabs::-webkit-scrollbar,.seg.tabs::-webkit-scrollbar,.int-nav::-webkit-scrollbar{display:none}
+.page-tabs button,.seg.tabs button,.int-nav button,.ws-nav button{flex:none;border:0;background:none;border-radius:999px;padding:6px 13px;min-height:0;font-size:13px;font-weight:600;line-height:20px;color:var(--ink-2);white-space:nowrap;cursor:pointer}
+.page-tabs button:hover,.seg.tabs button:hover,.int-nav button:hover,.ws-nav button:hover{color:var(--ink);background:none}
+.page-tabs button.active,.page-tabs button[aria-pressed="true"],.seg.tabs button[aria-pressed="true"],.int-nav button.active,.ws-nav button.active{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line);font-weight:600}
+.seg{padding:3px;gap:2px}
+.seg button{padding:5px 12px;font-size:13px;font-weight:600;line-height:20px}
+.card-head .seg button,.inv-primary .inv-viewbar .seg button,.research-price .seg button{padding:4px 11px;font-size:13px}
+
+/* ---------- buttons: filled for the main action, outlined for the rest, soft for small row actions ---------- */
+.btn{min-height:34px;padding:6px 14px;border-radius:var(--r-ctl);font-size:14px;font-weight:600;line-height:20px;white-space:nowrap}
+.btn.sm,.btn.small{min-height:30px;padding:4px 11px;font-size:13px;border-radius:9px}
+.btn.ghost{background:var(--surface-2);border-color:transparent;color:var(--ink);padding:4px 11px;min-height:30px;font-size:13px;border-radius:9px}
+.btn.ghost:hover{background:var(--line);color:var(--ink)}
+.btn.ghost:disabled{background:var(--surface-2)}
+.card-head .btn{min-height:30px;padding:4px 11px;font-size:13px;border-radius:9px}
+.icon-btn{width:34px;height:34px;flex:none}
+.act{min-height:30px}
+/* links that act: one colour, no underline until you point at them */
+.linkish,#view a.linkish,.home-hub-links a,.utility-links a,#view .hub-open,.brief-ask,.page-ai-card .brief-ask,a.linkish.small{color:var(--accent);font-weight:600;font-size:13px;text-decoration:none}
+.linkish:hover,#view a.linkish:hover,.home-hub-links a:hover,.utility-links a:hover{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+td .nm.linkish,.linkish.nm,button.nm.linkish{color:var(--ink);font-size:inherit}
+td .nm.linkish:hover{color:var(--accent);text-decoration:none}
+.linkish.muted,#view .linkish.muted{color:var(--muted)}
+.side .foot .linkish{color:var(--muted);font-weight:500;font-size:12px}
+#view p a:not(.btn):not(.linkish),.sub a:not(.btn):not(.linkish){color:inherit;text-decoration:underline;text-underline-offset:2px}
+
+/* ---------- fields ---------- */
+input:not([type]),input[type=text],input[type=email],input[type=url],input[type=tel],input[type=number],input[type=date],input[type=month],input[type=password],input[type=search],select{min-height:36px}
+.ws-forms input,.ws-forms select,.ws-forms textarea,#intConnectionsForm input,#intConnectionsForm select,.int-workspace textarea{margin:0;font-size:14px;border-radius:var(--r-ctl);border:1px solid var(--line-strong);padding:7px 12px}
+.ws-forms label,#intConnectionsForm label,.field,.pop-filters label{font-size:13px;color:var(--ink-2);gap:6px}
+.ws-forms{gap:14px 16px}
+.inv-bar select,.pop-sort select{border-radius:var(--r-ctl);min-height:36px;font-size:13px;padding:6px 12px;background:var(--surface);border-color:var(--line-strong)}
+.controls{gap:8px 10px}
+.txt select,.qc-cat select,.sh-fields select,.review select,.review input{min-height:30px}
+
+/* ---------- tables: one header style, one row height ---------- */
+table,.int-table-wrap table,.ws-table table{font-size:14px}
+th,.int-table-wrap th,.ws-table th{font-size:12px;font-weight:600;color:var(--muted);padding:8px 10px;white-space:nowrap;vertical-align:bottom;line-height:1.4}
+td,.int-table-wrap td,.ws-table td{padding:10px;border-top:0;border-bottom:1px solid var(--line);vertical-align:middle}
+.ws-table th,.int-table-wrap th{border-bottom:1px solid var(--line)}
+.ws-table tr:last-child td,.int-table-wrap tr:last-child td{border-bottom:0}
+.ws-table th:first-child,.ws-table td:first-child,.int-table-wrap th:first-child,.int-table-wrap td:first-child{padding-left:0}
+.ws-table th:last-child,.ws-table td:last-child,.int-table-wrap th:last-child,.int-table-wrap td:last-child{padding-right:0}
+.ws-table .ws-cell-detail{overflow-wrap:normal;word-break:normal}
+.amt,.ws-table td .btn,.int-table-wrap td .btn,.ws-table td .linkish{white-space:nowrap}
+.int-table-wrap,.ws-table{margin-top:0}
+table.compact td,table.compact th{padding-top:8px;padding-bottom:8px}
+td .meta,.meta{font-size:12px;color:var(--muted)}
+.grp-row td{font-size:13px}
+
+/* ---------- small labels, tags and badges ---------- */
+.tag,.chip-v,.ws-badge,.int-holding-badge,.cmp-tag,.news-m .chip,.acct-card .chip{display:inline-block;vertical-align:1px;font-size:11px;font-weight:600;line-height:16px;padding:1px 8px;border-radius:999px;background:var(--surface-2);color:var(--ink-2);border:0;letter-spacing:0;white-space:nowrap}
+.tag.good,.chip-v.good{background:color-mix(in srgb,var(--gain) 14%,var(--surface));color:var(--gain)}
+.tag.warn,.tag.warn-tag{background:color-mix(in srgb,var(--warn) 16%,var(--surface));color:var(--warn)}
+.tag.plan{background:var(--accent-soft);color:var(--accent)}
+.nav .ws-badge,.nav a[data-badge]::after{margin-left:auto;background:var(--accent);color:var(--accent-ink);font-size:11px;font-weight:700;min-width:18px;height:18px;padding:0 5px;border-radius:999px;display:inline-grid;place-items:center}
+.grp,.opp-h,.menu-h,.cp-topic,.acc-h,.tm-group{font-size:11px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+
+/* ---------- numbers in a row: label above, figure below, the same on every page ---------- */
+.int-metrics,.inv-stats,.home-hub-metrics{gap:16px 20px;padding:0;margin:0}
+.int-metric .label,.inv-stats>div>span,.home-hub-metrics>div>span,.tile .k,.hero .label,.inv-hero .label{font-size:13px;font-weight:500;color:var(--ink-2);letter-spacing:0;text-transform:none}
+.int-metric b,.inv-stats b,.home-hub-metrics b,.research-hero .int-metrics b,.company-research>.grid .int-metrics b{font-size:20px;font-weight:650;letter-spacing:-.01em;font-variant-numeric:tabular-nums;line-height:1.3}
+.int-metric .muted.small,.inv-stats .small,.tile .n{font-size:12px;color:var(--muted)}
+.tile .v,.cash-ai-top .tile .v{font-size:24px;font-weight:650}
+.int-score{font-size:20px;font-weight:650}
+
+/* ---------- empty states: one quiet line ---------- */
+.empty,.inv .empty{padding:20px 0;font-size:14px;color:var(--muted);text-align:center}
+.card-empty .empty{padding:6px 0 2px;text-align:left}
+.card-empty .card-head{margin-bottom:6px}
+
+/* ---------- lists ---------- */
+.list-row,.ws-row,.rev,.todo,.pot,.advice,.q-item,.rec-card,.opp,.fund,.news-row,.home-hub-line{border-color:var(--line)}
+.ws-row{padding:12px 0}
+.list-row{padding:10px 0}
+
+/* ---------- Claude's cards: one colour, one text size ---------- */
+.brief,.page-ai-card.brief,.hd-claude,.cash-insights,.portfolio-brief,.news-picks{background:var(--claude-bg)}
+.brief-head b,.page-ai-card .brief-head b,.research-brief .brief-head b,.hd-claude-h b{font-size:14px;font-weight:650}
+.claude-mark,#portfolioBrief .claude-mark,.page-ai-card .claude-mark,.research-brief .claude-mark{width:22px;height:22px}
+.claude-mark.sm{width:18px;height:18px}
+.brief-line,.page-ai-card .brief-line,.cash-insights p,.portfolio-brief .brief-line,.hd-claude p,.company-note p{font-size:14px;line-height:1.55}
+.page-ai-card .brief-lines{gap:10px}
+.page-ai-card .brief-head .ago,.research-brief #companyBriefAge,.ago{font-size:12px}
+.brief-prompts{gap:6px}
+.brief-prompts button,.research-prompts button{font-size:12px;font-weight:500;padding:4px 10px;border-radius:999px;background:color-mix(in srgb,var(--surface) 75%,transparent);border:1px solid var(--line);color:var(--ink-2);cursor:pointer}
+.brief-prompts button:hover,.research-prompts button:hover{color:var(--ink);border-color:var(--line-strong);text-decoration:none}
+
+/* ---------- nothing smaller than 12px, except the uppercase labels above ---------- */
+.hero-history .small,.page-ai-card>.small,.page-ai-card .brief-risk+.small,.page-ai-card .brief-lines a,.research-price>p,.research-news .small,.company-note>.small,.company-note a,.company-note a+.small,
+.int-top #intSourceLink,.home-hub-allocation,.pop-filter-meta,.ws-scope,.ws-private-note,.ws-live-region,.ws-connection p,.int-json,.quiet-update,.inv-primary .sub,.inv-primary #invChartNote,
+.page-ai-card .brief-risk,.research-hero .label,.research-hero .int-metrics .small,.int-metric .label{font-size:12px}
+.research-news a,.page-ai-card .home-hub-links button,.inv-primary .ret .v,.investment-ai-top .ret .v{font-size:13px}
+
+/* ---------- topbar ---------- */
+.topbar{margin-bottom:20px}
+.topbar h1{font-size:24px;font-weight:700}
+#intNotification{position:relative}
+#intNotification[data-badge]::after{content:attr(data-badge);position:absolute;top:-4px;right:-4px;background:var(--accent);color:var(--accent-ink);font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:999px;display:grid;place-items:center;padding:0 4px}
+
+/* ---------- footnotes become a small info mark in the card heading ---------- */
+.info-btn{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;border:0;background:none;color:var(--muted);cursor:pointer;padding:0;vertical-align:middle;margin-left:4px;flex:none}
+.info-btn:hover,.info-btn[aria-expanded="true"]{color:var(--ink);background:var(--surface-2)}
+.info-btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.info-pop{position:fixed;z-index:42;max-width:min(360px,calc(100vw - 24px));background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 40px rgba(0,0,0,.16);padding:12px 14px;font-size:13px;line-height:1.55;color:var(--ink-2);animation:popIn .12s ease-out}
+.info-pop p{margin:0}.info-pop p+p{margin-top:8px}
+
+/* ---------- overview summaries: equal cards, links pinned to the bottom ---------- */
+.home-hub-card{display:flex;flex-direction:column}
+.home-hub-card>.card-head{margin-bottom:14px}
+.home-hub-links{margin-top:auto;padding-top:14px;display:flex;flex-wrap:wrap;gap:6px 16px}
+#homeGoals,#homeSpendingBody{display:flex;flex-direction:column;flex:1}
+.home-hub-metrics{margin:0 0 14px}
+.home-hub-line{padding:10px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.home-hub-line:first-child{padding-top:0}
+.home-hub-metrics+.home-hub-line{padding-top:10px;border-top:1px solid var(--line)}
+#view a.home-hub-line.hub-rec{flex-direction:row;align-items:baseline;justify-content:space-between;gap:10px;text-decoration:none;color:var(--ink)}
+a.home-hub-line.hub-rec:hover b{color:var(--accent)}
+.hub-rec b{font-weight:600;font-size:14px;line-height:1.4}
+.home-invest-trend{margin-top:14px;padding-top:12px}
+.home-invest-allocation{margin:4px 0 10px}
+.home-hub-metrics{grid-template-columns:repeat(auto-fit,minmax(min(100%,110px),1fr))}
+.hub-rec .tag{flex:none}
+
+/* ---------- investments ---------- */
+.inv-bar>.investment-filter-chips{flex-wrap:wrap;overflow:visible}
+.investment-filter-chips .chip-divider{margin:4px 6px;align-self:stretch}
+.investment-ai-top .ih-rets,.inv-primary .ih-rets{grid-template-columns:repeat(auto-fit,minmax(58px,1fr))}
+.ret{padding:6px 8px}
+.ret .k{font-size:12px}
+.inv-hero .big,.investment-ai-top .inv-hero .big{font-size:clamp(34px,4vw,46px);font-weight:700;letter-spacing:-.025em}
+.inv-daily-bottom{align-items:start}
+
+/* Claude's page cards: the page name next to "Claude" says nothing new, and an empty status line takes no room */
+.page-ai-card .brief-head .ago:not([id]){display:none}
+[data-page-status]:empty,#cashBriefStatus:empty,#companyBriefStatus:empty,#portfolioBriefStatus:empty{display:none}
+.nowrap{white-space:nowrap}
+
+/* ---------- settings: a section index on the left, rows of "what it is" and "the control" on the right ---------- */
+.settings{display:grid;grid-template-columns:180px minmax(0,1fr);gap:24px;align-items:start}
+.set-nav{position:sticky;top:20px;display:flex;flex-direction:column;gap:2px}
+.set-nav button{border:0;background:none;text-align:left;padding:7px 12px;border-radius:9px;color:var(--ink-2);font:inherit;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap}
+.set-nav button:hover{background:var(--surface-2);color:var(--ink)}
+.set-nav button.on{background:var(--surface-2);color:var(--ink);font-weight:600}
+.set-main{min-width:0}
+.set-group{scroll-margin-top:16px}
+.set-group>h2{margin-bottom:4px}
+.set-group>h2+.sub{margin-bottom:12px}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:10px 24px;padding:14px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.set-group>h2+.set-row,.set-group>h2+div>.set-row:first-child,.set-group>h2+form>.set-row:first-child{border-top:0}
+.set-l{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 280px}
+.set-l>b{font-weight:600;font-size:14px}
+.set-l>span{font-size:13px;color:var(--muted);line-height:1.5}
+.set-l>span a{color:inherit}
+.set-c{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;flex:0 1 auto;min-width:0}
+.set-c select{min-width:160px}
+.set-inline{display:flex;gap:8px;margin:0;min-width:0}
+.set-inline input{width:260px;max-width:100%}
+.set-more{padding:0 0 14px}
+.set-more>summary{font-size:13px;font-weight:600;color:var(--ink-2)}
+.set-more[open]>summary{margin-bottom:12px}
+.set-more ol{margin:0 0 12px;padding-left:20px;font-size:13px;color:var(--ink-2);line-height:1.7}
+.set-form{display:flex;flex-direction:column;gap:8px;max-width:440px}
+.set-save{display:flex;justify-content:flex-end;padding:4px 0 14px}
+.set-note{margin:0 0 10px}
+.set-group .prof{gap:0 16px}
+.set-group .kv{margin-top:0;max-width:440px}
+/* research data sources folded into the Public data group, without a card of their own */
+#intSettingsConnections>.card{border:0;box-shadow:none;padding:14px 0 0;border-top:1px solid var(--line);border-radius:0;background:none}
+#intSettingsConnections>.card>summary{font-size:14px;font-weight:600}
+#intSettingsConnections .grid.g2{gap:12px 16px}
+#intSettingsConnections #intConnectionsForm .btn{margin-top:14px}
+/* a switch instead of a bare checkbox */
+input.switch{appearance:none;-webkit-appearance:none;width:38px;height:22px;border-radius:999px;background:var(--line-strong);position:relative;cursor:pointer;flex:none;margin:0;transition:background .15s}
+input.switch::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+input.switch:checked{background:var(--accent)}
+input.switch:checked::after{transform:translateX(16px)}
+@media(max-width:860px){.settings{grid-template-columns:1fr;gap:12px}.set-nav{position:static;flex-direction:row;overflow-x:auto;scrollbar-width:none;background:var(--surface-2);border-radius:999px;padding:3px}.set-nav button{padding:6px 13px;font-size:13px;font-weight:600;border-radius:999px}.set-nav button.on{background:var(--surface);box-shadow:0 0 0 1px var(--line)}}
+@media(max-width:640px){.set-l{flex:1 1 190px}.set-c{justify-content:flex-start}.set-inline{flex:1 1 100%}.set-inline input{flex:1;width:auto}.set-group .prof{grid-template-columns:1fr}}
+
+/* ---------- explore: signals and ideas side by side, questions below ---------- */
+.opp-grid{align-items:start}
+.opp{padding:14px 0;border-top:1px solid var(--line);gap:6px}
+#oppSignals>.opp:first-child,#oppIdeas>.opp:first-child{border-top:0;padding-top:0}
+.opp-t{font-weight:650;font-size:15px;line-height:1.4}
+.opp .adv-act{margin-top:6px}
+.opp-risk{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.idea-qs{margin-top:0}
+.idea-q{padding:11px 0}
+.idea-q b{font-weight:500;font-size:14px}
+#oppIdeasAge{margin-left:6px;font-weight:500}
+.card .adv-why>summary,.card .dismissed>summary{font-size:13px;font-weight:600;color:var(--ink-2)}
+.qs-card,.ask-card{border-color:var(--line)}
+.rec-card{padding:16px 0}
+.rec-card .adv-chips{margin:2px 0 4px}
+
+/* card tools float in the corner, so they never push a title onto a second line */
+.card{position:relative}
+.tile .ctools,.hero .ctools,.home-top .hero .ctools{position:absolute;top:12px;right:12px;margin:0}
+.barrow .bl:has(>.sw-dot){flex-direction:row;align-items:center}
+.pot-top{align-items:center}
+.pot-top b,.pot .linkish.pot-name{color:var(--ink);font-weight:600;font-size:14px}
+.pot .linkish.pot-name:hover{color:var(--accent)}
+.pot-top>span{font-size:14px;color:var(--ink-2)}
+.page-tabs button,.seg.tabs button,.int-nav button,.ws-nav button{padding:6px 11px}
+.sub-row{column-gap:10px}
+#view .ws-inline-link{color:var(--accent);font-weight:600;font-size:13px;text-decoration:none}
+#view .ws-inline-link:hover{text-decoration:underline}
+.ws-connection{padding:12px 0}
+.ws-connection b{font-size:14px}
+.ws-connection p{font-size:12px}
+.ws-filter{margin:0;gap:10px}
+.ws-filter .seg.tabs{width:auto;flex:none}
+.ws-filter input[type=search]{flex:1 1 220px}
+.tab-n{display:inline-block;min-width:18px;padding:0 5px;margin-left:3px;border-radius:999px;background:var(--line);color:var(--ink-2);font-size:11px;line-height:18px;text-align:center}
+[aria-pressed="true"]>.tab-n{background:var(--accent);color:var(--accent-ink)}
+
+/* cards that get narrow (chat open, small screens) drop their decorations instead of overlapping */
+.home-top .hero{container-type:inline-size}
+.home-top .hero .big{font-size:clamp(36px,9cqw,60px)}
+@container (max-width:520px){.home-top .hero{grid-template-columns:1fr}.hero-history{display:block;grid-column:1/-1;width:100%}}
+.tile{container-type:inline-size}
+@container (max-width:210px){.tile .spark{display:none}.tile-row{display:block}}
+.tile .k{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ih-rets{align-content:start;align-items:start}
+.investment-ai-top .inv-hero,.inv-primary .inv-hero{justify-content:flex-start}
+.msel{min-height:36px;font-size:14px;border-color:var(--line-strong);border-radius:var(--r-ctl);padding:7px 12px;color:var(--ink);background:var(--surface)}
+.msel.on{border-color:var(--accent)}
+.research-search input{min-width:240px}
+/* a wrapping column measures the returns at their narrowest (one per row) and keeps that height: no wrapping */
+.investment-ai-top .inv-hero,.inv-primary .inv-hero{flex-wrap:nowrap}
+.ih-rets{width:100%}

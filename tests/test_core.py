@@ -262,14 +262,14 @@ class Zips(unittest.TestCase):
         return {"name": name, "media_type": "application/zip", "data": base64.b64encode(buf.getvalue()).decode()}
 
     def test_members_come_out_and_junk_stays_in(self):
-        out = app.expand_archives([self.zipped([("exports/sample.csv", "a,b\n1,2\n"), ("exports/shot.png", b"\x89PNG"),
+        out = app.expand_archives([self.zipped([("exports/jan.csv", "a,b\n1,2\n"), ("exports/shot.png", b"\x89PNG"),
                                                 ("notes.pdf", b"%PDF-1.4"), ("exports/sub/", ""),
-                                                ("__MACOSX/._sample.csv", "junk"), (".DS_Store", "junk")])])
-        self.assertEqual(sorted(f["name"] for f in out), ["notes.pdf", "sample.csv", "shot.png"])
+                                                ("__MACOSX/._jan.csv", "junk"), (".DS_Store", "junk")])])
+        self.assertEqual(sorted(f["name"] for f in out), ["jan.csv", "notes.pdf", "shot.png"])
         kinds = {f["name"]: f["media_type"] for f in out}
         self.assertEqual(kinds["shot.png"], "image/png")
         self.assertEqual(kinds["notes.pdf"], "application/pdf")
-        self.assertEqual(kinds["sample.csv"], "")  # read by its name, not by what the computer calls a csv
+        self.assertEqual(kinds["jan.csv"], "")  # read by its name, not by what the computer calls a csv
 
     def test_other_files_pass_through_untouched(self):
         import base64
@@ -340,7 +340,7 @@ class ConcurrentWrites(unittest.TestCase):
         old = app.INBOX
         app.INBOX = self.tmp / "inbox.json"
         try:
-            threads = [threading.Thread(target=app.ask_jan, args=("import-%d" % i, "question %d" % i))
+            threads = [threading.Thread(target=app.ask_owner, args=("import-%d" % i, "question %d" % i))
                        for i in range(8)]
             for t in threads:
                 t.start()

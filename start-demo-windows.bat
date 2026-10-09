@@ -6,4 +6,4 @@ if %errorlevel% equ 0 (
 ) else (
   python demo.py
 )
-pause
+if errorlevel 1 pause

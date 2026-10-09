@@ -46,6 +46,9 @@ def user_agent():
 
 
 def get(url, timeout=20):
+    if "sec.gov/" in url:
+        from intelligence.data import HTTP
+        return HTTP.get(url,sec=True)
     req = urllib.request.Request(url, headers={"User-Agent": user_agent(), "Accept-Encoding": "identity"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read().decode("utf-8")

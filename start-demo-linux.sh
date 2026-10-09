@@ -1,3 +1,4 @@
 #!/bin/sh
-cd "$(dirname "$0")" || exit 1
-python3 demo.py
+set -eu
+cd "$(dirname "$0")"
+python3 launch.py demo

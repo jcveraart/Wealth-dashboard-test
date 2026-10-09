@@ -25,6 +25,8 @@ function spark(vals, {w = 88, h = 26} = {}) {
    o.markers [{t, label}], o.dots [{t, v, label}], o.bands [{pts: [[t, lo, hi]], color, op}], o.hline {v, label},
    o.select (drag to compare two dates), o.sync (hover links to other charts by month), o.height, o.xfmt, o.legend */
 function timeChart(el, o) {
+  // drawn before its card has a width (just inserted, or folded): wait one frame instead of drawing a shrunken chart
+  if ((!el.isConnected || !el.clientWidth) && !o._waited) { o._waited = true; requestAnimationFrame(() => timeChart(el, o)); return; }
   el.classList.add('tc');
   const W = Math.max(280, Math.round(el.clientWidth || 640)), H = o.height || 240, pl = 56, pr = 14, pt = 12, pb = 26;
   let series = (o.series || []).filter(s => s.pts && s.pts.length).map((s, i) => ({...s, color: s.color || col(i), pts: s.pts.map(p => [p[0], p[1]])}));
@@ -97,10 +99,13 @@ function timeChart(el, o) {
     hits += `<circle class="tc-hit" data-tip="${esc(fdate(isoOf(m.t)) + ': ' + m.label)}" cx="${X(m.t).toFixed(1)}" cy="${y.toFixed(1)}" r="11"/>`;
   }
   const legend = (o.legend ?? series.length > 1) ? `<div class="c-legend">${series.map(s => `<span data-series="${esc(s.name)}"><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join('')}${o.legendExtra || ''}</div>` : '';
+  // short axis labels, unless rounding makes two of them the same (a balance that barely moves)
+  const yl = ticks.map(v => fmtV(v, unit, true)), ylabs = new Set(yl).size < yl.length ? ticks.map(v => fmtV(v, unit)) : yl;
+  const xlabs = xticks.map(t => String(xlab(t))).map((l, i, a) => i && l === a[i - 1] ? '' : l);
   el.innerHTML = `${legend}<div class="tc-sel" hidden></div><svg viewBox="0 0 ${W} ${H}" class="c-svg tc-svg" role="img" aria-label="${esc(o.label || 'Chart')}">
-    ${ticks.map(v => `<line class="c-grid" x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}"/><text class="c-ax" x="${pl - 8}" y="${Y(v) + 4}" text-anchor="end">${fmtV(v, unit, true)}</text>`).join('')}
+    ${ticks.map((v, i) => `<line class="c-grid" x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}"/><text class="c-ax" x="${pl - 8}" y="${Y(v) + 4}" text-anchor="end">${ylabs[i]}</text>`).join('')}
     ${y0 < 0 && y1 > 0 ? `<line class="c-base" x1="${pl}" x2="${W - pr}" y1="${Y(0)}" y2="${Y(0)}"/>` : ''}
-    ${xticks.map((t, i) => `<text class="c-ax" x="${X(t)}" y="${H - 7}" text-anchor="${i === 0 ? 'start' : i === xticks.length - 1 ? 'end' : 'middle'}">${esc(xlab(t))}</text>`).join('')}
+    ${xticks.map((t, i) => xlabs[i] ? `<text class="c-ax" x="${X(t)}" y="${H - 7}" text-anchor="${i === 0 ? 'start' : i === xticks.length - 1 ? 'end' : 'middle'}">${esc(xlabs[i])}</text>` : '').join('')}
     <rect class="tc-selrect" y="${pt}" height="${H - pt - pb}" width="0" visibility="hidden"/>
     ${marks}
     <line class="tc-cross" y1="${pt}" y2="${H - pb}" visibility="hidden"/>

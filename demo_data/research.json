@@ -1,0 +1,1038 @@
+[
+  {
+    "symbol": "AAPL",
+    "source": "Fictional demo provider",
+    "data": {
+      "_demo": true,
+      "analyst_estimates": [],
+      "info": {
+        "country": "North America",
+        "currency": "EUR",
+        "earningsGrowth": 0.11,
+        "fiftyTwoWeekHigh": 211.6,
+        "financialCurrency": "EUR",
+        "forwardPE": 19,
+        "freeCashflow": 480000000,
+        "industry": "Illustrative industry",
+        "longBusinessSummary": "Fictional financial snapshot for Apple. This company profile is supplied only to demonstrate the research layout. Prices, ratios, statements and headlines are invented.",
+        "marketCap": 12000000000,
+        "operatingMargins": 0.22,
+        "profitMargins": 0.18,
+        "regularMarketPrice": 184,
+        "returnOnEquity": 0.17,
+        "revenueGrowth": 0.08,
+        "sector": "Technology",
+        "shortName": "Apple",
+        "totalCash": 1800000000,
+        "totalDebt": 1400000000,
+        "totalRevenue": 2400000000,
+        "trailingPE": 22,
+        "website": "https://example.com"
+      },
+      "lookthrough": [],
+      "news": [
+        {
+          "date": "2026-10-09T09:00:00+00:00",
+          "source": "Fictional news example",
+          "title": "DEMO ONLY: Apple reports an illustrative quarter",
+          "url": "https://example.com"
+        }
+      ],
+      "statements": {
+        "balance": [],
+        "cashflow": [],
+        "income": [
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 342000000.0,
+              "Operating Income": 451200000.0,
+              "Total Revenue": 2232000000.0
+            },
+            "period": "2025-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 324000000.0,
+              "Operating Income": 422400000.0,
+              "Total Revenue": 2064000000.0
+            },
+            "period": "2024-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 306000000.0,
+              "Operating Income": 393600000.00000006,
+              "Total Revenue": 1896000000.0
+            },
+            "period": "2023-12-31"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "symbol": "AGGH.AS",
+    "source": "Fictional demo provider",
+    "data": {
+      "_demo": true,
+      "analyst_estimates": [],
+      "info": {
+        "country": "Europe",
+        "currency": "EUR",
+        "earningsGrowth": 0.11,
+        "fiftyTwoWeekHigh": 109.71,
+        "financialCurrency": "EUR",
+        "forwardPE": 19,
+        "freeCashflow": 480000000,
+        "industry": "Illustrative industry",
+        "longBusinessSummary": "Fictional financial snapshot for Managed Euro Bond Fund. This company profile is supplied only to demonstrate the research layout. Prices, ratios, statements and headlines are invented.",
+        "marketCap": 12000000000,
+        "operatingMargins": 0.22,
+        "profitMargins": 0.18,
+        "regularMarketPrice": 95.4,
+        "returnOnEquity": 0.17,
+        "revenueGrowth": 0.08,
+        "sector": "Bonds",
+        "shortName": "Managed Euro Bond Fund",
+        "totalCash": 1800000000,
+        "totalDebt": 1400000000,
+        "totalRevenue": 2400000000,
+        "trailingPE": 22,
+        "website": "https://example.com"
+      },
+      "lookthrough": [],
+      "news": [
+        {
+          "date": "2026-10-09T09:00:00+00:00",
+          "source": "Fictional news example",
+          "title": "DEMO ONLY: Managed Euro Bond Fund reports an illustrative quarter",
+          "url": "https://example.com"
+        }
+      ],
+      "statements": {
+        "balance": [],
+        "cashflow": [],
+        "income": [
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 342000000.0,
+              "Operating Income": 451200000.0,
+              "Total Revenue": 2232000000.0
+            },
+            "period": "2025-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 324000000.0,
+              "Operating Income": 422400000.0,
+              "Total Revenue": 2064000000.0
+            },
+            "period": "2024-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 306000000.0,
+              "Operating Income": 393600000.00000006,
+              "Total Revenue": 1896000000.0
+            },
+            "period": "2023-12-31"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "symbol": "ASML.AS",
+    "source": "Fictional demo provider",
+    "data": {
+      "_demo": true,
+      "analyst_estimates": [],
+      "info": {
+        "country": "Europe",
+        "currency": "EUR",
+        "earningsGrowth": 0.11,
+        "fiftyTwoWeekHigh": 818.8,
+        "financialCurrency": "EUR",
+        "forwardPE": 19,
+        "freeCashflow": 480000000,
+        "industry": "Illustrative industry",
+        "longBusinessSummary": "Fictional financial snapshot for ASML. This company profile is supplied only to demonstrate the research layout. Prices, ratios, statements and headlines are invented.",
+        "marketCap": 12000000000,
+        "operatingMargins": 0.22,
+        "profitMargins": 0.18,
+        "regularMarketPrice": 712,
+        "returnOnEquity": 0.17,
+        "revenueGrowth": 0.08,
+        "sector": "Technology",
+        "shortName": "ASML",
+        "totalCash": 1800000000,
+        "totalDebt": 1400000000,
+        "totalRevenue": 2400000000,
+        "trailingPE": 22,
+        "website": "https://example.com"
+      },
+      "lookthrough": [],
+      "news": [
+        {
+          "date": "2026-10-09T09:00:00+00:00",
+          "source": "Fictional news example",
+          "title": "DEMO ONLY: ASML reports an illustrative quarter",
+          "url": "https://example.com"
+        }
+      ],
+      "statements": {
+        "balance": [],
+        "cashflow": [],
+        "income": [
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 342000000.0,
+              "Operating Income": 451200000.0,
+              "Total Revenue": 2232000000.0
+            },
+            "period": "2025-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 324000000.0,
+              "Operating Income": 422400000.0,
+              "Total Revenue": 2064000000.0
+            },
+            "period": "2024-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 306000000.0,
+              "Operating Income": 393600000.00000006,
+              "Total Revenue": 1896000000.0
+            },
+            "period": "2023-12-31"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "symbol": "BTC-EUR",
+    "source": "Fictional demo provider",
+    "data": {
+      "_demo": true,
+      "analyst_estimates": [],
+      "info": {
+        "country": "Global",
+        "currency": "EUR",
+        "earningsGrowth": 0.11,
+        "fiftyTwoWeekHigh": 66930.0,
+        "financialCurrency": "EUR",
+        "forwardPE": 19,
+        "freeCashflow": 480000000,
+        "industry": "Illustrative industry",
+        "longBusinessSummary": "Fictional financial snapshot for Bitcoin. This company profile is supplied only to demonstrate the research layout. Prices, ratios, statements and headlines are invented.",
+        "marketCap": 12000000000,
+        "operatingMargins": 0.22,
+        "profitMargins": 0.18,
+        "regularMarketPrice": 58200,
+        "returnOnEquity": 0.17,
+        "revenueGrowth": 0.08,
+        "sector": "Digital assets",
+        "shortName": "Bitcoin",
+        "totalCash": 1800000000,
+        "totalDebt": 1400000000,
+        "totalRevenue": 2400000000,
+        "trailingPE": 22,
+        "website": "https://example.com"
+      },
+      "lookthrough": [],
+      "news": [
+        {
+          "date": "2026-10-09T09:00:00+00:00",
+          "source": "Fictional news example",
+          "title": "DEMO ONLY: Bitcoin reports an illustrative quarter",
+          "url": "https://example.com"
+        }
+      ],
+      "statements": {
+        "balance": [],
+        "cashflow": [],
+        "income": [
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 342000000.0,
+              "Operating Income": 451200000.0,
+              "Total Revenue": 2232000000.0
+            },
+            "period": "2025-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 324000000.0,
+              "Operating Income": 422400000.0,
+              "Total Revenue": 2064000000.0
+            },
+            "period": "2024-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 306000000.0,
+              "Operating Income": 393600000.00000006,
+              "Total Revenue": 1896000000.0
+            },
+            "period": "2023-12-31"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "symbol": "DEMO.BOND",
+    "source": "Fictional demo provider",
+    "data": {
+      "_demo": true,
+      "analyst_estimates": [],
+      "info": {
+        "country": "Europe",
+        "currency": "EUR",
+        "earningsGrowth": 0.11,
+        "fiftyTwoWeekHigh": 1.13275,
+        "financialCurrency": "EUR",
+        "forwardPE": 19,
+        "freeCashflow": 480000000,
+        "industry": "Illustrative industry",
+        "longBusinessSummary": "Fictional financial snapshot for Example Euro Bond 2028. This company profile is supplied only to demonstrate the research layout. Prices, ratios, statements and headlines are invented.",
+        "marketCap": 12000000000,
+        "operatingMargins": 0.22,
+        "profitMargins": 0.18,
+        "regularMarketPrice": 0.985,
+        "returnOnEquity": 0.17,
+        "revenueGrowth": 0.08,
+        "sector": "Government",
+        "shortName": "Example Euro Bond 2028",
+        "totalCash": 1800000000,
+        "totalDebt": 1400000000,
+        "totalRevenue": 2400000000,
+        "trailingPE": 22,
+        "website": "https://example.com"
+      },
+      "lookthrough": [],
+      "news": [
+        {
+          "date": "2026-10-09T09:00:00+00:00",
+          "source": "Fictional news example",
+          "title": "DEMO ONLY: Example Euro Bond 2028 reports an illustrative quarter",
+          "url": "https://example.com"
+        }
+      ],
+      "statements": {
+        "balance": [],
+        "cashflow": [],
+        "income": [
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 342000000.0,
+              "Operating Income": 451200000.0,
+              "Total Revenue": 2232000000.0
+            },
+            "period": "2025-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 324000000.0,
+              "Operating Income": 422400000.0,
+              "Total Revenue": 2064000000.0
+            },
+            "period": "2024-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 306000000.0,
+              "Operating Income": 393600000.00000006,
+              "Total Revenue": 1896000000.0
+            },
+            "period": "2023-12-31"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "symbol": "EMIM.AS",
+    "source": "Fictional demo provider",
+    "data": {
+      "_demo": true,
+      "analyst_estimates": [],
+      "info": {
+        "country": "Emerging markets",
+        "currency": "EUR",
+        "earningsGrowth": 0.11,
+        "fiftyTwoWeekHigh": 36.455,
+        "financialCurrency": "EUR",
+        "forwardPE": 19,
+        "freeCashflow": 480000000,
+        "industry": "Illustrative industry",
+        "longBusinessSummary": "Fictional financial snapshot for Emerging Markets ETF. This company profile is supplied only to demonstrate the research layout. Prices, ratios, statements and headlines are invented.",
+        "marketCap": 12000000000,
+        "operatingMargins": 0.22,
+        "profitMargins": 0.18,
+        "regularMarketPrice": 31.7,
+        "returnOnEquity": 0.17,
+        "revenueGrowth": 0.08,
+        "sector": "Diversified",
+        "shortName": "Emerging Markets ETF",
+        "totalCash": 1800000000,
+        "totalDebt": 1400000000,
+        "totalRevenue": 2400000000,
+        "trailingPE": 22,
+        "website": "https://example.com"
+      },
+      "lookthrough": [],
+      "news": [
+        {
+          "date": "2026-10-09T09:00:00+00:00",
+          "source": "Fictional news example",
+          "title": "DEMO ONLY: Emerging Markets ETF reports an illustrative quarter",
+          "url": "https://example.com"
+        }
+      ],
+      "statements": {
+        "balance": [],
+        "cashflow": [],
+        "income": [
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 342000000.0,
+              "Operating Income": 451200000.0,
+              "Total Revenue": 2232000000.0
+            },
+            "period": "2025-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 324000000.0,
+              "Operating Income": 422400000.0,
+              "Total Revenue": 2064000000.0
+            },
+            "period": "2024-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 306000000.0,
+              "Operating Income": 393600000.00000006,
+              "Total Revenue": 1896000000.0
+            },
+            "period": "2023-12-31"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "symbol": "ETH-EUR",
+    "source": "Fictional demo provider",
+    "data": {
+      "_demo": true,
+      "analyst_estimates": [],
+      "info": {
+        "country": "Global",
+        "currency": "EUR",
+        "earningsGrowth": 0.11,
+        "fiftyTwoWeekHigh": 3196.9999999999995,
+        "financialCurrency": "EUR",
+        "forwardPE": 19,
+        "freeCashflow": 480000000,
+        "industry": "Illustrative industry",
+        "longBusinessSummary": "Fictional financial snapshot for Ethereum. This company profile is supplied only to demonstrate the research layout. Prices, ratios, statements and headlines are invented.",
+        "marketCap": 12000000000,
+        "operatingMargins": 0.22,
+        "profitMargins": 0.18,
+        "regularMarketPrice": 2780,
+        "returnOnEquity": 0.17,
+        "revenueGrowth": 0.08,
+        "sector": "Digital assets",
+        "shortName": "Ethereum",
+        "totalCash": 1800000000,
+        "totalDebt": 1400000000,
+        "totalRevenue": 2400000000,
+        "trailingPE": 22,
+        "website": "https://example.com"
+      },
+      "lookthrough": [],
+      "news": [
+        {
+          "date": "2026-10-09T09:00:00+00:00",
+          "source": "Fictional news example",
+          "title": "DEMO ONLY: Ethereum reports an illustrative quarter",
+          "url": "https://example.com"
+        }
+      ],
+      "statements": {
+        "balance": [],
+        "cashflow": [],
+        "income": [
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 342000000.0,
+              "Operating Income": 451200000.0,
+              "Total Revenue": 2232000000.0
+            },
+            "period": "2025-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 324000000.0,
+              "Operating Income": 422400000.0,
+              "Total Revenue": 2064000000.0
+            },
+            "period": "2024-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 306000000.0,
+              "Operating Income": 393600000.00000006,
+              "Total Revenue": 1896000000.0
+            },
+            "period": "2023-12-31"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "symbol": "IEAC.AS",
+    "source": "Fictional demo provider",
+    "data": {
+      "_demo": true,
+      "analyst_estimates": [],
+      "info": {
+        "country": "Europe",
+        "currency": "EUR",
+        "earningsGrowth": 0.11,
+        "fiftyTwoWeekHigh": 117.07,
+        "financialCurrency": "EUR",
+        "forwardPE": 19,
+        "freeCashflow": 480000000,
+        "industry": "Illustrative industry",
+        "longBusinessSummary": "Fictional financial snapshot for Euro Corporate Bond Fund. This company profile is supplied only to demonstrate the research layout. Prices, ratios, statements and headlines are invented.",
+        "marketCap": 12000000000,
+        "operatingMargins": 0.22,
+        "profitMargins": 0.18,
+        "regularMarketPrice": 101.8,
+        "returnOnEquity": 0.17,
+        "revenueGrowth": 0.08,
+        "sector": "Bonds",
+        "shortName": "Euro Corporate Bond Fund",
+        "totalCash": 1800000000,
+        "totalDebt": 1400000000,
+        "totalRevenue": 2400000000,
+        "trailingPE": 22,
+        "website": "https://example.com"
+      },
+      "lookthrough": [],
+      "news": [
+        {
+          "date": "2026-10-09T09:00:00+00:00",
+          "source": "Fictional news example",
+          "title": "DEMO ONLY: Euro Corporate Bond Fund reports an illustrative quarter",
+          "url": "https://example.com"
+        }
+      ],
+      "statements": {
+        "balance": [],
+        "cashflow": [],
+        "income": [
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 342000000.0,
+              "Operating Income": 451200000.0,
+              "Total Revenue": 2232000000.0
+            },
+            "period": "2025-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 324000000.0,
+              "Operating Income": 422400000.0,
+              "Total Revenue": 2064000000.0
+            },
+            "period": "2024-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 306000000.0,
+              "Operating Income": 393600000.00000006,
+              "Total Revenue": 1896000000.0
+            },
+            "period": "2023-12-31"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "symbol": "IMEU.AS",
+    "source": "Fictional demo provider",
+    "data": {
+      "_demo": true,
+      "analyst_estimates": [],
+      "info": {
+        "country": "Europe",
+        "currency": "EUR",
+        "earningsGrowth": 0.11,
+        "fiftyTwoWeekHigh": 60.25999999999999,
+        "financialCurrency": "EUR",
+        "forwardPE": 19,
+        "freeCashflow": 480000000,
+        "industry": "Illustrative industry",
+        "longBusinessSummary": "Fictional financial snapshot for Europe Equity ETF. This company profile is supplied only to demonstrate the research layout. Prices, ratios, statements and headlines are invented.",
+        "marketCap": 12000000000,
+        "operatingMargins": 0.22,
+        "profitMargins": 0.18,
+        "regularMarketPrice": 52.4,
+        "returnOnEquity": 0.17,
+        "revenueGrowth": 0.08,
+        "sector": "Diversified",
+        "shortName": "Europe Equity ETF",
+        "totalCash": 1800000000,
+        "totalDebt": 1400000000,
+        "totalRevenue": 2400000000,
+        "trailingPE": 22,
+        "website": "https://example.com"
+      },
+      "lookthrough": [],
+      "news": [
+        {
+          "date": "2026-10-09T09:00:00+00:00",
+          "source": "Fictional news example",
+          "title": "DEMO ONLY: Europe Equity ETF reports an illustrative quarter",
+          "url": "https://example.com"
+        }
+      ],
+      "statements": {
+        "balance": [],
+        "cashflow": [],
+        "income": [
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 342000000.0,
+              "Operating Income": 451200000.0,
+              "Total Revenue": 2232000000.0
+            },
+            "period": "2025-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 324000000.0,
+              "Operating Income": 422400000.0,
+              "Total Revenue": 2064000000.0
+            },
+            "period": "2024-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 306000000.0,
+              "Operating Income": 393600000.00000006,
+              "Total Revenue": 1896000000.0
+            },
+            "period": "2023-12-31"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "symbol": "IWDA.AS",
+    "source": "Fictional demo provider",
+    "data": {
+      "_demo": true,
+      "analyst_estimates": [],
+      "info": {
+        "country": "Global",
+        "currency": "EUR",
+        "earningsGrowth": 0.11,
+        "fiftyTwoWeekHigh": 111.32,
+        "financialCurrency": "EUR",
+        "forwardPE": 19,
+        "freeCashflow": 480000000,
+        "industry": "Illustrative industry",
+        "longBusinessSummary": "Fictional financial snapshot for World Equity ETF. This company profile is supplied only to demonstrate the research layout. Prices, ratios, statements and headlines are invented.",
+        "marketCap": 12000000000,
+        "operatingMargins": 0.22,
+        "profitMargins": 0.18,
+        "regularMarketPrice": 96.8,
+        "returnOnEquity": 0.17,
+        "revenueGrowth": 0.08,
+        "sector": "Diversified",
+        "shortName": "World Equity ETF",
+        "totalCash": 1800000000,
+        "totalDebt": 1400000000,
+        "totalRevenue": 2400000000,
+        "trailingPE": 22,
+        "website": "https://example.com"
+      },
+      "lookthrough": [],
+      "news": [
+        {
+          "date": "2026-10-09T09:00:00+00:00",
+          "source": "Fictional news example",
+          "title": "DEMO ONLY: World Equity ETF reports an illustrative quarter",
+          "url": "https://example.com"
+        }
+      ],
+      "statements": {
+        "balance": [],
+        "cashflow": [],
+        "income": [
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 342000000.0,
+              "Operating Income": 451200000.0,
+              "Total Revenue": 2232000000.0
+            },
+            "period": "2025-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 324000000.0,
+              "Operating Income": 422400000.0,
+              "Total Revenue": 2064000000.0
+            },
+            "period": "2024-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 306000000.0,
+              "Operating Income": 393600000.00000006,
+              "Total Revenue": 1896000000.0
+            },
+            "period": "2023-12-31"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "symbol": "QDVE.DE",
+    "source": "Fictional demo provider",
+    "data": {
+      "_demo": true,
+      "analyst_estimates": [],
+      "info": {
+        "country": "North America",
+        "currency": "EUR",
+        "earningsGrowth": 0.11,
+        "fiftyTwoWeekHigh": 164.56499999999997,
+        "financialCurrency": "EUR",
+        "forwardPE": 19,
+        "freeCashflow": 480000000,
+        "industry": "Illustrative industry",
+        "longBusinessSummary": "Fictional financial snapshot for Technology ETF. This company profile is supplied only to demonstrate the research layout. Prices, ratios, statements and headlines are invented.",
+        "marketCap": 12000000000,
+        "operatingMargins": 0.22,
+        "profitMargins": 0.18,
+        "regularMarketPrice": 143.1,
+        "returnOnEquity": 0.17,
+        "revenueGrowth": 0.08,
+        "sector": "Technology",
+        "shortName": "Technology ETF",
+        "totalCash": 1800000000,
+        "totalDebt": 1400000000,
+        "totalRevenue": 2400000000,
+        "trailingPE": 22,
+        "website": "https://example.com"
+      },
+      "lookthrough": [],
+      "news": [
+        {
+          "date": "2026-10-09T09:00:00+00:00",
+          "source": "Fictional news example",
+          "title": "DEMO ONLY: Technology ETF reports an illustrative quarter",
+          "url": "https://example.com"
+        }
+      ],
+      "statements": {
+        "balance": [],
+        "cashflow": [],
+        "income": [
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 342000000.0,
+              "Operating Income": 451200000.0,
+              "Total Revenue": 2232000000.0
+            },
+            "period": "2025-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 324000000.0,
+              "Operating Income": 422400000.0,
+              "Total Revenue": 2064000000.0
+            },
+            "period": "2024-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 306000000.0,
+              "Operating Income": 393600000.00000006,
+              "Total Revenue": 1896000000.0
+            },
+            "period": "2023-12-31"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "symbol": "SJPA.AS",
+    "source": "Fictional demo provider",
+    "data": {
+      "_demo": true,
+      "analyst_estimates": [],
+      "info": {
+        "country": "Asia",
+        "currency": "EUR",
+        "earningsGrowth": 0.11,
+        "fiftyTwoWeekHigh": 64.74499999999999,
+        "financialCurrency": "EUR",
+        "forwardPE": 19,
+        "freeCashflow": 480000000,
+        "industry": "Illustrative industry",
+        "longBusinessSummary": "Fictional financial snapshot for Japan Equity ETF. This company profile is supplied only to demonstrate the research layout. Prices, ratios, statements and headlines are invented.",
+        "marketCap": 12000000000,
+        "operatingMargins": 0.22,
+        "profitMargins": 0.18,
+        "regularMarketPrice": 56.3,
+        "returnOnEquity": 0.17,
+        "revenueGrowth": 0.08,
+        "sector": "Diversified",
+        "shortName": "Japan Equity ETF",
+        "totalCash": 1800000000,
+        "totalDebt": 1400000000,
+        "totalRevenue": 2400000000,
+        "trailingPE": 22,
+        "website": "https://example.com"
+      },
+      "lookthrough": [],
+      "news": [
+        {
+          "date": "2026-10-09T09:00:00+00:00",
+          "source": "Fictional news example",
+          "title": "DEMO ONLY: Japan Equity ETF reports an illustrative quarter",
+          "url": "https://example.com"
+        }
+      ],
+      "statements": {
+        "balance": [],
+        "cashflow": [],
+        "income": [
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 342000000.0,
+              "Operating Income": 451200000.0,
+              "Total Revenue": 2232000000.0
+            },
+            "period": "2025-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 324000000.0,
+              "Operating Income": 422400000.0,
+              "Total Revenue": 2064000000.0
+            },
+            "period": "2024-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 306000000.0,
+              "Operating Income": 393600000.00000006,
+              "Total Revenue": 1896000000.0
+            },
+            "period": "2023-12-31"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "symbol": "UNA.AS",
+    "source": "Fictional demo provider",
+    "data": {
+      "_demo": true,
+      "analyst_estimates": [],
+      "info": {
+        "country": "Europe",
+        "currency": "EUR",
+        "earningsGrowth": 0.11,
+        "fiftyTwoWeekHigh": 57.04,
+        "financialCurrency": "EUR",
+        "forwardPE": 19,
+        "freeCashflow": 480000000,
+        "industry": "Illustrative industry",
+        "longBusinessSummary": "Fictional financial snapshot for Unilever. This company profile is supplied only to demonstrate the research layout. Prices, ratios, statements and headlines are invented.",
+        "marketCap": 12000000000,
+        "operatingMargins": 0.22,
+        "profitMargins": 0.18,
+        "regularMarketPrice": 49.6,
+        "returnOnEquity": 0.17,
+        "revenueGrowth": 0.08,
+        "sector": "Consumer staples",
+        "shortName": "Unilever",
+        "totalCash": 1800000000,
+        "totalDebt": 1400000000,
+        "totalRevenue": 2400000000,
+        "trailingPE": 22,
+        "website": "https://example.com"
+      },
+      "lookthrough": [],
+      "news": [
+        {
+          "date": "2026-10-09T09:00:00+00:00",
+          "source": "Fictional news example",
+          "title": "DEMO ONLY: Unilever reports an illustrative quarter",
+          "url": "https://example.com"
+        }
+      ],
+      "statements": {
+        "balance": [],
+        "cashflow": [],
+        "income": [
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 342000000.0,
+              "Operating Income": 451200000.0,
+              "Total Revenue": 2232000000.0
+            },
+            "period": "2025-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 324000000.0,
+              "Operating Income": 422400000.0,
+              "Total Revenue": 2064000000.0
+            },
+            "period": "2024-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 306000000.0,
+              "Operating Income": 393600000.00000006,
+              "Total Revenue": 1896000000.0
+            },
+            "period": "2023-12-31"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "symbol": "VWRL.AS",
+    "source": "Fictional demo provider",
+    "data": {
+      "_demo": true,
+      "analyst_estimates": [],
+      "info": {
+        "country": "Global",
+        "currency": "EUR",
+        "earningsGrowth": 0.11,
+        "fiftyTwoWeekHigh": 129.14499999999998,
+        "financialCurrency": "EUR",
+        "forwardPE": 19,
+        "freeCashflow": 480000000,
+        "industry": "Illustrative industry",
+        "longBusinessSummary": "Fictional financial snapshot for Managed Global Equity Fund. This company profile is supplied only to demonstrate the research layout. Prices, ratios, statements and headlines are invented.",
+        "marketCap": 12000000000,
+        "operatingMargins": 0.22,
+        "profitMargins": 0.18,
+        "regularMarketPrice": 112.3,
+        "returnOnEquity": 0.17,
+        "revenueGrowth": 0.08,
+        "sector": "Diversified",
+        "shortName": "Managed Global Equity Fund",
+        "totalCash": 1800000000,
+        "totalDebt": 1400000000,
+        "totalRevenue": 2400000000,
+        "trailingPE": 22,
+        "website": "https://example.com"
+      },
+      "lookthrough": [],
+      "news": [
+        {
+          "date": "2026-10-09T09:00:00+00:00",
+          "source": "Fictional news example",
+          "title": "DEMO ONLY: Managed Global Equity Fund reports an illustrative quarter",
+          "url": "https://example.com"
+        }
+      ],
+      "statements": {
+        "balance": [],
+        "cashflow": [],
+        "income": [
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 342000000.0,
+              "Operating Income": 451200000.0,
+              "Total Revenue": 2232000000.0
+            },
+            "period": "2025-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 324000000.0,
+              "Operating Income": 422400000.0,
+              "Total Revenue": 2064000000.0
+            },
+            "period": "2024-12-31"
+          },
+          {
+            "currency": "EUR",
+            "items": {
+              "Net Income": 306000000.0,
+              "Operating Income": 393600000.00000006,
+              "Total Revenue": 1896000000.0
+            },
+            "period": "2023-12-31"
+          }
+        ]
+      }
+    }
+  }
+]

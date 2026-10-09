@@ -33,11 +33,11 @@ async function loadGeo() {
 /* public data (ECB rates and inflation, company figures): loaded once in a while, shown only where it helps */
 let ECON = null, ECON_AT = 0, FUND = null;
 async function loadEcon() {
-  if (!ECON || Date.now() - ECON_AT > 3600e3) { try { ECON = await (await fetch('/api/economy', {cache: 'no-store'})).json(); ECON_AT = Date.now(); } catch { ECON = ECON || {}; } }
+  if (!ECON || Date.now() - ECON_AT > 3600e3) { try { ECON = await cachedJSON('/api/economy',{ttl:3600e3}); ECON_AT = Date.now(); } catch { ECON = ECON || {}; } }
   return ECON;
 }
 async function loadFund() {
-  if (!FUND) { try { FUND = await (await fetch('/api/fundamentals', {cache: 'no-store'})).json(); } catch { FUND = {}; } }
+  if (!FUND) { try { FUND = await cachedJSON('/api/fundamentals',{ttl:600e3}); } catch { FUND = {}; } }
   return FUND;
 }
 async function ensureSpending() { if (!SP.d) await loadSpending(); return SP.d; }
@@ -110,6 +110,7 @@ function rangeLabel(p = RANGE.p) {
   return 'All time';
 }
 function setRange(p, extra = {}) {
+  if(view==='holdings' && typeof INVF!=='undefined') { INVF.mode='history';store.set('inv.mode','history'); }
   Object.assign(RANGE, {p}, extra);
   for (const k of ['p', 'from', 'to', 'cmp', 'g']) store.set('range.' + k, RANGE[k]);
   renderRangeSlot();
@@ -166,7 +167,7 @@ function closeMenus() { $$('.menu').forEach(m => m.remove()); document.removeEve
 
 /* ---------- saved views ---------- */
 function viewState() {
-  return {hash: location.hash || '#overview', range: {...RANGE}, sp: {tab: SP.tab, accts: [...SP.accts], focus: [...SP.focus], tx: {...SP.tx}}, hold: {...ui.hold}};
+  return {hash: location.hash || '#overview', range: {...RANGE}, sp: {tab: SP.tab, accts: [...SP.accts], focus: [...SP.focus], tx: {...SP.tx}}, hold: {...ui.hold}, workspace: typeof WS === "undefined" ? null : {tab:WS.tab, account:WS.account, month:WS.month}};
 }
 function applyView(v) {
   const s = v.state || {};
@@ -174,6 +175,7 @@ function applyView(v) {
   for (const k of ['p', 'from', 'to', 'cmp', 'g']) store.set('range.' + k, RANGE[k]);
   if (s.sp) { SP.tab = s.sp.tab || SP.tab; SP.accts = s.sp.accts || (s.sp.acct && s.sp.acct !== 'all' ? [s.sp.acct] : []); SP.focus = s.sp.focus || []; Object.assign(SP.tx, s.sp.tx || {}); }
   if (s.hold) Object.assign(ui.hold, s.hold);
+  if (s.workspace && typeof WS !== "undefined") {Object.assign(WS,s.workspace);store.set("ws.tab",WS.tab);store.set("ws.account",WS.account);}
   if (location.hash === s.hash) route(); else location.hash = s.hash || '#overview';
 }
 function renderViews() {
@@ -204,12 +206,11 @@ const STARTERS_BY = {
   cash: ['Is my cash earning enough interest?', 'How big should my emergency fund be?', 'Should I repay my loan early or keep saving?'],
   history: ['What was my best year and why?', 'How fast is my wealth growing?', 'Where did most of my growth come from?'],
   plan: ['When could I stop working?', 'Am I on track for my goals?', 'How much should I save each month?'],
-  taxes: ['How much box 3 tax will I pay?', 'Can I lower my box 3 tax?', 'What do I need for my tax return?'],
   advice: ['Which of these should I do first?', 'Explain the biggest recommendation', 'What am I missing?'],
   import: ['Which files should I import to complete my data?', 'Is any of my data out of date?'],
   settings: ['What does the app know about me?'],
 };
-const TOPIC_ORDER = ['Spending', 'Investing', 'Savings & debt', 'Planning', 'Taxes', 'General'];
+const TOPIC_ORDER = ['Spending', 'Investing', 'Savings & debt', 'Planning', 'General'];
 function openChat({text = '', ctx = null, send = false, files = null, conv = null} = {}) {
   CP.open = true; CP.mode = 'chat';
   if (conv && CP.conv.id !== conv) {
@@ -230,6 +231,7 @@ function openChat({text = '', ctx = null, send = false, files = null, conv = nul
 function closeChat() { CP.open = false; document.body.classList.remove('chat-open'); const p = $('#chatPanel'); if (p) p.hidden = true; }
 function newChat() { CP.conv = {id: null, messages: []}; CP.error = null; CP.ctx = null; CP.mode = 'chat'; renderChat(); }
 function deliverInbox() {
+  if ((CP.contextScope || store.get('chat.contextScope','all')) !== 'all') return false;
   // Claude's open questions after an import go into the conversation, once
   const items = (S && S.inbox || []).filter(i => !CP.conv.messages.some(m => m.inbox === i.id));
   if (!items.length || CP.busy) return false;
@@ -250,12 +252,12 @@ function msgHtml(m, i) {
 }
 function renderChat() {
   let p = $('#chatPanel');
-  if (!p) { p = document.createElement('aside'); p.id = 'chatPanel'; p.className = 'panel'; p.setAttribute('aria-label', 'Claude'); document.body.appendChild(p); }
+  if (!p) { p = document.createElement('aside'); p.id = 'chatPanel'; p.className = 'panel'; p.setAttribute('aria-label', 'AI chat'); document.body.appendChild(p); }
   p.hidden = !CP.open;
   if (!CP.open) return;
   deliverInbox();
   const C = CP, starters = STARTERS_BY[view] || STARTERS_BY.overview;
-  p.innerHTML = `<div class="panel-head"><div class="panel-title"><span class="claude-mark">${CLAUDE_ICON}</span>${CP.mode === 'history' ? 'Conversations' : 'Claude'}</div>
+  p.innerHTML = `<div class="panel-head"><div class="panel-title"><span class="claude-mark">${CLAUDE_ICON}</span>${CP.mode === 'history' ? 'Conversations' : `<span id="cpProviderName">${aiProviderName('chat')}</span>`}</div>
       <div class="panel-tools">
         <button type="button" class="icon-btn sm" id="cpHist" title="${CP.mode === 'history' ? 'Back to the chat' : 'Earlier conversations'}" aria-label="Earlier conversations">${CP.mode === 'history' ? ICON.back : ICON.list}</button>
         <button type="button" class="icon-btn sm" id="cpNew" title="New conversation" aria-label="New conversation">${ICON.plus}</button>
@@ -274,12 +276,13 @@ function renderChat() {
       <input type="file" id="cpFile" multiple hidden accept="image/*,.csv,.tsv,.txt,.json,.xml,.pdf,.xlsx,.xls,.xlsm,.zip">
       <textarea id="cpQ" rows="1" placeholder="Ask about your money" aria-label="Message" ${C.busy ? 'disabled' : ''}></textarea>
       <button class="send" aria-label="Send" ${C.busy ? 'disabled' : ''}>${ICON.up}</button></form>
-    <div class="cp-effort" role="group" aria-label="How hard Claude thinks"><span class="muted">Effort</span>${EFFORTS.map(([v, l, t]) =>
+    <div class="cp-effort" role="group" aria-label="Response effort"><span class="muted">Effort</span>${EFFORTS.map(([v, l, t]) =>
       `<button type="button" data-effort="${v}" aria-pressed="${chatEffort() === v}" title="${esc(t)}">${l}</button>`).join('')}</div>`}`;
   $('#cpClose').onclick = closeChat;
   $('#cpNew').onclick = newChat;
   $('#cpHist').onclick = () => { CP.mode = CP.mode === 'history' ? 'chat' : 'history'; renderChat(); };
   if (CP.mode === 'history') { loadChatList(); $('#cpSearch').oninput = e => { CP.q = e.target.value; clearTimeout(CP.t); CP.t = setTimeout(loadChatList, 200); }; return; }
+  chatProviderControl(p);
   const box = $('#cpMsgs'); box.scrollTop = box.scrollHeight;
   attachTips(p, box);
   const q = $('#cpQ');
@@ -358,14 +361,14 @@ async function sendChat(text, effort) {
   try {
     // a question about a card carries that card's numbers along
     const msgs = CP.conv.messages.filter(m => !m.local).map(m => ({role: m.role, content: m.role === 'user' && m.ctx ? `(About this part of the dashboard, "${m.ctx.title}": ${m.ctx.text})\n\n${m.content}` : m.content}));
-    const r = await post('/api/chat', {messages: msgs, files: files.map(({name, media_type, data}) => ({name, media_type, data})), progress_id: pid, effort: effort || chatEffort()});
-    CP.conv.messages.push({role: 'assistant', content: r.reply, undo: r.undo || null, level: r.level || null});
+    const r = await post('/api/chat', {messages: msgs, files: files.map(({name, media_type, data, original_data, original_media_type}) => ({name, media_type, data, original_data, original_media_type})), progress_id: pid, effort: effort || chatEffort(), provider:chosenAIProvider('chat'), context_scope:CP.contextScope||store.get('chat.contextScope','all')});
+    CP.conv.messages.push({role: 'assistant', content: r.reply, undo: r.undo || null, level: r.level || null, provider:r.provider || 'claude'});
     if (r.undo) load();
     saveConv();
   } catch (e) { CP.error = e.message; CP.conv.messages.pop(); CP.files = files; CP.ctx = ctx; }
   CP.busy = false;
   if (CP.open) renderChat();
-  else toast('Claude answered. Press / to read it.');
+  else toast(aiProviderName('chat') + ' answered. Press / to read it.');
 }
 function cardContext(card) {
   // the card's title and what it shows, as plain text for Claude
@@ -386,6 +389,7 @@ function actionsHtml(json) {
   return `<div class="acts">${list.slice(0, 3).filter(a => a && a.label && a.do).map(a => `<button type="button" class="btn act" data-act="${esc(JSON.stringify(a))}">${esc(a.label)}</button>`).join('')}</div>`;
 }
 async function runAction(a, btn, e) {
+  if(a.do==='open_receipt') return openReceipt(a.id);
   const done = label => { if (btn) { btn.disabled = true; btn.textContent = '✓ ' + label; } };
   try {
     if (a.do === 'open_payments') { await openThing({kind: 'payments', title: a.label, filter: a.filter || {}}, e); }
@@ -506,7 +510,7 @@ document.addEventListener('click', e => {
   }
 }, true);
 /* ---------- move cards around: drag a card by its grip; every page remembers its own arrangement ---------- */
-const pageKey = () => view === 'spending' ? 'spending:' + SP.tab : view === 'account' ? 'account' : view;
+const pageKey = () => view === 'overview' ? 'overview:hub-v2' : view === 'spending' ? 'spending:' + SP.tab : view === 'holdings' ? 'holdings:v2:' + INT.tab : view === 'explore' ? 'explore:' + EXP.tab : view === 'account' ? 'account' : view;
 const movable = c => !c.closest('.pop, .drawer, .fs, .panel, .menu') && c.dataset.card && !(c.parentElement && c.parentElement.closest('.card'));
 /* Long lists and tables scroll inside their card instead of stretching the page. */
 const CAP = 440, SCROLLS = {};
@@ -528,7 +532,7 @@ function capLong(root = $('#view')) {
       for (const c of el.children) {
         if (c.classList.contains('scrolly')) { n++; continue; }
         if (c.matches('svg, canvas, .seg, .controls, form, .pop, .menu')) continue;
-        const listy = c.matches('.table-wrap') || (c.children.length >= 6 && !c.querySelector('svg.c-svg, .map'));
+        const listy = c.matches('.table-wrap, .ws-table, .int-table-wrap') || (c.children.length >= 6 && !c.querySelector('svg.c-svg, .map, .card'));
         if (c.dataset.cap === 'tall' || (listy && c.offsetHeight > CAP + 40)) mark(c, base + n++); else if (c.offsetHeight > CAP) walk(c);
       }
     };
@@ -874,7 +878,7 @@ window.addEventListener('drop', async e => {
 
 /* ---------- keyboard ---------- */
 let gPending = 0;
-const GO = {o: 'overview', h: 'holdings', a: 'accounts', c: 'cash', s: 'spending', y: 'history', p: 'plan', t: 'taxes', v: 'advice', i: 'import', ',': 'settings'};
+const GO = {o: 'overview', h: 'holdings', a: 'accounts', c: 'cash', s: 'spending', y: 'history', p: 'plan', v: 'advice', i: 'import', ',': 'settings'};
 document.addEventListener('keydown', e => {
   const typing = document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openSearch(); return; }
@@ -890,7 +894,7 @@ document.addEventListener('keydown', e => {
 });
 function showShortcuts() {
   const rows = [['/', 'Ask Claude'], ['⌘ K or Ctrl K', 'Search everything'], ['?', 'These shortcuts'], ['g then o, h, a, c, s', 'Overview, Investments, Accounts, Savings & debt, Spending & income'],
-    ['g then y, p, t, v, i', 'History, Plan, Taxes, Advice, Import'], ['b', 'Hide or show amounts'], ['Esc', 'Close a panel or menu'],
+    ['g then y, p, v, i', 'History, Plan, Advice, Import'], ['b', 'Hide or show amounts'], ['Esc', 'Close a panel or menu'],
     ['Enter, S, ←, A', 'Quick check: looks right, skip, back, all from merchant'], ['Right click a row', 'Actions for a transaction or investment']];
   const f = $('#dlgForm');
   f.innerHTML = `<h3>Keyboard shortcuts</h3><div class="keys">${rows.map(([k, l]) => `<div class="key-row"><span>${k.split(' or ').map(x => `<kbd>${esc(x)}</kbd>`).join(' or ')}</span><span class="muted">${esc(l)}</span></div>`).join('')}</div>
@@ -968,7 +972,7 @@ function shellInit() {
   // the old chat history in this browser becomes the first saved conversation
   const old = store.get('chat', null);
   if (old && old.length) { CP.conv = {id: null, messages: old}; saveConv(); store.set('chat', []); }
-  new MutationObserver(() => { clearTimeout(shellInit.t); shellInit.t = setTimeout(() => { decorateCards(); applyLayout(); capLong(); }, 30); }).observe($('#view'), {childList: true, subtree: true});
+  new MutationObserver(() => { clearTimeout(shellInit.t); shellInit.t = setTimeout(() => { openPageSections(); decorateCards(); applyLayout(); capLong(); }, 30); }).observe($('#view'), {childList: true, subtree: true});
   loadUI();
   loadGeo();
 }

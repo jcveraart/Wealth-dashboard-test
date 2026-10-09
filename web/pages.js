@@ -1,5 +1,5 @@
 'use strict';
-/* Savings & debt, history, plan, taxes, advice, import and settings. Uses app.js, charts.js and shell.js. */
+/* Savings & debt, history, plan, advice, import and settings. Uses app.js, charts.js and shell.js. */
 
 /* ---------- savings and debt ---------- */
 const DEBT = {extra: {}};
@@ -16,63 +16,28 @@ function amortize(bal, ratePct, pay, extra = 0, max = 600) {
 }
 const inMonths = n => n === Infinity ? 'never' : n < 12 ? `${n} month${n === 1 ? '' : 's'}` : `${(n / 12).toFixed(n % 12 ? 1 : 0)} years`;
 function cash() {
-  // money you can reach and money you owe: cash accounts, the buffer and pots, and debts with their payoff.
-  // Savings you count as investments live on the Investments page; this page still lists them so you can switch.
-  const t = S.totals;
-  const cashAcc = S.savings.filter(s => !s.invest), invAcc = S.savings.filter(s => s.invest);
-  const cashTotal = cashAcc.reduce((s, x) => s + x.value, 0);
-  const earn = cashAcc.reduce((s, x) => s + x.value * (x.rate_pct || 0) / 100, 0);
-  const real = S.debts.filter(d => !d.expected_gift);
-  const pay = real.reduce((s, d) => s + d.balance * (d.rate_pct || 0) / 100, 0);
-  const pots = S.pots || [], inPots = pots.reduce((s, p) => s + (p.saved_eur || 0), 0);
-  const spend = S.spend_month, months = spend ? cashTotal / spend : null, want = (S.profile || {}).buffer_months || 4;
-  const flex = cashAcc.filter(s => !s.maturity && s.rate_pct), best = flex.length ? flex.reduce((a, b) => b.rate_pct > a.rate_pct ? b : a) : null;
-  const cmp = (S.profile || {}).compare_rate_pct, top = Math.max(best ? best.rate_pct : 0, cmp || 0);
-  const lows = cashAcc.filter(s => !s.maturity && (s.rate_pct || 0) < top - 0.25 && s.value > 500);
-  const row = (s, i) => `<tr data-ctx="account:${esc(s.name)}"><td><a class="nm h-link" href="#account/${encodeURIComponent(s.name)}">${esc(s.name)}</a><div class="meta">${esc(s.bank || '')}${s.maturity ? `, until ${fdate(s.maturity)}` : ''}</div></td>
-    <td class="num">${s.rate_pct ? s.rate_pct.toFixed(2) + '%' : '<span class="muted">none</span>'}</td><td class="num"><b>${eur(s.value)}</b></td>
-    <td class="num">${seg('cnt' + i, [['cash', 'Cash'], ['inv', 'Investment']], s.invest ? 'inv' : 'cash')}</td>
-    <td class="num"><button class="btn ghost sm" data-sav="${i}">Edit</button></td></tr>`;
-  $('#view').innerHTML = `<div class="stack-y">
+  const cashAcc=liquidCashRows(S),cashTotal=cashAcc.reduce((n,r)=>n+r.value,0),real=S.debts.filter(d=>!d.expected_gift),pots=S.pots||[];
+  const earn=cashAcc.filter(r=>r.rate_pct!=null).reduce((n,r)=>n+Math.max(0,r.value)*r.rate_pct/100,0),pay=real.filter(r=>r.rate_pct!=null).reduce((n,r)=>n+r.balance*r.rate_pct/100,0);
+  const spend=S.spend_month,positiveCash=cashAcc.reduce((n,r)=>n+Math.max(0,r.value),0),months=spend?positiveCash/spend:null,want=S.profile?.buffer_months||4,inPots=pots.reduce((n,p)=>n+(p.saved_eur||0),0);
+  const rateCoverage=cashAcc.every(r=>r.rate_pct!=null)&&real.every(r=>r.rate_pct!=null);
+  $('#view').innerHTML=`<div class="stack-y cash-page">
     <div class="grid g4">
-      <div class="card tile"><div class="k">Cash</div><div class="v" data-count="${cashTotal}">${eur(cashTotal)}</div><div class="n">${invAcc.length ? `${eur(t.invested_savings)} more counted as investments` : 'in savings and current accounts'}</div></div>
-      <div class="card tile"><div class="k">Buffer</div><div class="v">${months == null ? '<span class="muted">n/a</span>' : months.toFixed(1) + ' months'}</div><div class="n">${spend ? `of spending (${eur(spend)} a month), aim ${want}` : 'Import bank exports to see this'}</div></div>
-      <div class="card tile"><div class="k">Debt</div><div class="v" data-count="${t.debt}">${eur(t.debt)}</div><div class="n">${real.length} counted</div></div>
-      <div class="card tile"><div class="k">Interest a year</div><div class="v">${sgn(earn - pay)}</div><div class="n">${eur(earn)} in, ${eur(pay)} out</div></div>
+      <div class="card tile"><div class="k">Available cash</div><div class="v">${eur(cashTotal)}</div><div class="n">Current accounts, flexible savings & broker cash</div></div>
+      <div class="card tile"><div class="k">Buffer</div><div class="v">${months==null?'—':months.toFixed(1)+' months'}</div><div class="n">${spend?'Recorded spending · target '+want+' months':'Import payments to measure your buffer'}</div></div>
+      <div class="card tile"><div class="k">Debt</div><div class="v">${eur(S.totals.debt)}</div><div class="n">${real.length} counted ${real.length===1?'loan':'loans'}</div></div>
+      <div class="card tile"><div class="k">Interest / year</div><div class="v">${sgn(earn-pay)}</div><div class="n">${rateCoverage?'At saved rates':'Known rates only'} · ${eur(earn)} in / ${eur(pay)} out</div></div>
     </div>
-    <section class="card" data-card="cash-accounts">
-      <div class="card-head"><div><h2>Accounts</h2><p class="sub">Choose per account whether it is cash or an investment. Investments show on the <a href="#holdings">Investments</a> page.</p></div><button class="btn" id="addSav">Add account</button></div>
-      <div class="table-wrap"><table class="compact">
-        <thead><tr><th>Account</th><th class="num">Rate</th><th class="num">Balance</th><th class="num">Counts as</th><th></th></tr></thead>
-        <tbody>${S.savings.map((s, i) => row(s, i)).join('')}</tbody></table></div>
-      <div class="muted small market-line" id="marketLine"></div>
-      ${lows.length ? `<div class="hint">${lows.map(s => `<b>${esc(s.name)}</b> earns ${(s.rate_pct || 0).toFixed(2)}%. At ${top.toFixed(2)}% it would bring <span class="amt">${eur(s.value * (top - (s.rate_pct || 0)) / 100)}</span> a year more.`).join(' ')}</div>` : ''}
-    </section>
-    <div class="grid g2">
-      <section class="card" data-card="cash-buffer"><div class="card-head"><div><h2>Buffer and pots</h2><p class="sub">${pots.length ? `${eur(inPots)} set aside, ${eur(Math.max(0, cashTotal - inPots))} free` : 'Set money aside for a holiday, a car or a rainy day'}</p></div><button class="btn ghost" id="potAdd">Add pot</button></div>
-        ${spend ? `<div class="pot"><div class="pot-top"><span><b>Emergency buffer</b> <span class="muted small">${want} months of spending</span></span><span class="num"><b class="amt">${eur(Math.min(cashTotal, spend * want))}</b> <span class="muted">of ${eur(spend * want)}</span></span></div>
-          <div class="bud-bar"><i class="${cashTotal >= spend * want ? 'good' : ''}" style="width:${Math.min(100, cashTotal / (spend * want) * 100)}%"></i></div></div>` : ''}
-        ${pots.map((p, i) => { const share = p.target_eur ? (p.saved_eur || 0) / p.target_eur : 1; return `<div class="pot"><div class="pot-top"><button type="button" class="linkish pot-name" data-pot="${i}">${esc(p.name)}</button><span class="num"><b class="amt">${eur(p.saved_eur || 0)}</b>${p.target_eur ? ` <span class="muted">of ${eur(p.target_eur)}</span>` : ''}</span></div>
-          ${p.target_eur ? `<div class="bud-bar"><i class="${share >= 1 ? 'good' : ''}" style="width:${Math.min(100, share * 100)}%"></i></div>` : ''}</div>`; }).join('')}
-      </section>
-      <section class="card" data-card="cash-debts"><div class="card-head"><h2>Debts</h2><button class="btn ghost" id="addDebt">Add debt</button></div>
-        ${S.debts.map((d, i) => `<div class="list-row"><div><b>${esc(d.name)}</b><div class="muted small">${(d.rate_pct || 0).toFixed(2)}%${d.monthly_payment_eur ? `, ${eur(d.monthly_payment_eur)} a month` : ''}${d.expected_gift ? ', expected to become a gift, not counted' : ''}</div></div>
-          <div class="num"><b class="${d.expected_gift ? 'muted' : ''}">${eur(d.balance)}</b> <button class="linkish small" data-debt="${i}">Edit</button></div></div>`).join('') || '<div class="empty">No debts. Nice.</div>'}
-      </section>
-    </div>
-    ${real.map((d, i) => `<section class="card" data-card="debt${i}"><div class="card-head"><h2>Paying off ${esc(d.name)}</h2><span class="muted small" id="dsum${i}"></span></div>
-      ${d.monthly_payment_eur ? `<div class="debt-ctl"><span class="muted small">Pay extra per month</span><input type="range" min="0" max="${Math.max(200, Math.round(d.monthly_payment_eur * 3 / 50) * 50)}" step="10" value="${DEBT.extra[d.name] || 0}" data-extra="${i}" aria-label="Extra per month"><b data-extrav="${i}"></b></div><div id="dchart${i}"></div>`
-        : `<div class="empty" style="padding:14px 0">Set the monthly payment to see when it is paid off. <button class="linkish" data-debt="${S.debts.indexOf(d)}">Set it</button></div>`}</section>`).join('')}
+    <section class="card cash-insights brief page-ai-card no-tools" id="cashNotes"><div class="brief-head"><span class="claude-mark">${CLAUDE_ICON}</span><b>Claude</b><span class="ago">Cash & debt</span></div><div id="cashNotesBody">${pageBriefNotes(initialCashBrief())}</div><span class="muted small" id="cashBriefStatus">${pageBriefStatus(initialCashBrief())}</span><div class="home-hub-links"><button type="button" class="linkish small" id="cashAsk">Ask Claude about keeping cash or repaying →</button></div></section>
+    <section class="card" data-card="cash-accounts"><div class="card-head"><div><h2>Cash accounts</h2><p class="sub">Withdrawable balances. Fixed deposits and bonds stay in <a href="#holdings">Investments</a>.</p></div><button class="btn ghost" id="addSav">Add account</button></div><div class="table-wrap"><table class="compact"><thead><tr><th>Account</th><th class="num">Saved rate</th><th class="num">Balance</th><th></th></tr></thead><tbody>${cashAcc.map(r=>`<tr data-ctx="account:${esc(r.name)}"><td><a class="nm h-link" href="#account/${encodeURIComponent(r.name)}">${esc(r.name)}</a><div class="meta">${esc(r.bank|| (r.source==='broker'?'Uninvested broker cash':'Flexible cash'))}${r.snapshot_date?' · '+fdate(r.snapshot_date):''}</div></td><td class="num">${r.rate_pct==null?'—':r.rate_pct.toFixed(2)+'%'}</td><td class="num"><b>${eur(r.value)}</b></td><td class="num">${r.source==='savings'?`<button class="btn ghost sm" data-sav="${r.index}">Edit</button>`:''}</td></tr>`).join('')||'<tr><td colspan="4" class="muted">No cash accounts recorded.</td></tr>'}</tbody></table></div></section>
+    <div class="grid g2 cash-history"><section class="card" data-card="cash-history"><div class="card-head"><h2>Cash over time</h2></div><div id="cashHistory"></div></section><section class="card" data-card="debt-history"><div class="card-head"><h2>Debt over time</h2></div><div id="debtHistory"></div></section></div>
+    <div class="grid g2"><section class="card" data-card="cash-buffer"><div class="card-head"><h2>Buffer & pots</h2><button class="btn ghost" id="potAdd">Add pot</button></div><p class="sub">${pots.length?eur(inPots)+' reserved in your accounts':'Separate money for your plans within your existing cash.'}</p>${spend?`<div class="pot"><div class="pot-top"><b>Emergency buffer</b><span>${eur(Math.min(positiveCash,spend*want))} of ${eur(spend*want)}</span></div><div class="bud-bar"><i style="width:${Math.min(100,positiveCash/(spend*want)*100)}%"></i></div></div>`:''}${pots.map((p,i)=>`<div class="pot"><div class="pot-top"><button class="linkish pot-name" data-pot="${i}">${esc(p.name)}</button><span>${eur(p.saved_eur||0)}${p.target_eur?' of '+eur(p.target_eur):''}</span></div>${p.target_eur?`<div class="bud-bar"><i style="width:${Math.min(100,(p.saved_eur||0)/p.target_eur*100)}%"></i></div>`:''}</div>`).join('')}</section>
+    <section class="card" data-card="cash-debts"><div class="card-head"><h2>Debts</h2><button class="btn ghost" id="addDebt">Add debt</button></div>${S.debts.map((d,i)=>`<div class="list-row"><div><b>${esc(d.name)}</b><div class="muted small">${d.rate_pct==null?'Rate missing':d.rate_pct.toFixed(2)+'%'} · ${d.monthly_payment_eur==null?'Repayment not recorded':eur(d.monthly_payment_eur)+' / month'}${d.expected_gift?' · expected gift, excluded from total':''}</div></div><div class="num"><b>${eur(d.balance)}</b> <button class="linkish small" data-debt="${i}">Edit</button></div></div>`).join('')||'<p class="muted small">No debts recorded.</p>'}</section></div>
+    ${real.map((d,i)=>`<section class="card" data-card="debt-scenario-${i}"><div class="card-head"><h2>${esc(d.name)} · looking ahead</h2></div><div class="debt-scenario-controls"><label>Monthly repayment €<input type="number" min="0" step="1" data-scenario-pay="${i}" value="${d.monthly_payment_eur??0}"></label><label>Extra / month €<input type="number" min="0" step="1" data-scenario-extra="${i}" value="${DEBT.extra[d.name]||0}"></label><label>Horizon<select data-scenario-years="${i}">${[5,10,20,35].map(y=>`<option value="${y}" ${y===10?'selected':''}>${y} years</option>`).join('')}</select></label></div><div id="debtProjection${i}"></div><div class="debt-scenario-summary" id="debtScenarioSummary${i}"></div><p class="muted small">Illustration at a constant saved interest rate, compounded monthly. Changing these controls does not change your saved repayment. ${d.monthly_payment_eur==null?'No repayment is assumed until you enter one. ':''}${/duo/i.test(d.name)?'DUO payments depend on your repayment regime and income; rate changes and possible future forgiveness are not modelled. ':''}Edit the debt to record a confirmed repayment.</p></section>`).join('')}
   </div>`;
-  loadEcon().then(E => {
-    const box = $('#marketLine'); if (!box || !E) return;
-    const bits = [E.ecb_rate != null ? `ECB rate ${E.ecb_rate.toFixed(2)}%` : '', E.savings_nl != null ? `${E.savings_nl_area === 'Netherlands' ? 'Dutch banks' : 'Banks in the euro area'} pay ${E.savings_nl.toFixed(2)}% on average` : '',
-      E.inflation_nl != null ? `inflation ${E.inflation_nl.toFixed(1)}%` : '', E.bond2 != null ? `2 year euro government bonds ${E.bond2.toFixed(2)}%` : ''].filter(Boolean);
-    if (bits.length) box.textContent = bits.join(' · ') + '. Source: ECB.';
-    // an account that earns less than prices rise loses value; a quiet marker says so
-    if (E.inflation_nl != null) cashAcc.forEach(x => { if (x.rate_pct && x.rate_pct < E.inflation_nl && x.value > 1000) { const r = $(`tr[data-ctx="account:${CSS.escape(x.name)}"] .meta`); if (r) r.insertAdjacentHTML('beforeend', ' <span class="tag warn-tag" title="Earns less than prices rise">below inflation</span>'); } });
-  });
-  S.savings.forEach((s, i) => onSeg('cnt' + i, v => edit({section: 'savings', index: i, fields: {invest: v === 'inv'}}, v === 'inv' ? `${s.name} now counts as an investment` : `${s.name} counts as cash`)));
+  moveBriefToTop($('.cash-page>.grid.g4'),$('#cashNotes'),{className:'cash-ai-top'});
+  drawCashHistory(cashAcc);real.forEach((d,i)=>drawCashDebtScenario(d,i));loadCashNotes();
+  $('#cashAsk').onclick=()=>openChat({text:'Review my cash and debts. Compare keeping accessible cash with extra repayment, using my recorded rates and buffer. For DUO consider the recorded repayment rules and rate-fix period; identify missing information. If comparing bonds, look up current yields, dates, duration and credit risk rather than assuming a bond is cash.',send:true});
+  $$('[data-scenario-pay],[data-scenario-extra],[data-scenario-years]').forEach(input=>input.oninput=()=>{const i=+(input.dataset.scenarioPay??input.dataset.scenarioExtra??input.dataset.scenarioYears);drawCashDebtScenario(real[i],i);});
   const savFields = s => [
     {k: 'name', label: 'Name', type: 'text', value: s.name}, {k: 'bank', label: 'Bank', type: 'text', value: s.bank},
     {k: 'principal_eur', label: 'Balance (€)', type: 'number', value: s.principal_eur}, {k: 'snapshot_date', label: 'Balance date', type: 'date', value: s.snapshot_date || today()},
@@ -85,8 +50,10 @@ function cash() {
   $$('[data-sav]').forEach(b => b.onclick = () => { const i = +b.dataset.sav; form('Edit ' + S.savings[i].name, savFields(S.savings[i]), v => edit({section: 'savings', index: i, fields: v}), () => edit({section: 'savings', action: 'delete', index: i}, 'Account removed')); });
   const debtFields = d => [
     {k: 'name', label: 'Name', type: 'text', value: d.name}, {k: 'balance_eur', label: 'Balance including interest (€)', type: 'number', value: d.balance_eur},
-    {k: 'snapshot_date', label: 'Balance date', type: 'date', value: d.snapshot_date || today()}, {k: 'rate_pct', label: 'Interest rate (%)', type: 'number', value: d.rate_pct ?? 0},
+    {k: 'snapshot_date', label: 'Balance date', type: 'date', value: d.snapshot_date || today()}, {k: 'rate_pct', label: 'Interest rate (%)', type: 'number', value: d.rate_pct ?? ''},
     {k: 'monthly_payment_eur', label: 'Monthly payment (€), if you are repaying', type: 'number', value: d.monthly_payment_eur ?? ''},
+    {k: 'repayment_regime', label: 'DUO repayment regime (if confirmed)', type: 'select', value: d.repayment_regime || '', options: [['','Not recorded'],['SF35','SF35'],['SF15','SF15'],['SF15-old','SF15 old rules']]},
+    {k: 'rate_fixed_until', label: 'Interest fixed until (if confirmed)', type: 'date', value: d.rate_fixed_until || ''},
     {k: 'expected_gift', label: 'Expected to become a gift (not counted)', type: 'checkbox', value: !!d.expected_gift}];
   $('#addDebt').onclick = () => form('Add debt', debtFields({}), v => edit({section: 'debts', action: 'add', fields: v}, 'Debt added'));
   $$('[data-debt]').forEach(b => b.onclick = () => { const i = +b.dataset.debt; form('Edit ' + S.debts[i].name, debtFields(S.debts[i]), v => edit({section: 'debts', index: i, fields: v}), () => edit({section: 'debts', action: 'delete', index: i}, 'Debt removed')); });
@@ -94,21 +61,10 @@ function cash() {
     {k: 'target_eur', label: 'Target (€), optional', type: 'number', value: p.target_eur ?? ''}, {k: 'account', label: 'Which account it sits in (optional)', type: 'text', value: p.account || ''}];
   $('#potAdd').onclick = () => form('Add pot', potFields({}), v => edit({section: 'pots', action: 'add', fields: v}, 'Pot added'));
   $$('[data-pot]').forEach(b => b.onclick = () => { const i = +b.dataset.pot; form('Edit ' + pots[i].name, potFields(pots[i]), v => edit({section: 'pots', index: i, fields: v}), () => edit({section: 'pots', action: 'delete', index: i}, 'Pot removed')); });
-  real.forEach((d, i) => { if (d.monthly_payment_eur) drawDebt(d, i); });
-  $$('[data-extra]').forEach(r => r.oninput = () => { const d = real[+r.dataset.extra]; DEBT.extra[d.name] = +r.value; drawDebt(d, +r.dataset.extra); });
+
+
   countUp();
 }
-function drawDebt(d, i) {
-  const extra = DEBT.extra[d.name] || 0, base = amortize(d.balance, d.rate_pct || 0, d.monthly_payment_eur), fast = amortize(d.balance, d.rate_pct || 0, d.monthly_payment_eur, extra);
-  const when = n => n === Infinity ? 'never' : fdate(isoD(new Date(Date.now() + n * 30.4375 * 864e5)).slice(0, 7));
-  $(`[data-extrav="${i}"]`).innerHTML = `<span class="amt">€${extra}</span>`;
-  $(`#dsum${i}`).innerHTML = base.never ? '<span class="neg">The payment does not cover the interest</span>' : extra
-    ? `Paid off ${when(fast.months)} instead of ${when(base.months)}: ${inMonths(base.months - fast.months)} sooner, <span class="pos amt">${eur(base.interest - fast.interest)}</span> less interest`
-    : `Paid off ${when(base.months)}, <span class="amt">${eur(base.interest)}</span> interest to go`;
-  timeChart($(`#dchart${i}`), {series: [{name: 'As planned', pts: base.pts.filter((_, k) => k % 3 === 0 || k === base.pts.length - 1), color: 'var(--muted)'},
-    ...(extra ? [{name: `With €${extra} extra`, pts: fast.pts.filter((_, k) => k % 3 === 0 || k === fast.pts.length - 1), color: 'var(--s1)', area: true}] : [])], height: 200, zero: true, label: 'Debt balance', xfmt: 'date'});
-}
-
 /* ---------- history ---------- */
 function liveValueOf(name) {
   const a = S.accounts.find(x => x.name === name); if (a) return a.value + a.cash;
@@ -445,147 +401,39 @@ function wireDecide() {
   loanOut(); homeOut();
 }
 
-/* ---------- taxes ---------- */
-// Box 3 rules per tax year. 2026 rates are provisional; check belastingdienst.nl and adjust in the table below.
-const BOX3 = {
-  2024: {bank: 1.03, other: 6.04, debt: 2.47, allowance: 57000, threshold: 3700, rate: 36},
-  2025: {bank: 1.44, other: 5.88, debt: 2.62, allowance: 57684, threshold: 3800, rate: 36},
-  2026: {bank: 1.28, other: 6.00, debt: 2.70, allowance: 51396, threshold: 3800, rate: 36, provisional: true},
-};
-const TAX = {year: new Date().getFullYear(), sim: {repay: 0, invest: 0, spend: 0}};
-function box3Params(y) {
-  const saved = ((S.tax || {}).params || {})[y];
-  const known = Object.keys(BOX3).map(Number).sort();
-  return {...(BOX3[y] || BOX3[known.filter(k => k <= y).pop() || known[0]]), ...(saved || {}), guessed: !BOX3[y] && !saved};
-}
-function box3(bank, other, debts, P, partner) {
-  const allow = P.allowance * (partner ? 2 : 1), thr = P.threshold * (partner ? 2 : 1), d = Math.max(0, debts - thr);
-  const ret = bank * P.bank / 100 + other * P.other / 100 - d * P.debt / 100, base = bank + other - d;
-  const eff = base > 0 ? ret / base : 0, taxable = Math.max(0, base - allow), gain = taxable * eff;
-  return {allow, thr, d, ret, base, eff, taxable, gain, tax: Math.max(0, gain * P.rate / 100)};
-}
-function peildatum(y) {
-  // values on 1 January: from the daily history when the app ran then, else from year end statements, else today's
-  const iso = `${y}-01-01`, h = (S.history || []).filter(x => x.date <= `${y}-01-07` && x.date >= `${y - 1}-12-20`).pop();
-  if (h && h.cash != null) return {bank: h.cash, other: (h.etf + h.stocks + h.bonds + h.other_inv) + h.managed, debts: h.debt, src: `your recorded values on ${fdate(h.date)}`};
-  if (h) return {bank: h.savings, other: h.self_directed + h.managed, debts: h.debt, src: `your recorded values on ${fdate(h.date)}`};
-  const ah = (S.account_history || []).filter(r => r.date === `${y - 1}-12-31`);
-  if (ah.length) {
-    const sav = new Set(S.savings.map(s => s.name)), deb = new Set(S.debts.map(d => d.name));
-    return {bank: ah.filter(r => sav.has(r.account)).reduce((s, r) => s + r.value_eur, 0), other: ah.filter(r => !sav.has(r.account) && !deb.has(r.account)).reduce((s, r) => s + r.value_eur, 0),
-      debts: ah.filter(r => deb.has(r.account)).reduce((s, r) => s + Math.abs(r.value_eur), 0), src: `year end statements of ${y - 1}`};
-  }
-  const t = S.totals;
-  return {bank: t.cash ?? t.savings, other: (t.etf + t.stocks + t.bonds + t.other_inv) + t.managed, debts: t.debt, src: iso > today() ? 'today\'s values, as an estimate' : 'today\'s values, because nothing was recorded on that date', estimate: true};
-}
-function taxesPage() {
-  const y = TAX.year, P = box3Params(y), partner = !!(S.tax || {}).partner, v = peildatum(y), R = box3(v.bank, v.other, v.debts, P, partner);
-  const sim = TAX.sim, sv = {bank: v.bank - sim.repay - sim.invest - sim.spend, other: v.other + sim.invest, debts: Math.max(0, v.debts - sim.repay)};
-  const RS = box3(sv.bank, sv.other, sv.debts, P, partner);
-  const flows = (S.yearly_flows || []).filter(r => r.year === y - 1);
-  const actual = flows.length ? flows.reduce((s, r) => s + (r.dividends_eur || 0) + (r.interest_received_eur || 0) + (r.profit_eur || 0) - (r.interest_paid_eur || 0), 0) : null;
-  const checks = ((S.tax || {}).checklist || {})[y] || {};
-  const items = [
-    ...S.savings.map(s => ({k: 'bank:' + s.name, t: `${s.name} (${s.bank}) on 1 January ${y}`, v: s.value})),
-    ...S.accounts.map(a => ({k: 'inv:' + a.name, t: `${a.name} value on 1 January ${y}`, v: a.value + a.cash})),
-    {k: 'inv:managed', t: `${S.managed.name} value on 1 January ${y}`, v: S.managed.value},
-    ...S.debts.filter(d => !d.expected_gift).map(d => ({k: 'debt:' + d.name, t: `${d.name} balance on 1 January ${y}`, v: d.balance})),
-    ...(flows.some(r => r.taxes_eur) ? [{k: 'divtax', t: `Dividend tax withheld in ${y - 1}`, v: flows.reduce((s, r) => s + (r.taxes_eur || 0), 0)}] : []),
-    {k: 'prefill', t: 'Compare the pre-filled return with these numbers', v: null}];
-  const now = new Date(), cal = [[`${y}-01-01`, 'Box 3 reference date: what you own and owe on this day counts for the whole year'], [`${y + 1}-03-01`, `Tax return over ${y} opens`],
-    [`${y + 1}-05-01`, `Deadline for the return over ${y}, or ask for more time (until 1 September)`], [`${y + 1}-09-01`, 'Deadline when you asked for more time'],
-    [`${y}-12-01`, `Ask for or adjust a provisional assessment for ${y + 1}, so you pay or get money back spread over the year`], [`${y + 1}-01-01`, `Next reference date: moves before this day count for ${y + 1}`]].sort((a, b) => a[0].localeCompare(b[0]));
-  const nextIdx = cal.findIndex(c => c[0] >= isoD(now));
-  const row = (l, val, cls = '') => `<tr class="${cls}"><td>${l}</td><td class="num">${val}</td></tr>`;
-  $('#view').innerHTML = `<div class="stack-y">
-    <div class="controls" style="margin:0">${seg('taxyear', [y - 1, y, y + 1].map(x => [String(x), String(x)]), String(y))}
-      <label class="check"><input type="checkbox" id="partner" ${partner ? 'checked' : ''}> With a tax partner (allowance doubled)</label></div>
-    ${P.guessed || P.provisional ? `<div class="banner warn">The rates for ${y} are ${P.provisional ? 'provisional' : 'copied from the latest year I know'}. Check belastingdienst.nl and adjust them under Rates below.</div>` : ''}
-    <div class="grid g4">
-      <div class="card tile"><div class="k">Box 3 tax for ${y}</div><div class="v" data-count="${R.tax}">${eur(R.tax)}</div><div class="n">${(R.tax / 12).toFixed(0) > 0 ? `about ${eur(R.tax / 12)} a month` : 'under the allowance'}</div></div>
-      <div class="card tile"><div class="k">Counted wealth</div><div class="v">${eur(R.base)}</div><div class="n">on 1 January ${y}</div></div>
-      <div class="card tile"><div class="k">Above the allowance</div><div class="v">${eur(R.taxable)}</div><div class="n">allowance ${eur(R.allow)}</div></div>
-      <div class="card tile"><div class="k">Assumed return</div><div class="v">${(R.eff * 100).toFixed(2)}%</div><div class="n">taxed at ${P.rate}%</div></div>
-    </div>
-    <div class="grid g2">
-      <section class="card"><h2>How it is worked out</h2><p class="sub">From ${esc(v.src)}${v.estimate ? '. Replace with your real 1 January balances when you have them.' : ''}</p>
-        <div class="table-wrap"><table class="calc"><tbody>
-          ${row('Bank and savings', eur(v.bank))}${row(`× ${P.bank}% assumed return`, eur(v.bank * P.bank / 100), 'sub')}
-          ${row('Investments and other', eur(v.other))}${row(`× ${P.other}% assumed return`, eur(v.other * P.other / 100), 'sub')}
-          ${row(`Debts above ${eur(R.thr)}`, eur(R.d))}${row(`× ${P.debt}% assumed cost`, '−' + eur(R.d * P.debt / 100), 'sub')}
-          ${row('Counted wealth', eur(R.base), 'strong')}${row('Total assumed return', eur(R.ret))}${row('As a share of counted wealth', (R.eff * 100).toFixed(2) + '%')}
-          ${row('Minus the tax free allowance', '−' + eur(R.allow))}${row('Taxed base', eur(R.taxable))}${row('Taxed income (base × share)', eur(R.gain))}${row(`Tax at ${P.rate}%`, eur(R.tax), 'strong')}
-        </tbody></table></div>
-        ${actual != null ? `<p class="small" style="margin-top:10px">Your recorded actual return in ${y - 1} was <b class="amt">${eur(actual)}</b>. When your real return is lower than the assumed one, you can ask to be taxed on the real return instead.</p>` : ''}
-      </section>
-      <section class="card"><h2>Before 1 January</h2><p class="sub">What moving money before the reference date of ${y + (y < now.getFullYear() ? 1 : 0)} would do, with these rates</p>
-        <div class="sliders">
-          <label>Repay debt from savings <b id="vRepay"></b><input type="range" id="sRepay" min="0" max="${Math.max(0, Math.min(v.bank, v.debts))}" step="500" value="${sim.repay}"></label>
-          <label>Move savings into investments <b id="vInvest"></b><input type="range" id="sInvest" min="0" max="${Math.max(0, v.bank)}" step="500" value="${sim.invest}"></label>
-          <label>Spend from savings (a planned purchase) <b id="vSpend2"></b><input type="range" id="sSpend2" min="0" max="${Math.max(0, v.bank)}" step="500" value="${sim.spend}"></label></div>
-        <div class="sim-out" id="simOut"></div>
-        <p class="muted small">Investments count at a higher assumed return than savings, so moving savings into investments raises box 3 tax even when it may pay off over time.</p>
-      </section>
-    </div>
-    <div class="grid g2">
-      <section class="card"><h2>For your tax return</h2><p class="sub">Click a number to copy it. Tick what you have entered.</p>
-        ${items.map(it => `<div class="chk-row"><input type="checkbox" data-chk="${esc(it.k)}" ${checks[it.k] ? 'checked' : ''} aria-label="Done"><span>${esc(it.t)}</span>${it.v != null ? `<button type="button" class="linkish num amt" data-copy="${it.v.toFixed(0)}" title="Copy">${eur(it.v)}</button>` : ''}</div>`).join('')}
-        <p class="muted small" style="margin:10px 0 0">Values shown are today's; use the 1 January figures from your banks' year overviews when they differ.</p></section>
-      <section class="card"><h2>Tax calendar</h2>${cal.map((c, i) => `<div class="cal-row ${i === nextIdx ? 'next' : ''} ${c[0] < isoD(now) ? 'past' : ''}"><span class="cal-date">${fdate(c[0])}</span><span>${esc(c[1])}</span></div>`).join('')}</section>
-    </div>
-    <details class="card"><summary><b>Rates for ${y}</b> <span class="muted small">change them if the official numbers differ</span></summary>
-      <form id="rates" class="rates">${[['bank', 'Bank savings return (%)'], ['other', 'Other assets return (%)'], ['debt', 'Debt cost (%)'], ['allowance', 'Tax free allowance (€)'], ['threshold', 'Debt threshold (€)'], ['rate', 'Tax rate (%)']].map(([k, l]) =>
-        `<label class="field">${l}<input type="number" step="any" name="${k}" value="${P[k]}"></label>`).join('')}<div><button class="btn primary">Save rates</button></div></form></details>
-  </div>`;
-  onSeg('taxyear', v2 => { TAX.year = +v2; taxesPage(); });
-  $('#partner').onchange = e => edit({section: 'tax', fields: {partner: e.target.checked}}, 'Saved');
-  const simUpd = () => {
-    sim.repay = +$('#sRepay').value; sim.invest = +$('#sInvest').value; sim.spend = +$('#sSpend2').value;
-    $('#vRepay').innerHTML = `<span class="amt">€${fmtN(sim.repay)}</span>`; $('#vInvest').innerHTML = `<span class="amt">€${fmtN(sim.invest)}</span>`; $('#vSpend2').innerHTML = `<span class="amt">€${fmtN(sim.spend)}</span>`;
-    const s2 = {bank: v.bank - sim.repay - sim.invest - sim.spend, other: v.other + sim.invest, debts: Math.max(0, v.debts - sim.repay)}, r2 = box3(s2.bank, s2.other, s2.debts, P, partner), d = r2.tax - R.tax;
-    $('#simOut').innerHTML = `<span class="muted">Tax would be</span> <b class="amt">${eur(r2.tax)}</b> <span class="${Math.abs(d) < 1 ? 'muted' : d > 0 ? 'neg' : 'pos'}">${Math.abs(d) < 1 ? 'no change' : (d > 0 ? '+' : '−') + eur(Math.abs(d))}</span>`;
-  };
-  ['sRepay', 'sInvest', 'sSpend2'].forEach(id => $('#' + id).oninput = simUpd);
-  simUpd();
-  $$('[data-copy]').forEach(b => b.onclick = async () => { try { await navigator.clipboard.writeText(b.dataset.copy); toast('Copied ' + b.dataset.copy); } catch { toast(b.dataset.copy); } });
-  $$('[data-chk]').forEach(c => c.onchange = () => { const all = {...((S.tax || {}).checklist || {})}; all[y] = {...(all[y] || {}), [c.dataset.chk]: c.checked}; edit({section: 'tax', fields: {checklist: all}}, c.checked ? 'Ticked' : 'Unticked'); });
-  $('#rates').onsubmit = e => { e.preventDefault(); const f = Object.fromEntries([...new FormData(e.target)].map(([k, x]) => [k, +x])); const params = {...((S.tax || {}).params || {}), [y]: f}; edit({section: 'tax', fields: {params}}, 'Rates saved'); };
-  countUp();
-}
-
 /* ---------- advice ---------- */
 const EFFORT_RANK = {'2 minutes': 1, '5 minutes': 1, '10 minutes': 2, '15 minutes': 2, '30 minutes': 3, 'an hour': 4, 'a few months': 6};
 const RISK = [['low', 'Careful'], ['medium', 'Balanced'], ['high', 'Adventurous']];
 /* opportunities: what stands out in your numbers, Claude's ideas of the week, and the watchlist */
 let OPP = null, OPP_T = null;
 async function loadOpp(force) {
-  try { OPP = force ? await post('/api/opportunities/refresh', {}) : await (await fetch('/api/opportunities', {cache: 'no-store'})).json(); }
+  try { OPP = force ? await post('/api/opportunities/refresh', {}) : await cachedJSON('/api/opportunities',{ttl:OPP?.ideas?.updating?10000:600e3}); }
   catch (e) { if (force) toast(e.message); OPP = OPP || {signals: [], ideas: {}, watchlist: []}; }
   clearTimeout(OPP_T);
   // keep checking while Claude writes the ideas or prices are being fetched
-  if (OPP.ideas && OPP.ideas.updating) OPP_T = setTimeout(() => { if (view === 'advice') loadOpp().then(drawOpp); }, 12000);
+  if (OPP.ideas && OPP.ideas.updating) OPP_T = setTimeout(() => { if (view === 'explore' && EXP.tab==='opportunities') loadOpp().then(drawOpp); }, 12000);
   return OPP;
 }
 function oppCard() {
-  return `<section class="card opp-card" data-card="adv-opps"><div class="card-head"><div><h2>Opportunities</h2><p class="sub">Found for you automatically: from your own numbers every day, and new ideas from Claude every week</p></div>
-      <button type="button" class="btn ghost sm" id="oppRefresh" title="Ask Claude for new ideas now">New ideas</button></div>
-    <div id="oppBody"><div class="skel-line"></div><div class="skel-line short"></div></div>
-    <details class="opp-more" id="oppResearch" hidden><summary class="muted small">Research: your stocks against their industry, and what well known investors did</summary><div id="researchBody"></div></details>
-    <details class="opp-more"><summary class="muted small">Your risk profile and more questions for Claude</summary>
-      <div class="pref-row"><span>Your risk profile</span>${seg('ideaRisk', RISK, (S.profile || {}).risk || '')}</div>
-      <div class="idea-qs">${IDEA_QS.map(q => `<button type="button" class="barrow idea-q" data-idea="${esc(q)}"><span class="bl"><b>${esc(q)}</b></span><span aria-hidden="true">→</span></button>`).join('')}</div>
-    </details></section>`;
+  return `<div class="grid g2 opp-grid">
+      <section class="card" data-card="opp-signals"><div class="card-head"><h2>In your numbers</h2></div><div id="oppSignals"><div class="skel-line"></div><div class="skel-line short"></div></div></section>
+      <section class="card" data-card="opp-ideas"><div class="card-head"><h2>Ideas from Claude <span class="ago" id="oppIdeasAge"></span></h2><button type="button" class="btn ghost sm" id="oppRefresh" title="Ask Claude for new ideas now">New ideas</button></div>
+        <div id="oppIdeas"><div class="skel-line"></div><div class="skel-line short"></div></div><p class="note">Ideas, not instructions: check them yourself, and only invest what fits your plan.</p></section>
+    </div>
+    <section class="card" data-card="opp-ask"><div class="card-head"><h2>Ask Claude</h2><div class="opp-risk"><span class="muted small">Your risk profile</span>${seg('ideaRisk', RISK, (S.profile || {}).risk || '')}</div></div>
+      <div class="idea-qs">${IDEA_QS.map(q => `<button type="button" class="barrow idea-q" data-idea="${esc(q)}"><span class="bl"><b>${esc(q)}</b></span><span aria-hidden="true">→</span></button>`).join('')}</div></section>
+    <details class="card" id="oppResearch" data-card="opp-research" hidden><summary>Industry valuations and well known investors</summary><div id="researchBody"></div></details>`;
 }
 const IDEA_QS = ['Which of my investments look expensive, and which look cheap right now?', 'Given my risk profile, what would you change in my portfolio?',
   'Which companies look undervalued and would fit my portfolio?', 'What are the biggest risks in my portfolio right now?', 'What does the recent news mean for my investments?'];
 function drawOpp() {
-  const box = $('#oppBody'); if (!box || !OPP) return;
+  const box = $('#oppSignals'), ibox = $('#oppIdeas'); if (!box || !ibox || !OPP) return;
   const sig = OPP.signals || [], I = OPP.ideas || {}, ideas = I.ideas || [], watched = new Set((OPP.watchlist || []).map(w => w.symbol));
-  box.innerHTML = `${sig.length ? `<div class="opp-h">In your numbers</div>${sig.map((s, i) => `<div class="opp">
+  box.innerHTML = `${sig.length ? `${sig.map((s, i) => `<div class="opp">
       <div class="opp-t">${esc(s.title)}</div><div class="muted small">${esc(s.detail)}</div>
-      <div class="adv-act"><button class="btn sm" data-osig="${i}"><span class="claude-mark sm">${CLAUDE_ICON}</span>Talk about it</button>${s.open ? (s.open.startsWith('page:') ? `<button class="linkish small" data-link="${esc(JSON.stringify({kind: 'page', page: s.open.slice(5)}))}">Open</button>` : `<button class="linkish small" data-open="${esc(s.open)}">Open</button>`) : ''}</div></div>`).join('')}` : ''}
-    <div class="opp-h">Ideas from Claude${I.date ? `<span class="ago">${fdate(I.date)}</span>` : ''}</div>
-    ${ideas.map((d, i) => `<div class="opp idea">
+      <div class="adv-act"><button class="btn sm" data-osig="${i}"><span class="claude-mark sm">${CLAUDE_ICON}</span>Talk about it</button>${s.open ? (s.open.startsWith('page:') ? `<button class="linkish small" data-link="${esc(JSON.stringify({kind: 'page', page: s.open.slice(5)}))}">Open</button>` : `<button class="linkish small" data-open="${esc(s.open)}">Open</button>`) : ''}</div></div>`).join('')}` : '<div class="empty">Nothing stands out in your numbers today.</div>'}`;
+  if ($('#oppIdeasAge')) $('#oppIdeasAge').textContent = I.date ? fdate(I.date) : '';
+  ibox.innerHTML = `${ideas.map((d, i) => `<div class="opp idea">
       <div class="opp-top"><div class="opp-t">${esc(d.title)}</div>${d.type ? `<span class="chip-v">${esc(d.type)}</span>` : ''}</div>
       <div class="small"><b>${esc(d.name || '')}</b>${d.ticker ? ` <span class="muted">${esc(d.ticker)}</span>` : ''}</div>
       <div class="small">${esc(d.why || '')}</div>
@@ -593,9 +441,8 @@ function drawOpp() {
       <div class="adv-act"><button class="btn sm" data-oidea="${i}"><span class="claude-mark sm">${CLAUDE_ICON}</span>Talk about it</button>
         ${d.ticker ? (watched.has(d.ticker.toUpperCase()) ? '<span class="tag">On your watchlist</span>' : `<button class="linkish small" data-owatch="${i}">Watch</button>`) : ''}
         ${d.link && /^https?:\/\//.test(d.link) ? `<a class="linkish small" href="${esc(d.link)}" target="_blank" rel="noopener noreferrer">Read more</a>` : ''}</div></div>`).join('')
-      || `<div class="muted small" style="padding:6px 0 4px">${I.updating ? '<span class="spinner"></span> Claude is looking for ideas that fit you. This takes a minute.' : S.status.ai_mode ? 'No ideas yet. Press New ideas.' : 'Claude needs Claude Code or an API key for ideas.'}</div>`}
-    ${I.updating && ideas.length ? '<div class="muted small"><span class="spinner"></span> Fresh ideas are on the way.</div>' : ''}
-    <p class="muted small opp-note">Ideas, not instructions: check them yourself, and only invest what fits your plan.</p>`;
+      || `<div class="empty">${I.updating ? '<span class="spinner"></span> Claude is looking for ideas that fit you. This takes a minute.' : S.status.ai_mode ? 'No ideas yet. Press New ideas.' : 'Claude needs Claude Code or an API key for ideas.'}</div>`}
+    ${I.updating && ideas.length ? '<div class="muted small"><span class="spinner"></span> Fresh ideas are on the way.</div>' : ''}`;
   $$('[data-osig]').forEach(b => b.onclick = () => { const s = sig[+b.dataset.osig]; openChat({conv: 'opp-' + s.id.replace(/[^a-z0-9-]/gi, '-').slice(0, 60), ctx: {title: s.title, text: s.detail}}); CP.loading.then(() => { if (!CP.conv.messages.length) sendChat(s.ask, 'normal'); }); });
   $$('[data-oidea]').forEach(b => b.onclick = () => { const d = ideas[+b.dataset.oidea]; openChat({conv: 'idea-' + String(d.ticker || d.name || 'idea').replace(/[^a-z0-9-]/gi, '-').slice(0, 50), ctx: {title: d.title, text: `${d.name} (${d.ticker || 'no ticker'}): ${d.why} Risk: ${d.risk} Fits: ${d.fits}`}}); });
   $$('[data-owatch]').forEach(b => b.onclick = () => { const d = ideas[+b.dataset.owatch]; edit({section: 'watchlist', action: 'add', fields: {name: d.name || d.ticker, symbol: d.ticker, note: d.title}}, `Watching ${d.name || d.ticker}`).then(() => loadOpp().then(() => { drawOpp(); drawWatch(); })); });
@@ -625,7 +472,7 @@ function drawWatch() {
   box.innerHTML = W.map((w, i) => `<div class="list-row watch-row"><div><b>${esc(w.name)}</b> <span class="muted small">${esc(w.symbol)}</span>
       <div class="muted small">${w.price != null ? `${eur(w.price, 2)}${w.since_added_pct != null ? ` · ${w.since_added_pct > 0 ? '+' : ''}${w.since_added_pct}% since you added it` : ''}${w.from_high_pct != null && w.from_high_pct < -1 ? ` · ${Math.abs(w.from_high_pct)}% below its high` : ''}` : 'Fetching prices…'}${w.buy_below ? ` · waiting for ${eur(w.buy_below, 2)}` : ''}</div></div>
       <div class="num">${w.spark && w.spark.length > 2 ? spark(w.spark, {w: 80, h: 24}) : ''}<button class="linkish small" data-wedit="${i}">Edit</button></div></div>`).join('')
-    || '<div class="empty" style="padding:10px 0">Nothing yet. Press Watch on an idea, or Add.</div>';
+    || '<div class="empty">Nothing yet. Press Watch on an idea, or Add.</div>';
   const fields = w => [{k: 'name', label: 'Name', type: 'text', value: w.name || ''}, {k: 'symbol', label: 'Ticker on Yahoo Finance, for example ASML.AS or IWDA.AS', type: 'text', value: w.symbol || ''},
     {k: 'buy_below', label: 'Tell me when it is below (€), optional', type: 'number', value: w.buy_below ?? ''}, {k: 'note', label: 'Note', type: 'text', value: w.note || ''}];
   const after = () => loadOpp().then(() => { drawOpp(); });
@@ -688,8 +535,7 @@ function advicePage() {
   $('#view').innerHTML = `<div class="stack-y adv">
     <div class="grid g2">
       <div class="stack-y">
-        ${oppCard()}
-        <section class="card" data-card="adv-recs"><div class="card-head"><div><h2>Recommendations</h2><p class="sub">${perYear ? `Together worth about <b class="amt">${eur(perYear)}</b> a year. Best value for the effort first.` : 'Sorted by what they are worth for the effort.'}</p></div></div>
+        <section class="card" data-card="adv-recs"><div class="card-head"><div><h2>Recommendations</h2><p class="sub">${perYear ? `Together worth about <b class="amt">${eur(perYear)}</b> a year. Best value for the effort first.` : 'Best value for the effort first.'}</p></div><a class="linkish" href="#explore">Investment ideas →</a></div>
           ${recs.map((r, i) => `<article class="rec-card">
             <div class="rec-ic">${TOPIC_ICON[r.topic] || CLAUDE_ICON}</div>
             <div class="rec-body">
@@ -705,19 +551,19 @@ function advicePage() {
           ${(S.advice_dismissed || []).length ? `<details class="dismissed"><summary class="muted small">${S.advice_dismissed.length} you said were not for you</summary>
             ${S.advice_dismissed.map((d, i) => `<div class="list-row small"><div>${esc(d.title || d.id)}${d.reason ? `<div class="muted">${esc(d.reason)}</div>` : ''}</div><button class="btn ghost" data-restore="${i}">Bring back</button></div>`).join('')}</details>` : ''}
         </section>
-        <section class="card" data-card="adv-done"><h2>Done</h2>${done.length ? `<p class="sub">About <b class="amt">${eur(savedSoFar)}</b> saved so far by what you did</p>${[...done].reverse().map((d, i) => `<div class="list-row small"><div><b>${esc(d.title)}</b><div class="muted">${fdate(d.date)}${d.impact_eur ? `, worth ${eur(d.impact_eur)} a year` : ''}</div></div><button class="btn ghost" data-undone="${done.length - 1 - i}">Undo</button></div>`).join('')}`
-          : '<div class="empty" style="padding:12px 0">Mark a recommendation as done and it lands here, with what it has saved you.</div>'}</section>
+
       </div>
       <div class="stack-y">
         ${questionsCard()}
-        ${watchCard()}
+
         <section class="card" data-card="adv-todo"><h2>To do</h2>
-          <div id="todos">${S.todos.map((x, i) => `<div class="todo ${x.done ? 'done' : ''}"><input type="checkbox" data-todo="${i}" ${x.done ? 'checked' : ''} aria-label="Done"><span>${esc(x.text)}</span><button class="btn ghost" data-del-todo="${i}" aria-label="Remove">×</button></div>`).join('') || '<div class="empty" style="padding:12px 0">Nothing on your list.</div>'}</div>
+          <div id="todos">${S.todos.map((x, i) => `<div class="todo ${x.done ? 'done' : ''}"><input type="checkbox" data-todo="${i}" ${x.done ? 'checked' : ''} aria-label="Done"><span>${esc(x.text)}</span><button class="btn ghost" data-del-todo="${i}" aria-label="Remove">×</button></div>`).join('') || '<div class="empty">Nothing on your list.</div>'}</div>
           <form id="addTodo" class="controls" style="margin:14px 0 0"><input type="text" id="todoText" placeholder="Add a to do" style="flex:1" aria-label="New to do"><button class="btn primary">Add</button></form>
         </section>
+        <section class="card" data-card="adv-done"><h2>Done</h2>${done.length ? `<p class="sub">About <b class="amt">${eur(savedSoFar)}</b> saved so far by what you did</p>${[...done].reverse().map((d, i) => `<div class="list-row small"><div><b>${esc(d.title)}</b><div class="muted">${fdate(d.date)}${d.impact_eur ? `, worth ${eur(d.impact_eur)} a year` : ''}</div></div><button class="btn ghost" data-undone="${done.length - 1 - i}">Undo</button></div>`).join('')}`
+          : '<div class="empty">What you mark as done lands here, with what it saved you.</div>'}</section>
       </div>
     </div></div>`;
-  wireOpp();
   wireQuestions();
   // recommendations already talked about say so
   fetch('/api/chats', {cache: 'no-store'}).then(r => r.json()).then(list => { for (const c of list || []) { const b = document.getElementById('talk-' + c.id); if (b) b.lastChild.textContent = `Continue (${c.count})`; } }).catch(() => {});
@@ -747,7 +593,7 @@ const howToExport = name => (EXPORT_HOW.find(([re]) => re.test(name)) || [null, 
 function importView() {
   importPage();
   const box = $('#importExtras'); if (!box) return;
-  box.innerHTML = `<section class="card"><div class="card-head"><h2>What your data covers</h2><span class="muted small">Last 24 months. Click a gap to see what to export.</span></div><div id="coverage"><div class="skel-line"></div></div></section>
+  box.innerHTML = `<section class="card"><div class="card-head"><h2>What your data covers</h2><span class="muted small">Last 24 months</span></div><div id="coverage"><div class="skel-line"></div></div></section>
     <section class="card"><h2>Import log</h2><div id="ilog"><div class="skel-line"></div></div></section>`;
   drawCoverage(); drawLog();
 }
@@ -792,47 +638,40 @@ async function drawLog() {
 /* ---------- settings ---------- */
 async function settings() {
   settingsBase();
-  const box = $('#settingsExtras'); if (!box) return;
+  if (!$('#setYou')) return;
   const p = S ? S.profile || {} : {}, pr = UIS.prefs || {};
   let usage = {};
   try { usage = await (await fetch('/api/ai-usage', {cache: 'no-store'})).json(); } catch {}
+  if (!$('#setYou')) return;
   const months = Object.keys(usage).sort().slice(-6), cur = usage[isoD(new Date()).slice(0, 7)] || {};
   const KIND0 = {chat: 'Chat answers', import: 'Imports', categorise: 'Categorising', note: 'Payment conversations', places: 'Countries', briefing: 'Daily briefing', holding: 'Investment notes', news: 'News picks', ideas: 'Investment ideas', classify: 'Grouping investments', spending: 'Other'};
   const KIND = new Proxy(KIND0, {get: (o, k) => typeof k === 'string' && k.endsWith('-local') ? `${o[k.slice(0, -6)] || k.slice(0, -6)}, on this computer` : o[k]});
-  box.innerHTML = `<section class="card"><h2>About you</h2><p class="sub">Used for the plan, the advice and what Claude knows about you.</p>
-      <form id="profForm" class="prof">
-        <label class="field">Birth year<input type="number" name="birth_year" value="${esc(p.birth_year ?? '')}" placeholder="1995"></label>
-        <label class="field">Want to stop working at age<input type="number" name="retire_age" value="${esc(p.retire_age ?? '')}" placeholder="60"></label>
-        <label class="field">Household<input type="text" name="household" value="${esc(p.household || '')}" placeholder="Single, partner, children"></label>
-        <label class="field">Risk you are comfortable with<select name="risk">${[['', 'Not set'], ['low', 'Low: steady over growth'], ['medium', 'Medium'], ['high', 'High: growth over steady']].map(([v, l]) => `<option value="${v}" ${p.risk === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
-        <label class="field">Best savings rate you could get elsewhere (%)<input type="number" step="0.01" name="compare_rate_pct" value="${esc(p.compare_rate_pct ?? '')}"></label>
-        <label class="field">Benchmark for your investments<input type="text" name="benchmark" value="${esc(p.benchmark || 'IWDA.AS')}" placeholder="IWDA.AS"></label>
-        <label class="field" style="grid-column:1/-1">Goals in your own words<textarea name="goals_text" rows="2" placeholder="For example: buy a house in 2029, keep a year of expenses as a buffer">${esc(p.goals_text || '')}</textarea></label>
-        <div><button class="btn primary">Save</button></div></form></section>
-    <section class="card"><h2>Notifications</h2>
-      <div class="pref-row"><span>Claude's briefing on the home page</span>${seg('pBrief', [['daily', 'Daily'], ['weekly', 'Weekly'], ['off', 'Off']], pr.briefing || 'daily')}</div>
-      <label class="check pref-row"><input type="checkbox" id="pCel" ${pr.celebrations !== false ? 'checked' : ''}> Celebrate milestones (net worth, debt free, goals)</label>
-      <label class="check pref-row"><input type="checkbox" id="pStale" ${pr.stale_reminders !== false ? 'checked' : ''}> Remind me when bank data gets old</label></section>
-    <section class="card"><h2>AI use</h2><p class="sub">How often Claude was asked to do something. With Claude Code this counts toward your Claude plan; with an API key it is billed per use.</p>
-      <div class="pref-row"><span>How hard Claude thinks in the chat</span>${seg('pEffort', EFFORTS.map(([v, l]) => [v, l]), pr.effort || 'auto')}</div>
-      <p class="muted small">Auto answers simple lookups with a quick model and the rest with a normal one. Claude only reads through your data files when you ask it to change something, or on Deep. You can change it per question in the chat, and every answer offers Think harder.</p>
-      ${Object.keys(cur).length ? `<div class="kv">${Object.entries(cur).sort((a, b) => b[1] - a[1]).map(([k, n]) => `<span>${esc(KIND[k] || k)}</span><span>${n}</span>`).join('')}<span><b>This month</b></span><span><b>${Object.values(cur).reduce((a, b) => a + b, 0)}</b></span></div>` : '<div class="empty" style="padding:10px 0">Nothing yet this month.</div>'}
-      ${months.length > 1 ? chartHtml({type: 'bar', unit: '', labels: months.map(mLabel), series: [{name: 'Requests', values: months.map(m => Object.values(usage[m]).reduce((a, b) => a + b, 0))}]}, 420) : ''}</section>
-    <section class="card"><h2>Export</h2><p class="sub">Your data as files, to keep or to open elsewhere.</p>
-      <div class="controls" style="margin:0"><a class="btn" href="/api/export?what=all">Everything (JSON)</a><a class="btn" href="/api/export?what=transactions">Transactions (CSV)</a><a class="btn" href="/api/export?what=holdings">Investments (CSV)</a></div></section>
-    <section class="card" data-card="set-local"><h2>Model on this computer</h2><p class="sub">Small, frequent jobs (countries, the briefing, grouping investments, news picks, categorising) can run on a free model on your own computer with <a href="https://ollama.com" target="_blank" rel="noopener noreferrer">Ollama</a>. Nothing leaves the computer and it saves your Claude usage. When it isn't running, Claude does them.</p>
-      <div id="localBox"><div class="skel-line"></div></div></section>
-    <section class="card" data-card="set-public"><h2>Public data</h2><p class="sub">Interest rates and inflation come from the ECB, company figures from the SEC. Both are free and official. The SEC asks callers for a contact email.</p>
-      <form id="contactForm" class="controls" style="margin:0"><input type="email" id="contactEmail" placeholder="Your email, sent only to the SEC" style="flex:1" aria-label="Contact email"><button class="btn">Save</button></form></section>
-    <section class="card"><h2>Layout</h2><p class="sub">Drag any card by its grip (top right, next to the title) to move it. Every page remembers its own arrangement.</p>
-      <button type="button" class="btn" id="layoutReset">Put every page back</button></section>`;
+  const sw = (id, on, label) => `<input type="checkbox" class="switch" id="${id}" ${on ? 'checked' : ''} aria-label="${esc(label)}">`;
+  $('#setPrefs').innerHTML = setRow("Claude's briefing", 'The short note at the top of the overview.', seg('pBrief', [['daily', 'Daily'], ['weekly', 'Weekly'], ['off', 'Off']], pr.briefing || 'daily'))
+    + setRow('Celebrate milestones', 'Net worth records, debt paid off, goals reached.', sw('pCel', pr.celebrations !== false, 'Celebrate milestones'))
+    + setRow('Remind me when bank data gets old', '', sw('pStale', pr.stale_reminders !== false, 'Remind me when bank data gets old'));
+  $('#setEffort').innerHTML = setRow('How hard Claude thinks', 'Auto uses a quick model for simple questions. You can change it per question in the chat.', seg('pEffort', EFFORTS.map(([v, l]) => [v, l]), pr.effort || 'auto'));
+  const total = Object.values(cur).reduce((a, b) => a + b, 0);
+  $('#setUsage').innerHTML = setRow('Use this month', total ? `${total} request${total === 1 ? '' : 's'} to Claude.` : 'Nothing yet this month.', '')
+    + (total || months.length > 1 ? `<details class="set-more"><summary>Details</summary>${Object.keys(cur).length ? `<div class="kv">${Object.entries(cur).sort((a, b) => b[1] - a[1]).map(([k, n]) => `<span>${esc(KIND[k] || k)}</span><span>${n}</span>`).join('')}</div>` : ''}
+      ${months.length > 1 ? chartHtml({type: 'bar', unit: '', labels: months.map(mLabel), series: [{name: 'Requests', values: months.map(m => Object.values(usage[m]).reduce((a, b) => a + b, 0))}]}, 520) : ''}</details>` : '');
+  $('#setYou').innerHTML = `<form id="profForm" class="prof">
+      <label class="field">Birth year<input type="number" name="birth_year" value="${esc(p.birth_year ?? '')}" placeholder="1995"></label>
+      <label class="field">Want to stop working at age<input type="number" name="retire_age" value="${esc(p.retire_age ?? '')}" placeholder="60"></label>
+      <label class="field">Household<input type="text" name="household" value="${esc(p.household || '')}" placeholder="Single, partner, children"></label>
+      <label class="field">Risk you are comfortable with<select name="risk">${[['', 'Not set'], ['low', 'Low: steady over growth'], ['medium', 'Medium'], ['high', 'High: growth over steady']].map(([v, l]) => `<option value="${v}" ${p.risk === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+      <label class="field">Best savings rate elsewhere (%)<input type="number" step="0.01" name="compare_rate_pct" value="${esc(p.compare_rate_pct ?? '')}"></label>
+      <label class="field">Benchmark for your investments<input type="text" name="benchmark" value="${esc(p.benchmark || 'IWDA.AS')}" placeholder="IWDA.AS"></label>
+      <label class="field" style="grid-column:1/-1">Goals in your own words<textarea name="goals_text" rows="2" placeholder="For example: buy a house in 2029, keep a year of expenses as a buffer">${esc(p.goals_text || '')}</textarea></label>
+      <div><button class="btn primary">Save</button></div></form>`;
   $('#layoutReset').onclick = () => resetLayout(true);
   $('#contactForm').onsubmit = async e => { e.preventDefault(); try { await post('/api/settings', {contact_email: $('#contactEmail').value}); toast('Saved'); } catch (err) { toast(err.message); } };
   fetch('/api/local-ai', {cache: 'no-store'}).then(r => r.json()).then(L => {
     const box = $('#localBox'); if (!box) return;
-    box.innerHTML = L.models.length ? `<div class="pref-row"><span>Use it for small jobs</span>${seg('pLocal', [['auto', 'On'], ['off', 'Off']], L.mode || 'auto')}</div>
-      <div class="pref-row"><span>Model</span><select id="pLocalModel" aria-label="Local model">${L.models.map(m => `<option ${m === L.model ? 'selected' : ''}>${esc(m)}</option>`).join('')}</select></div>`
-      : '<p class="muted small">Ollama isn\'t running on this computer. Install it from ollama.com, then run <code>ollama pull qwen2.5:7b</code> once. The app finds it by itself.</p>';
+    box.innerHTML = L.models.length
+      ? setRow('Model on this computer', 'Small jobs run on Ollama, free and private. Claude takes over when it is off.', seg('pLocal', [['auto', 'On'], ['off', 'Off']], L.mode || 'auto'))
+        + setRow('Local model', '', `<select id="pLocalModel" aria-label="Local model">${L.models.map(m => `<option ${m === L.model ? 'selected' : ''}>${esc(m)}</option>`).join('')}</select>`)
+      : setRow('Model on this computer', 'Small jobs can run free and private on <a href="https://ollama.com" target="_blank" rel="noopener noreferrer">Ollama</a>. Install it, then run <code>ollama pull qwen2.5:7b</code> once.', '<span class="muted small">Not running</span>');
     onSeg('pLocal', v => uiPost({action: 'prefs', prefs: {local_ai: v}}, v === 'off' ? 'Small jobs go to Claude' : 'Small jobs run on this computer'));
     if ($('#pLocalModel')) $('#pLocalModel').onchange = e => uiPost({action: 'prefs', prefs: {local_model: e.target.value}}, 'Saved');
   }).catch(() => {});

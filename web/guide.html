@@ -1,0 +1,219 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wealth — installation and screenshots</title><style>body{max-width:1000px;margin:32px auto;padding:0 22px;font:16px/1.75 system-ui;color:#222;background:#fafaf8}h1{margin-top:64px;font-size:30px}h2{margin-top:36px}a{color:#26364a}code{background:#eeeee9;border-radius:5px;padding:2px 5px}pre{white-space:pre-wrap;padding:18px;background:#eeeee9;border-radius:12px}pre code{padding:0}img{display:block;max-width:100%;height:auto;border-radius:12px;border:1px solid #ddd;margin:18px 0}table{border-collapse:collapse;width:100%;font-size:14px}td,th{text-align:left;padding:10px;border-bottom:1px solid #ddd;vertical-align:top}.table-scroll{overflow:auto}li{margin:7px 0}nav{display:flex;gap:20px;flex-wrap:wrap;position:sticky;top:0;background:#fafaf8;padding:12px 0;border-bottom:1px solid #ddd}</style><nav><a href="#installation">Installation</a><a href="#connections">Connections</a><a href="#screenshots">Screenshots</a><a href="/">Dashboard</a></nav><h1 id="installation">Installation and first use</h1>
+<p>This guide starts with a disconnected demo, then creates a separate workspace for your own records. You do not need a GitHub account, bank login, AI account or Supabase project to try the demo.</p>
+<h2>1. Download and extract</h2>
+<ul>
+<li>Open the <a href="https://github.com/jcveraart/Wealth-dashboard-test">public repository</a>.</li>
+<li>Select <strong>Code → Download ZIP</strong>.</li>
+<li>On Windows, right-click the ZIP and choose <strong>Extract All</strong>. On macOS/Linux, extract it normally.</li>
+<li>Open the extracted project folder. Run the files from this folder, not from inside the ZIP.</li>
+<li>Install <a href="https://www.python.org/downloads/">Python</a> if you do not have it. Python 3.11 or 3.12 is recommended. The offline demo supports Python 3.9+. On Windows, include Python in PATH when offered.</li>
+</ul>
+<p>Keep the whole folder together. <code>web/</code>, <code>workspace/</code>, <code>intelligence/</code> and the launcher files are part of the application.</p>
+<h2>2. Try the demo</h2>
+<div class="table-scroll"><table><thead><tr><th>Computer</th><th>Start</th></tr></thead><tbody>
+<tr><td>Windows</td><td>Double-click <code>start-demo-windows.bat</code></td></tr>
+<tr><td>macOS</td><td>Open Terminal in this folder and run <code>sh start-demo-mac.command</code></td></tr>
+<tr><td>Linux</td><td>Run <code>sh start-demo-linux.sh</code></td></tr>
+<tr><td>Any terminal</td><td>Run <code>python demo.py</code> or <code>python3 demo.py</code></td></tr>
+</tbody></table></div>
+<p>The browser opens <a href="http://127.0.0.1:8051">http://127.0.0.1:8051</a>. The normal launcher starts the server in the background; you may close its launcher terminal after it reports success. For a visible development server, use <code>python demo.py --foreground</code> and keep that terminal open.</p>
+<p>The blue <strong>Demo · fictional data</strong> bar identifies this workspace. It contains invented investments, payment accounts, savings, debt, plans, an invoice and about five years of history. It does not connect to a bank, AI provider, local model or cloud database. Company figures, prices, headlines and comparison rates in demo mode are examples, not current financial information.</p>
+<p>Start with the <a href="#screenshots">screenshot walkthrough</a>. Try account filters, historical graphs, price/date sorting, savings-rate comparisons and debt scenarios. Demo chat returns clearly labelled saved examples. To try a deterministic import, download the <strong>DEMO ONLY</strong> sample CSV from <strong>Setup &amp; help</strong> and upload it on Import.</p>
+<h3>Stop, reopen or reset</h3>
+<pre><code>
+python launch.py demo --command stop
+
+python demo.py
+
+python launch.py demo --command restart
+
+</code></pre>
+<p>On Windows, <code>stop-demo-windows.bat</code> stops this profile. If you used foreground mode, press Ctrl+C in its terminal.</p>
+<p>To reset demo edits, first stop it, then run <code>python demo.py --reset</code>. The old demo is preserved in the ignored <code>backups/</code> folder before a new sample dataset is created. This never resets the personal profile. An interrupted first setup or an old unmarked demo folder is also preserved rather than deleted.</p>
+<p>If port 8051 is busy, use <code>python demo.py --port 8053</code>. Do not stop an unrelated application just to free a port.</p>
+<h2>3. Switch to your own data</h2>
+<ul>
+<li>In the demo, select <strong>Use my own data</strong> in the top bar, or open <strong>Setup &amp; help</strong>.</li>
+<li>Select <strong>Start my personal workspace</strong>.</li>
+<li>Your browser opens the separate workspace at <a href="http://127.0.0.1:8052/#setup">http://127.0.0.1:8052/#setup</a>.</li>
+<li>Check that the top bar says <strong>Personal · your local data</strong>.</li>
+<li>The personal workspace starts empty. Sample balances, transactions, invoices, history, settings and connections are not carried over.</li>
+</ul>
+<p>Alternatively, double-click <code>start-personal-windows.bat</code>, run the corresponding macOS/Linux launcher, or run <code>python personal.py</code>.</p>
+<div class="table-scroll"><table><thead><tr><th>Profile</th><th>Local folder</th><th>Default port</th><th>Initial state</th></tr></thead><tbody>
+<tr><td>Demo</td><td><code>.demo-runtime/</code></td><td>8051</td><td>Fictional data; external services blocked</td></tr>
+<tr><td>Personal</td><td><code>.personal-runtime/</code></td><td>8052</td><td>Empty; optional connections disabled</td></tr>
+</tbody></table></div>
+<p>Returning to the demo does not merge it with personal data. Restarting personal mode preserves your records. There is deliberately no personal-data reset button in the demo launcher.</p>
+<h2>4. Install optional features</h2>
+<p>The basic demo uses Python&#x27;s built-in libraries. Live prices, AI authentication, Excel/PDF processing, encrypted-backup support and optional tray features use packages listed in <code>requirements.txt</code>.</p>
+<ul>
+<li>Stop the personal workspace if it is running.</li>
+<li>From the extracted <strong>project folder</strong>, run <code>python install.py</code> (<code>python3 install.py</code> on macOS/Linux), or double-click <code>install-optional-windows.bat</code>.</li>
+<li>This creates <code>.venv/</code> in this project and installs its dependencies. It does not install OpenBB or connect any accounts.</li>
+<li>Start <code>personal.py</code> again. The launcher uses this virtual environment automatically.</li>
+</ul>
+<p>You can also install manually with <code>python -m venv .venv</code>, activate it, then run <code>python -m pip install -r requirements.txt</code>. Run commands in the same Python environment used to start the dashboard.</p>
+<h2>5. Choose your connections</h2>
+<p>In personal mode, open <strong>Setup &amp; help</strong>. Enable only what you want:</p>
+<ul>
+<li><strong>Live public data:</strong> quotes, company research, public filings where configured, and flexible-savings comparisons.</li>
+<li><strong>AI:</strong> your configured Claude, eligible ChatGPT-plan connection, or local model.</li>
+<li><strong>Supabase:</strong> your separately configured cloud copy.</li>
+</ul>
+<p>Select <strong>Save choices &amp; restart this workspace</strong>. After restart, configure the relevant provider in Settings. A choice enables the feature; it does not sign in, create a financial account, buy anything or copy someone else&#x27;s credentials. If the browser reloads before restart finishes, wait a few seconds and refresh.</p>
+<p>Follow <a href="#connections">Connections</a> for exact instructions, costs, data sharing and limitations. Every connection is optional. The public app has no developer-supplied keys and no shared financial database.</p>
+<h2>6. Import real records</h2>
+<p>Do this in <strong>personal mode</strong>:</p>
+<ul>
+<li>Begin with a recent bank export in CSV/TXT format where supported. Check its account, currency and date range.</li>
+<li>Recognised bank CSVs apply immediately and return a summary with Undo. Check imported totals, duplicates and internal transfers. For flows that offer a preview, inspect it before applying.</li>
+<li>Import current broker holdings and a complete execution/export history. Supported Trade Republic CSVs are calculated deterministically; other statements or screenshots may need AI.</li>
+<li>Upload invoices or receipts to clarify the products behind existing bank payments. An invoice is evidence, not a second payment. Confirm matching and allocation in Receipts.</li>
+<li>Enter confirmed flexible-savings balances/rates and debt terms. Leave unknown information empty rather than guessing.</li>
+<li>Review account links, investment regions, savings-plan schedules and the review inbox.</li>
+<li>Use <strong>Undo</strong> if an applied import or chat edit is wrong.</li>
+</ul>
+<p>No direct ABN AMRO, DEGIRO, Raisin or Trade Republic account-login connector is bundled. Bank/broker exports and documents provide your private records. Public quote/rate sources are separate from account access. The dashboard is EUR-based; verify conversions and imported financial totals.</p>
+<p>Return metrics need dated values and complete external cash flows. Missing execution, deposit, withdrawal, fee or FX evidence can leave a metric unavailable. Do not mark coverage complete merely to make a number appear.</p>
+<h2>7. Backups and sharing</h2>
+<p>Before a major update or moving computers, use <strong>Settings → Backups</strong>. Choose a portable password-protected backup and keep the password separately. Test its restore preview. Some optional cryptographic features require the installed packages.</p>
+<p>The personal runtime contains your records, statements, cache, settings and credentials. It is Git-ignored. Financial backups can contain settings/keys; treat them as private. OpenAI refresh credentials are not part of a financial backup, so sign in again after moving computers. Windows-protected credentials/local backup keys may not work under another Windows account; use portable backups for migration.</p>
+<p>Share this repository, its Download ZIP link or the screenshot guide. Never share <code>.personal-runtime/</code>, real exports, attachments, local settings, credentials, logs or financial backups. Nothing in the demo requires publishing your own data.</p>
+<h2>8. Update the application</h2>
+<p><strong>Git checkout:</strong> stop the relevant profile, run <code>git pull --ff-only</code>, then restart its launcher. The launcher copies updated code into the runtime while preserving personal records. If Git reports local code changes, review them; do not force-reset your work.</p>
+<p><strong>ZIP installation:</strong> stop the profile, make a portable backup, and extract the new ZIP beside the old folder. Start a fresh personal workspace in the new folder and restore your verified backup using the documented restore workflow, or carefully keep the old hidden personal folder when replacing code in place. Do not overwrite personal runtime files with demo fixtures. Keep the old folder until you have verified the new copy.</p>
+<p>After updating, press Ctrl+F5 once in the browser to reload scripts and styles. Existing demo edits remain; resetting the demo is optional and preserves a backup. Older installations containing personal files directly in the project root are not automatically migrated: back them up and import/restore confirmed records into the personal profile.</p>
+<h2>Troubleshooting</h2>
+<div class="table-scroll"><table><thead><tr><th>Problem</th><th>What to do</th></tr></thead><tbody>
+<tr><td><code>python</code> or <code>py</code> not found</td><td>Install Python, reopen the terminal, then try <code>py -3 --version</code> or <code>python3 --version</code>. On Windows, check PATH.</td></tr>
+<tr><td>Double-clicking closes immediately</td><td>Open a terminal in the extracted folder and run <code>python demo.py</code>; read the displayed error.</td></tr>
+<tr><td>Website not reachable</td><td>Start the correct profile. Use its printed 127.0.0.1 URL and port. Check that another app does not own that port.</td></tr>
+<tr><td>Port busy</td><td>Choose another port, e.g. <code>python personal.py --port 8054</code>. Each profile keeps its own port.</td></tr>
+<tr><td>Old first-launch/demo-marker error</td><td>Stop the old process and use the new launcher. It preserves an unmarked demo folder. Do not delete a folder containing real data.</td></tr>
+<tr><td>Personal folder has no marker</td><td>It is preserved and refused. Back it up and move it aside before creating a clean profile; restore/import deliberately.</td></tr>
+<tr><td>Missing packages</td><td>Run <code>install.py</code> from the project folder, then restart the personal launcher.</td></tr>
+<tr><td>Scripts/styles look old</td><td>Ctrl+F5 after a source update.</td></tr>
+<tr><td>AI cannot answer</td><td>Enable AI in personal Setup, restart, connect the provider, and check its allowance/authentication. No automatic paid fallback is used for the ChatGPT-plan connection.</td></tr>
+<tr><td>No live quotes/rates</td><td>Enable public data, install optional packages and restart. Some sources can be unavailable or stale; inspect source dates.</td></tr>
+<tr><td>No bank transactions</td><td>Import your own supported export in personal mode. Enabling public data does not log into your bank.</td></tr>
+<tr><td>No investment-return metric</td><td>Check coverage and the complete cash-flow/valuation history. Unknown figures stay unknown.</td></tr>
+<tr><td>Supabase errors</td><td>Use your own dedicated project, apply all five schema files, check URL and server secret key, and inspect Settings status.</td></tr>
+<tr><td>Background start failed</td><td>Read the selected profile&#x27;s <code>cache/server-error.log</code>. Do not post logs publicly without checking for private information.</td></tr>
+</tbody></table></div>
+<p>For development: <code>python demo.py --foreground --no-browser</code>; run tests with <code>python -m unittest discover -s tests</code>. The server binds only to loopback. This is a local single-user application, not an internet-hosted service.</p><h1 id="connections">Connections: what to enable and how</h1>
+<p>Use <strong>personal mode</strong>, install optional packages, then enable the relevant choice in <strong>Setup &amp; help</strong> and restart. All connections start unconfigured. Nothing logs into a bank or shares records just because you downloaded the repository.</p>
+<h2>Connection map</h2>
+<div class="table-scroll"><table><thead><tr><th>Connection</th><th>Supplies</th><th>What you need</th><th>Cost/access note</th></tr></thead><tbody>
+<tr><td>Local bank/broker imports</td><td>Your payments, holdings and execution records</td><td>Files you export yourself</td><td>No direct bank-login integration is bundled</td></tr>
+<tr><td>Yahoo Finance</td><td>Public market prices/history</td><td>Public-data choice and installed dependencies</td><td>No key; availability, timing and coverage vary</td></tr>
+<tr><td>Flexible savings pages</td><td>Published Raisin/ABN/Trade Republic offers</td><td>Public-data choice</td><td>Public comparisons; no account opening or transfer</td></tr>
+<tr><td>Claude Code</td><td>Chat, supported AI imports and observations</td><td>Installed CLI and your own login</td><td>Uses your plan/provider rules; account limits apply</td></tr>
+<tr><td>Anthropic API</td><td>AI through a saved API key</td><td>Your own key and billing</td><td>Separately billed; optional</td></tr>
+<tr><td>ChatGPT plan</td><td>OpenAI chat/import where eligible</td><td>Continue with ChatGPT in Settings</td><td>Plan eligibility, model access and preview limits apply</td></tr>
+<tr><td>Ollama</td><td>Selected small local AI tasks</td><td>Installed/running local model</td><td>Local inference; hardware and model quality matter</td></tr>
+<tr><td>SEC EDGAR</td><td>Public issuer filings, Form 4 and 13F disclosures</td><td>Explicit SEC identification consent</td><td>Your configured contact identification is sent to SEC</td></tr>
+<tr><td>Supabase</td><td>Optional cloud copy of dashboard records</td><td>Your own dedicated project and secret key</td><td>Cloud data leaves the laptop; project plan limits apply</td></tr>
+<tr><td>OpenBB</td><td>Additional public datasets</td><td>Separate optional environment/provider access</td><td>Dataset coverage depends on provider/version</td></tr>
+<tr><td>Quiver</td><td>Optional alternative datasets</td><td>Your own API key/entitlement</td><td>Provider subscription may be required</td></tr>
+</tbody></table></div>
+<h2>Bank and broker records</h2>
+<p>In your bank/broker application, export statements or transaction/execution CSVs. In the dashboard, open <strong>Import</strong>, upload and review the returned totals. Recognised bank CSVs apply directly with Undo; inspect a preview before applying when that workflow offers one. Start with current balances/holdings, then add history. Supported CSV formats can work without AI; screenshots, PDFs and unrecognised layouts may require a chosen importer.</p>
+<p>Bank exports containing PayPal debits do not identify every purchased product. PayPal exports and invoices can add evidence; confirm matching to avoid double-counting. The dashboard does not store a bank password or place orders. Savings plans are dashboard records, not instructions to a broker.</p>
+<h2>Live market and savings information</h2>
+<p>Enable <strong>Live public data</strong>, restart, then use Investments/Explore and <strong>Savings &amp; debt → Rates &amp; options</strong>. The savings view loads source-dated flexible-EUR products, separates promotions, applies published amount limits and retains stale markers when a source fails. It does not replace a saved personal rate or establish your eligibility. A published overnight account may still require transfer time. Protection limits belong to the legal bank and retain their quoted currency.</p>
+<p>Public requests concern securities/products, not your account balances. There is no guarantee of complete market coverage or a real-time quote. Inspect source/retrieval/effective dates and product terms before acting. Ordinary daily price charts are separate from adjusted historical-return series.</p>
+<h2>Claude</h2>
+<ul>
+<li>Install Claude Code using the current <a href="https://code.claude.com/docs/en/setup">official setup guide</a>. A native Windows option is <code>winget install Anthropic.ClaudeCode</code>; macOS/Linux instructions are on that page.</li>
+<li>Open a new terminal and run <code>claude --version</code>, then <code>claude</code> to complete your own login.</li>
+<li>Enable AI in personal Setup and restart the dashboard.</li>
+<li>In <strong>Settings → Claude &amp; AI</strong>, check the connection and choose Claude for chat/import. The small chat and import provider switches can also change it per workflow.</li>
+<li>Ask a small question first. Check the chosen account/context and provider&#x27;s limits.</li>
+</ul>
+<p>An Anthropic API key is an optional alternative in Settings and is billed separately. Do not paste keys into chat, commit them or place them in the public sample files. AI chat/import sends the selected question/document/context to your configured provider. Explicitly requested supported dashboard edits have Undo; they never place broker orders.</p>
+<h2>OpenAI / ChatGPT plan</h2>
+<p>Enable AI, restart, then choose <strong>Continue with ChatGPT</strong> in Settings. Complete the provider&#x27;s browser consent flow yourself, return to the dashboard and verify connection status. Choose an available model and try a short request. Eligible plan usage is distinct from an API-key account; this app does not silently switch to paid OpenAI API billing. Model lists do not themselves prove entitlement, and the provider can reject a request or impose usage limits. See the <a href="https://developers.openai.com/siwc/quickstart">official sign-in quickstart</a> and <a href="https://developers.openai.com/siwc/token-sharing-open-source/preview-limitations">preview limitations</a>.</p>
+<p>Use your own account, not the author&#x27;s login or a shared token. You can disconnect it in Settings. Windows credentials use local OS protection; on other systems keep credential files and their containing folder private. Signing in does not grant this dashboard access to your ChatGPT conversation history.</p>
+<h2>Ollama</h2>
+<p>Install <a href="https://ollama.com/download">Ollama</a>, run it on your computer, and install a suitable model using its own instructions. In Settings, select a local model for small tasks. This is not a substitute for a live research source or a guarantee that chat/import supports every local model. Check classifications and extracted figures. Local-model availability can be seen in Settings; the demo never discovers or uses your local model automatically.</p>
+<h2>SEC EDGAR and research coverage</h2>
+<ul>
+<li>Enable public data in personal mode.</li>
+<li>In <strong>Settings → Public data</strong> / <strong>Connections</strong>, enter the contact identification SEC requires.</li>
+<li>Explicitly allow that identifying contact email to be sent with SEC requests.</li>
+<li>Refresh research and inspect filing/report dates and coverage.</li>
+</ul>
+<p>SEC data is disclosure data: institutional holdings are delayed, insider forms need classification, and non-US coverage can be missing. Absence of a record is not proof that no event occurred. Read <a href="https://github.com/jcveraart/Wealth-dashboard-test/blob/main/INTELLIGENCE.md">INTELLIGENCE.md</a> for sources and calculation conventions. Public ECB, OECD, BIS, AFM and other adapters need no private-bank login; optional providers may need their own account.</p>
+<h2>Supabase cloud copy</h2>
+<p>Local use does not require Supabase. If you choose it, the configured portfolio/history/payment/receipt metadata is copied to your own hosted project; raw local source files are not automatically made public.</p>
+<ul>
+<li>Create a <strong>dedicated empty project</strong> in <a href="https://supabase.com/dashboard">Supabase</a>. Do not reuse another application&#x27;s production database.</li>
+<li>Open <strong>SQL Editor → New query</strong>. Run, in order: <code>supabase-schema.sql</code>, <code>supabase-history.sql</code>, <code>supabase-spending.sql</code>, <code>supabase-plans.sql</code>, <code>supabase-receipts.sql</code> from this repository.</li>
+<li>These fresh-install scripts do not contain destructive DROP TABLE commands. They assume this application&#x27;s schema; they are not a migration tool for arbitrary existing tables.</li>
+<li>Keep Row Level Security enabled. The included views use the caller&#x27;s security context; no public read policies are supplied.</li>
+<li>Find your project URL and a <strong>server secret key</strong> (<code>sb_secret_…</code>), or a legacy <code>service_role</code> key if your project still uses it. A publishable/anon key cannot perform this server-side copy. Secret keys have elevated access; keep them only in local settings. <a href="https://supabase.com/docs/guides/getting-started/api-keys">Official key documentation</a>.</li>
+<li>Enable Supabase in personal Setup, restart, then enter your own URL/key in <strong>Settings → Data → Supabase</strong>. Test the connection, then request a sync.</li>
+<li>Verify the rows in your project. Settings shows sync status. Automatic syncing depends on the running app; manual sync remains available.</li>
+</ul>
+<p>Do not run the synthetic SQL seed against a personal project. <code>build_supabase_seed.py</code> is only for a separate empty <strong>demo</strong> project if you deliberately want to inspect example tables; it creates SQL locally and makes no connection. Never use a friend&#x27;s/project author&#x27;s secret key. GitHub never needs this key.</p>
+<h2>OpenBB, Quiver and other optional sources</h2>
+<p>Most public features use the built-in sources. OpenBB is optional and is not installed by the basic installer. Follow <code>INTELLIGENCE.md</code> and <code>requirements-openbb.txt</code>, use a separate OpenBB environment, and configure its Python/provider path in Connections. Provider entitlements and returned datasets vary; missing data remains unavailable.</p>
+<p>For Quiver, add your own key in Settings only if your subscription supplies the desired dataset. It is not necessary for the core dashboard. You can remove optional keys without losing your local financial records.</p>
+<h2>GitHub and updates</h2>
+<p>GitHub distributes the code, not your finances. Downloading a ZIP requires no Git login. Cloning/pulling requires Git; a private fork requires your own GitHub authentication. Keep runtime folders ignored. Source-update checks do not upload your local finances. Read the installation update steps before replacing code.</p>
+<h2>Backups and moving computers</h2>
+<p>Use a portable encrypted backup with a password you keep separately. Preview the restore and recover into a new/isolated workspace before replacing the old one. Windows-local keys are tied to that OS user; do not assume copying a credential blob is a portable login. Sign in to providers again on the new machine. The demo&#x27;s sample files and reset backups are distinct from your personal records.</p><h1 id="screenshots">Screenshot walkthrough</h1>
+<p>All 17 screenshots were captured from this public build using a fresh download. Financial records, rates, prices, news and company figures are fictional; the personal-setup screenshot shows an empty test profile. No private dashboard, bank statement or credential was photographed.</p>
+<p>Follow the <a href="#installation">installation guide</a> first. The <a href="#connections">connections guide</a> explains provider setup, cost/access requirements and what data leaves your computer. Light/dark appearance follows your selected theme; the layout is the same.</p>
+<h2>Overview: your whole dashboard</h2>
+<p>Open Overview. The top card combines net worth and a small history graph; the briefing sits beside it. Further down, summaries link spending, investments, cash, goals and advice.</p>
+<p><img loading="lazy" alt="Overview: your whole dashboard" src="guide-images/01-overview.jpg"></p>
+<h2>Investments: compact daily view</h2>
+<p>Open Investments → Overview. Asset classes and relevant accounts filter the same selection. Daily/History switches change the chart without changing your recorded holdings.</p>
+<p><img loading="lazy" alt="Investments: compact daily view" src="guide-images/02-investments.jpg"></p>
+<h2>Performance: evidence before return figures</h2>
+<p>Choose Performance. Recorded account values can be charted immediately. Adjusted returns remain unavailable until external-flow coverage is confirmed; this sample intentionally demonstrates that safeguard.</p>
+<p><img loading="lazy" alt="Performance: evidence before return figures" src="guide-images/03-performance.jpg"></p>
+<h2>Allocation and portfolio risk</h2>
+<p>Choose Allocation &amp; risk. Compare concentration, sector/region/currency proxies and a covered-holdings risk model. A modeled basket is distinct from the return of your actual trades.</p>
+<p><img loading="lazy" alt="Allocation and portfolio risk" src="guide-images/04-allocation.jpg"></p>
+<h2>Recurring investment plans</h2>
+<p>Choose Savings plans. See each amount, frequency, account, monthly equivalent and next execution. Add/Edit changes dashboard records; it never places orders with a broker.</p>
+<p><img loading="lazy" alt="Recurring investment plans" src="guide-images/05-savings-plans.jpg"></p>
+<h2>Cash: location, earnings and reserves</h2>
+<p>Open Savings &amp; debt → Overview. Flexible balances, saved rates, idle cash, reserves and debt sit together. Fixed deposits and securities stay in Investments.</p>
+<p><img loading="lazy" alt="Cash: location, earnings and reserves" src="guide-images/06-cash-overview.jpg"></p>
+<h2>Cash: an individual account</h2>
+<p>Choose Accounts and select Emergency Savings. Details include balance dates, access, purpose, saved rates and earnings. Scroll down for balance history and evidence; unknown protection or interest-paid figures stay unknown.</p>
+<p><img loading="lazy" alt="Cash: an individual account" src="guide-images/07-cash-account.jpg"></p>
+<h2>Flexible rates and promotions</h2>
+<p>Choose Rates &amp; options. Compare an amount and baseline rate, and decide whether to include introductory offers. These demo banks and quotes are fictional. Personal live mode retrieves supported public product pages.</p>
+<p><img loading="lazy" alt="Flexible rates and promotions" src="guide-images/08-savings-rates.jpg"></p>
+<h2>Debt: compare keeping cash with repayment</h2>
+<p>Choose Debt &amp; repayments, enter an amount and select Compare choices. Both paths use the same upfront money and monthly budget. The graphs illustrate constant-rate assumptions; they do not change balances or model future DUO forgiveness.</p>
+<p><img loading="lazy" alt="Debt: compare keeping cash with repayment" src="guide-images/09-debt-scenario.jpg"></p>
+<h2>Spending and income together</h2>
+<p>Open Spending &amp; income → Overview. Change account chips and date range, then inspect categories or monthly bars. Internal transfers should be classified separately from spending.</p>
+<p><img loading="lazy" alt="Spending and income together" src="guide-images/10-spending.jpg"></p>
+<h2>A small payment drilldown</h2>
+<p>Click a spending category. The popup has just Sort by (Date/Amount) and Ascending/Descending. Open in Transactions carries the selection into the full transaction view.</p>
+<p><img loading="lazy" alt="A small payment drilldown" src="guide-images/11-payment-popup.jpg"></p>
+<h2>Income sources and history</h2>
+<p>Choose Income in Spending &amp; income. Monthly history, sources and recorded incoming transactions remain under the same navigation and account chips.</p>
+<p><img loading="lazy" alt="Income sources and history" src="guide-images/12-income.jpg"></p>
+<h2>Invoice products linked to one payment</h2>
+<p>Choose Receipts and open Example Demo Shop. Two fictional products reconcile to one €84 payment. Product categories can split that existing payment without creating another expense; keep source evidence attached.</p>
+<p><img loading="lazy" alt="Invoice products linked to one payment" src="guide-images/13-invoice-evidence.jpg"></p>
+<h2>A company dossier with an ordinary price chart</h2>
+<p>Open Explore → Company research, type ASML.AS and select Open research. The demo includes fictional financials, news and daily closes. The blue observations card can start a scoped conversation in personal mode once AI is connected.</p>
+<p><img loading="lazy" alt="A company dossier with an ordinary price chart" src="guide-images/14-company-research.jpg"></p>
+<h2>Imports, provider selection and coverage</h2>
+<p>Open Import. Claude/OpenAI switches choose the configured importer. Download the marked sample CSV from Setup &amp; help to try a deterministic import without AI. Recognised bank CSVs apply directly with a summary and Undo; review the resulting records.</p>
+<p><img loading="lazy" alt="Imports, provider selection and coverage" src="guide-images/15-import.jpg"></p>
+<h2>Try first, then choose your own workspace</h2>
+<p>Open Setup &amp; help. The demo tour and sample download need no account or packages. Start my personal workspace creates/reopens a different data folder instead of mixing real records with examples.</p>
+<p><img loading="lazy" alt="Try first, then choose your own workspace" src="guide-images/16-demo-setup.jpg"></p>
+<h2>Personal mode: empty and opt-in</h2>
+<p>The separate personal workspace starts with no sample financial records. Install optional packages, choose desired features, save/restart, then configure your own providers. Leave unwanted connections disabled.</p>
+<p><img loading="lazy" alt="Personal mode: empty and opt-in" src="guide-images/17-personal-setup.jpg"></p></html>

@@ -1,0 +1,4 @@
+Date,Amount,Description,Counterparty,Account
+2026-10-09,-18.50,DEMO ONLY: Example bookstore,Example Bookstore,demo-checking
+2026-10-09,-9.95,DEMO ONLY: Example coffee,Example Coffee,demo-checking
+2026-10-09,4.25,DEMO ONLY: Example refund,Example Refund,demo-checking

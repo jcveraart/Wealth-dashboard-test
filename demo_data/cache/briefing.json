@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-09",
+  "time": "2026-10-09T09:00:00+00:00",
+  "by": "demo",
+  "version": "overview-v2",
+  "items": [
+    {
+      "text": "Saved demo example: compare the income/spending balance and the cash reserve before increasing regular investments.",
+      "link": {
+        "kind": "page",
+        "page": "cash"
+      }
+    },
+    {
+      "text": "Saved demo example: your fictional portfolio combines funds, shares, bonds and crypto. Compare concentration in Investments.",
+      "link": {
+        "kind": "page",
+        "page": "holdings"
+      }
+    }
+  ]
+}

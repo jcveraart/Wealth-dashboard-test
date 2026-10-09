@@ -1,0 +1,163 @@
+/* Keep the established palette, typography and icons; make navigation and spacing consistent. */
+.page-tabs,.int-nav{display:flex;align-items:center;gap:4px;padding:4px;background:var(--surface-2);border:0;border-radius:24px;overflow-x:auto;scrollbar-width:thin;margin:0 0 4px;max-width:100%}
+.page-tabs button,.int-nav button{border:1px solid transparent;background:none;border-radius:20px;white-space:nowrap;color:var(--muted);font:inherit;font-size:13px;font-weight:600;min-height:36px;padding:7px 15px;cursor:pointer}
+.page-tabs button.active,.int-nav button.active{background:var(--surface);border-color:var(--line);color:var(--ink)}
+.page-tabs button:hover,.int-nav button:hover{color:var(--ink)}
+.page-tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.inv-bar{margin:0 0 2px;flex-wrap:nowrap;min-width:0}
+.inv-bar>.seg{overflow-x:auto;min-width:0;scrollbar-width:thin;flex-shrink:1}
+.inv-bar>.seg button{white-space:nowrap}
+.inv-bar select{flex-shrink:0;max-width:260px;border-radius:22px;min-height:36px;padding:7px 14px;font-size:12px}
+.inv-primary{display:grid;grid-template-columns:minmax(290px,.85fr) minmax(0,1.45fr);gap:18px;align-items:stretch}
+.inv-primary>.card{margin:0;min-width:0;padding:22px}
+.inv-primary .inv-hero{display:flex;flex-direction:column;justify-content:space-between;align-items:stretch;gap:16px}
+.inv-primary .inv-hero .big{font-size:clamp(32px,3.6vw,48px)}
+.inv-primary .ih-rets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+.inv-primary .ret{min-width:0;padding:5px 6px}
+.inv-primary .ret .v{font-size:13px}
+.inv-primary .card-head{align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.inv-primary .card-head h2{font-size:15px}
+.inv-primary .card-head>.controls{order:2;width:100%;justify-content:flex-end}
+.inv-primary .inv-viewbar{margin-left:auto;padding:0;font-size:12px}
+.inv-primary .inv-viewbar .seg button{font-size:12px;padding:5px 12px}
+.inv-primary .sub,.inv-primary #invChartNote{font-size:11px;line-height:1.5;margin-top:8px}
+.portfolio-brief{padding:15px 20px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px 28px;align-items:start}
+.portfolio-brief .brief-head{margin:0;white-space:nowrap;flex-wrap:wrap}
+.portfolio-brief .brief-head b{font-size:12px}
+.portfolio-brief .brief-line{font-size:12px;margin:0;line-height:1.6}
+.portfolio-brief #portfolioNotes{display:flex;gap:12px 28px;flex-wrap:wrap}
+.portfolio-brief #portfolioNotes p{flex:1 1 260px}
+.inv .grid{gap:18px}
+.inv .compact-chart{padding:18px 22px}
+.inv .empty{padding:18px 12px}
+[hidden]{display:none!important}
+.inv-more[open]>summary{margin-bottom:14px}
+.inv-stats{gap:16px}
+.inv-stats b{font-size:18px}
+.card-head{gap:12px;min-width:0}
+.card-head h2{min-width:0;line-height:1.4}
+.card-head .controls{flex-shrink:1;min-width:0}
+.ws-header,.int-top{align-items:center;gap:16px;flex-wrap:wrap}
+.controls{align-items:center;gap:8px 12px}
+.controls label{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ws-forms label{min-width:0}
+.ws-forms input,.ws-forms select,.ws-forms textarea{max-width:100%;box-sizing:border-box}
+.ws-table,.table-wrap,.int-table-wrap{max-width:100%;overflow-x:auto}
+.ws-table th,.int-table-wrap th{vertical-align:bottom;line-height:1.4}
+.ws-row,.list-row{gap:14px;min-width:0}
+.ws-row>div:first-child,.list-row>div:first-child{min-width:0;overflow-wrap:anywhere}
+.utility-links{display:flex;flex-wrap:wrap;gap:12px 24px;padding:12px 0}
+.utility-back{margin:0 0 6px}
+.quiet-update{font-size:11px;white-space:nowrap}
+.hero-history{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px;padding-top:12px;border-top:1px solid var(--line);flex-wrap:wrap}
+.hero-history svg{display:block;max-width:100%;flex:0 1 240px}
+.hero-history .small{font-size:10px}
+.home-hub-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:10px 0 18px}
+.home-hub-metrics>div{display:flex;flex-direction:column;gap:6px}
+.home-hub-metrics b{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.3}
+.home-hub-line{display:flex;flex-direction:column;gap:5px;padding:10px 0;border-bottom:1px solid var(--line)}
+.home-hub-line:first-child{padding-top:0}
+.home-hub-line .small{line-height:1.55}
+.home-hub-line .int-track{margin:4px 0;height:4px}
+.home-hub-links{display:flex;gap:8px 16px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.home-invest-allocation{height:10px;display:flex;border-radius:7px;overflow:hidden;margin:20px 0 12px;gap:2px}
+.home-hub-allocation{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:11px;color:var(--muted)}
+.home-hub-allocation i{display:inline-block;width:7px;height:7px;margin-right:5px;border-radius:50%}
+.home-support .card{padding:20px}
+.home:has(#homeHub) #wsToday{display:none}
+.home-priorities .card{min-width:0}
+.home-hub-card .card-head{margin-bottom:14px}
+.brief-prompts{display:flex;flex-wrap:wrap;gap:8px 14px;border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.brief-prompts button{font-size:11px;text-align:left}
+#view #homeSpendingChart svg{max-height:180px}
+.home-invest-trend{display:flex;flex-direction:column;gap:8px;margin:18px 0 0;padding-top:12px;border-top:1px solid var(--line)}
+.home-invest-trend svg{width:100%;height:48px;max-width:100%}
+@media(max-width:640px){.home-hub-metrics{gap:10px}.home-hub-metrics b{font-size:17px}.hero-history{align-items:flex-start}.hero-history svg{flex-basis:100%}}
+.pop{max-height:min(580px,calc(100vh - 24px))}
+.pop-head,.pop-filters,.pop-foot{flex-shrink:0}
+.pop-list{min-height:0;flex:1}
+.pop-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.pop-filters label{display:flex;flex-direction:column;gap:4px;color:var(--muted);font-size:11px;min-width:0}
+.pop-filters input{width:100%;min-width:0;box-sizing:border-box;height:32px;padding:5px 8px;border-radius:8px;font-size:12px}
+.pop-filter-meta{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:10px;color:var(--muted)}
+.pop-filter-error{grid-column:1/-1;font-size:11px;color:var(--loss)}
+.pop-filter-error:empty{display:none}
+.int-intro h2{font-size:21px}
+.int-top{margin:0 0 12px}
+#intConnections{display:none}
+#portfolioBrief .claude-mark{width:18px;height:18px}
+details[open]>summary{margin-bottom:12px}
+details.card[open]>summary{font-size:15px;font-weight:600}
+details .int-json{max-height:260px}
+.stack-y{gap:18px}
+@media(min-width:1400px){.inv-primary{grid-template-columns:minmax(330px,.8fr) minmax(0,1.5fr)}}
+@media(max-width:900px){.inv-primary{grid-template-columns:1fr}.inv-primary .inv-hero{flex-direction:row;flex-wrap:wrap;align-items:center}.inv-primary .ih-rets{flex:1 1 300px}.portfolio-brief{grid-template-columns:1fr}.portfolio-brief #portfolioNotes{gap:6px}.inv-bar select{max-width:190px}}
+@media(max-width:640px){.page-tabs{border-radius:22px}.page-tabs button{padding:7px 12px;font-size:12px}.inv-bar{flex-wrap:wrap}.inv-bar>.seg{width:100%}.inv-bar select{width:100%;max-width:none}.inv-primary>.card{padding:18px}.portfolio-brief{padding:15px 18px}.topbar .tools{gap:6px}.quiet-update{max-width:150px;white-space:normal}.inv-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.controls>input[type=search]{min-width:0;flex:1 1 180px}.ws-header h2{font-size:20px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* One shared navigation treatment, matching Spending. */
+.page-tabs{width:100%;box-sizing:border-box;padding:3px;gap:2px;margin:0;background:var(--surface-2);border-radius:999px}
+.page-tabs button{font-size:13px;font-weight:600;padding:7px 14px;min-height:0;border:0;color:var(--ink-2);line-height:normal}
+.page-tabs button.active{border:0;background:var(--surface);box-shadow:0 0 0 1px var(--line)}
+.inv-bar{display:block}.inv-bar>.investment-filter-chips{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;gap:6px;max-width:100%;overflow-x:auto;scrollbar-width:thin;padding:2px 0}.investment-filter-chips button{flex:0 0 auto;width:auto;white-space:nowrap}.chip-divider{flex:0 0 1px;width:1px;background:var(--line-strong);margin:3px 7px;align-self:stretch}
+#view a,.linkish,.h-link:hover,.int-link,.int-url{color:var(--ink-2)}
+#view a:hover,.linkish:hover,.int-link:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+#view a.btn{color:inherit}.linkish.muted{color:var(--muted)}
+.pop-sort{display:flex;align-items:center;gap:8px;padding:8px 16px;border-bottom:1px solid var(--line);flex-shrink:0}
+.pop-sort select{height:29px;font-size:12px;padding:3px 9px;border-color:var(--line);border-radius:999px;background:var(--surface-2)}
+.home-top .hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(120px,.72fr);align-content:center;column-gap:18px;row-gap:0}
+.home-top .hero>.label,.home-top .hero>.big,.home-top .hero>.hero-delta{grid-column:1}
+.home-top .hero>.day,.home-top .hero>.hero-foot{grid-column:1/-1}
+.hero-history{grid-column:2;grid-row:1/4;display:flex;flex-direction:column-reverse;align-self:center;align-items:stretch;margin:0;padding:0;border:0;gap:7px}
+.hero-history svg{width:100%;height:88px;flex:none}.hero-history .small{font-size:9px;line-height:1.4}
+.cash-insights{padding:18px 22px}.cash-insights .brief-head{margin-bottom:10px}.cash-insights p{font-size:13px;line-height:1.6;margin:7px 0}
+.cash-history .card{min-width:0}.debt-scenario-controls{display:flex;gap:10px 20px;flex-wrap:wrap;margin:12px 0}
+.debt-scenario-controls label{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-2)}
+.debt-scenario-controls input{max-width:110px;font-size:12px}.debt-scenario-controls select{font-size:12px}.debt-scenario-summary{font-size:12px;line-height:1.6;margin:12px 0;color:var(--ink-2)}
+.cash-rates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.cash-rates .card{min-width:0}
+@media(max-width:640px){.home-top .hero{grid-template-columns:minmax(0,1fr) minmax(95px,.6fr);column-gap:10px}.home-top .hero .big{font-size:38px}.hero-history svg{height:65px}.page-tabs button{padding:7px 14px;font-size:13px}.investment-filter-chips{width:100%}.cash-rates{grid-template-columns:1fr}}
+
+.page-tabs button,.page-tabs button.active{padding:5px 11px;line-height:normal;font-size:13px;font-weight:600}.page-tabs{margin:0}
+@media(max-width:640px){.page-tabs button{padding:5px 11px}}
+
+/* Company research follows the same compact card system as the rest of Wealth. */
+.research-search{gap:8px;max-width:440px;margin:0}.research-search input{flex:1;width:0;font-size:13px}.research-search button{font-size:13px}
+.research-hero{padding:20px 24px}.research-hero .int-company-head{align-items:center;margin:0 0 18px}.research-hero h2{font-size:28px;margin:5px 0}.research-hero .label{font-size:11px;color:var(--muted)}
+.research-hero .int-metrics{margin:0;gap:14px}.research-hero .int-metrics b{font-size:21px}.research-hero .int-metrics .small{font-size:11px}
+.research-primary{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;align-items:start}.research-primary>.card{min-width:0;padding:20px 24px}
+.research-price .card-head{flex-wrap:wrap;gap:10px}.research-price h2{font-size:15px}.research-price .seg button{font-size:11px;padding:5px 9px}.research-price>p{font-size:10px;line-height:1.5;margin:10px 0 0}
+.research-brief .brief-head{margin-bottom:14px;gap:8px;flex-wrap:wrap}.research-brief .claude-mark{width:18px;height:18px}.research-brief .brief-head b{font-size:13px}.research-brief #companyBriefAge{font-size:9px;margin-left:auto}
+.company-note{margin-bottom:12px}.company-note>.small{font-size:10px}.company-note p{font-size:12px;line-height:1.65;margin:3px 0 5px}.company-note a,.company-note a+.small{font-size:10px}
+.research-ask{display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--line)}.research-ask input{min-width:0;width:0;flex:1;font-size:12px}
+.research-prompts{gap:6px;margin-top:10px}.research-prompts button{font-size:11px;padding:4px 8px}.research-prompts .linkish{padding:0}
+.research-business-news .card{padding:20px 24px;min-width:0}.research-business-news h2{font-size:15px}.research-business .int-business{font-size:13px;line-height:1.7;max-width:none;margin:10px 0}
+.research-news .list-row{padding:9px 0}.research-news a{font-size:12px;line-height:1.5}.research-news .small{font-size:10px;margin-top:4px}
+.company-research>.grid .int-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.company-research>.grid .int-metrics b{font-size:19px}
+.company-research>.grid .card{min-width:0}.company-research>section:not(.research-hero){padding:20px 24px}
+.int-top{font-size:12px;margin-bottom:4px}.int-top #intSourceLink{font-size:11px}
+@media(max-width:1000px){.research-primary{grid-template-columns:1fr}.research-brief #companyBriefBody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px}}
+@media(max-width:640px){.research-brief #companyBriefBody{display:block}.research-hero .int-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.research-hero .int-metrics b{font-size:18px}.research-primary>.card,.research-hero{padding:18px}.research-search{max-width:100%}.research-hero .int-company-head{gap:10px}}
+
+.int-top>div{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.int-top>div>.label{display:none}
+.research-scores{display:grid;gap:12px;margin:18px 0}.research-score{display:grid;grid-template-columns:minmax(90px,1fr) minmax(50px,1fr) 28px;gap:12px;align-items:center;font-size:12px}.research-score b{text-align:right;font-variant-numeric:tabular-nums}.research-dataset{margin:10px 0 20px}
+
+/* Page briefings use the same quiet blue, top-right composition as Home. */
+.page-ai-top{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:stretch}
+.page-ai-top>.page-ai-summary,.page-ai-top>.page-ai-card{min-width:0;margin:0}
+.page-ai-card.brief{display:flex;flex-direction:column;gap:10px;padding:22px;background:color-mix(in srgb,var(--accent-soft) 45%,var(--surface));border-color:var(--line)}
+.page-ai-card .brief-head{margin:0;gap:8px;flex-wrap:wrap}.page-ai-card .brief-head b{font-size:14px}.page-ai-card .brief-head .ago{font-size:10px;color:var(--muted);margin-left:auto}
+.page-ai-card .claude-mark{width:22px;height:22px;flex-shrink:0}
+.page-ai-card .brief-line{font-size:13px;line-height:1.6;margin:0;padding:0;cursor:default}
+.page-ai-card .brief-lines{gap:12px}.page-ai-card .brief-lines>li{min-width:0}.page-ai-card .brief-lines a{font-size:10px;display:inline-block;margin-top:5px}
+.page-ai-card> .small{font-size:10px}.page-ai-card .brief-ask,.page-ai-card .home-hub-links{margin-top:auto;font-size:12px}
+.page-ai-card .home-hub-links{padding-top:6px}.page-ai-card .home-hub-links button{font-size:12px}
+.cash-ai-top>.grid.g4{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.cash-ai-top .tile{padding:20px}.cash-ai-top .tile .v{font-size:28px}.cash-ai-top .tile .n{font-size:12px;line-height:1.55}
+.investment-chart-row.inv-primary{display:block}.investment-ai-top .inv-hero{padding:24px;display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;gap:14px}.investment-ai-top .inv-hero .big{font-size:44px}
+.investment-ai-top .ih-rets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}.investment-ai-top .ret{min-width:0;padding:5px 6px}.investment-ai-top .ret .v{font-size:13px}
+.page-ai-card.portfolio-brief #portfolioNotes{display:block}.page-ai-card.portfolio-brief #portfolioNotes p{margin:0}
+.research-primary.company-chart-row{display:block}.company-chart-row>.research-price{width:100%;box-sizing:border-box}.company-ai-top>.research-hero{padding:22px}.company-ai-top .research-hero .int-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.page-ai-card.research-brief #companyBriefBody{display:block}
+.page-ai-card.research-brief .research-ask{margin-top:auto}.page-ai-card.research-brief .research-prompts{margin-top:0}
+@media(max-width:850px){.page-ai-top{grid-template-columns:1fr}.page-ai-top>.page-ai-card{order:2}.cash-ai-top .tile .v{font-size:26px}}
+@media(max-width:640px){.page-ai-card.brief{padding:18px}.cash-ai-top>.grid.g4{gap:12px}.cash-ai-top .tile{padding:16px}.cash-ai-top .tile .v{font-size:23px}.investment-ai-top .inv-hero{padding:18px}.investment-ai-top .inv-hero .big{font-size:38px}}
+
+.page-ai-card .brief-risk{font-size:11px;line-height:1.55;margin:5px 0}.page-ai-card .brief-risk+.small{font-size:10px}

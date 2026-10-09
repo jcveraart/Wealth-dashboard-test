@@ -22,7 +22,7 @@ const store = {
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const fdate = s => { if (!s) return ''; const [y, m, d] = s.split('-'); return d ? `${+d} ${MONTHS[m - 1]} ${y}` : `${MONTHS[m - 1]} ${y}`; };
 const TITLES = {overview: 'Overview', holdings: 'Investments', accounts: 'Accounts', cash: 'Savings & debt', spending: 'Spending & income', history: 'History',
-  plan: 'Plan', taxes: 'Taxes', advice: 'Advice', import: 'Import', settings: 'Settings', account: 'Account'};
+  plan: 'Plan', advice: 'Advice', import: 'Import', settings: 'Settings', account: 'Account'};
 // known categories are grouped; any new category (Crypto, Gold, Real estate ...) becomes its own group
 const TYPE_OF = c => ({'Broad ETF': 'ETFs', 'Tech ETF': 'ETFs', 'Stock': 'Stocks', 'Bond': 'Bonds', 'Bond fund': 'Bonds'}[c] || c || 'Other');
 const SERIES = ['--s1', '--s2', '--s3', '--s4', '--s5', '--s6', '--s7', '--s8'];
@@ -37,31 +37,37 @@ const ui = {
 };
 
 /* ---------- data ---------- */
-async function load() {
-  try {
-    const r = await fetch('/api/state', {cache: 'no-store'});
-    S = await r.json();
-    renderChrome();
-    const typing = document.activeElement && $('#view').contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
-    // the home page redraws itself only when the numbers changed, so charts don't flicker every 30 seconds
-    const sig = JSON.stringify([S.totals, S.status.last_refresh, (S.history || []).length]);
-    const quiet = view === 'overview' && sig === load.sig;
-    load.sig = sig;
-    if (!['import', 'spending', 'plan', 'taxes'].includes(view) && !quiet && !$('#dlg').open && !typing && !$('.menu, .pop, .fs, .cmdk-wrap')) renderView();
-    chatBadge();
-    milestones();
-  } catch (e) {
-    $('#pricePill').innerHTML = '<span class="dot off"></span>App not reachable. Is it running?';
-  }
+let stateRequest = null;
+async function load({background = false} = {}) {
+  if (background && document.hidden) return;
+  if (stateRequest) return stateRequest;
+  stateRequest = (async () => {
+    try {
+      const first = !S;
+      const epoch=DATA_EPOCH;
+      let state=await cachedJSON('/api/state', {force:true});
+      if(epoch!==DATA_EPOCH)state=await cachedJSON('/api/state',{force:true});
+      S=state;
+      renderChrome();
+      if (first || !background) renderView();
+      else if (background) quietNumbers();
+      chatBadge(); milestones();
+    } catch (e) {
+      $('#pricePill').innerHTML = '<span class="dot off"></span>App not reachable. Is it running?';
+    } finally { stateRequest = null; }
+  })();
+  return stateRequest;
 }
 async function post(url, body) {
   const r = await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
   const j = await r.json().catch(() => ({error: 'Unexpected response'}));
   if (!r.ok || j.error) throw new Error(j.error || 'Request failed');
+  const readOnly=/\/api\/(?:chats|ui)(?:\/|$)/.test(url)||url==='/api/cash-scenario'||url==='/api/intelligence/history_metrics'||/^\/api\/workspace\/(?:bond|loan|stress|benchmark|public|source-update|cloud-preview)$/.test(url)||url==='/api/chat'&&!j.undo;
+  if (!readOnly) invalidateData();
   return j;
 }
 async function edit(payload, msg) {
-  try { await post('/api/edit', payload); toast(msg || 'Saved'); await load(); renderView(); }
+  try { await post('/api/edit', payload); toast(msg || 'Saved'); await load(); }
   catch (e) { toast(e.message); }
 }
 function toast(msg) {
@@ -74,9 +80,9 @@ function renderChrome() {
   const st = S.status;
   const when = st.last_refresh ? new Date(st.last_refresh).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'}) : 'not yet';
   const cls = st.refreshing ? 'busy' : st.live_positions ? '' : 'off';
+  if(st.demo){$('#pricePill').innerHTML='<span class="dot off"></span>Demo · fictional prices';$('#pricePill').title='Synthetic sample data; no live service is connected.';return;}
   $('#pricePill').innerHTML = `<span class="dot ${cls}"></span>${st.refreshing ? 'Updating prices' : `${st.live_positions} of ${st.total_positions} live, ${when}`}`;
   $('#pricePill').title = st.errors.length ? `${st.errors.length} pricing issues, see Settings` : 'Prices from Yahoo Finance, about 15 minutes delayed';
-  if (st.demo) { $('#pricePill').innerHTML = '<span class="dot off"></span>Demo · synthetic prices'; $('#pricePill').title = 'All balances, payments and prices are invented demo data.'; }
 }
 let lastView = 'overview';
 function route() {
@@ -101,7 +107,7 @@ function route() {
 }
 function renderView() {
   if (!S && !['import', 'spending', 'settings'].includes(view)) { $('#view').innerHTML = skeleton(); return; }
-  ({overview, holdings, account: accountPage, cash, spending: () => spendingPage(), history: historyPage, plan: planPage, taxes: taxesPage,
+  ({overview, holdings, account: accountPage, cash, spending: () => spendingPage(), history: historyPage, plan: planPage,
     advice: advicePage, import: importView, settings})[view]();
 }
 
@@ -190,9 +196,14 @@ function plansCard() {
 function wirePlans() {
   const fields = x => [
     {k: 'instrument', label: 'Fund or stock', type: 'text', value: x.instrument || ''},
-    {k: 'account', label: 'Account', type: 'text', value: x.account || 'Trade Republic'},
+    {k:'account',label:'Investment account',type:'select',options:[...(S.accounts||[]).map(a=>[a.name,a.name]),[S.managed.name,S.managed.name]],value:x.account||(S.accounts||[]).find(a=>a.name==='Trade Republic')?.name||S.accounts?.[0]?.name||S.managed.name},
     {k: 'amount_eur', label: 'Amount per buy (€)', type: 'number', value: x.amount_eur ?? ''},
-    {k: 'frequency', label: 'How often: weekly, biweekly, monthly or quarterly', type: 'text', value: x.frequency || 'monthly'},
+    {k:'frequency',label:'Frequency',type:'select',options:[['weekly','Weekly'],['biweekly','Every two weeks'],['twice_monthly','Twice monthly'],['monthly','Monthly'],['quarterly','Quarterly']],value:x.frequency||'monthly'},
+    {k:'starts_on',label:'Starting date',type:'date',value:x.starts_on||''},
+    {k:'second_day',label:'Second calendar day (twice monthly; leave blank if unknown)',type:'number',value:x.second_day??''},
+    {k:'asset_class',label:'Product type (for example Private markets)',type:'text',value:x.asset_class||''},
+    {k:'execution_fee_eur',label:'Confirmed fee per execution € (blank if unknown)',type:'number',value:x.execution_fee_eur??''},
+    {k:'note',label:'Product details / evidence',type:'text',value:x.note||''},
     {k: 'day', label: 'Day of the month (monthly or quarterly)', type: 'number', value: x.day ?? ''},
     {k: 'active', label: 'Running', type: 'checkbox', value: x.active ?? true}];
   $('#planAdd').onclick = () => form('Add savings plan', fields({}), v => edit({section: 'savings_plans', action: 'add', fields: v}, 'Plan added'));
@@ -294,7 +305,8 @@ function chartHtml(c, width = CHART_W) {
             return `<rect data-s="${esc(s.name)}" data-tip="${tip(l, s.name, v)}"${c.pick ? ` data-pt="${i}|${k}"` : ''}${px(i)} x="${x}" y="${Math.min(Y(from), Y(to))}" width="${bw}" height="${Math.max(1, Math.abs(Y(to) - Y(from)))}" fill="${s.color}" stroke="var(--surface)" stroke-width="1.5"/>`;
           }).join('');
           return (i % every === 0 ? `<text class="c-ax" x="${x + bw / 2}" y="${H - 8}" text-anchor="middle">${esc(l)}</text>` : '') + segs +
-            (n <= 12 && total ? `<text class="c-val" x="${x + bw / 2}" y="${Y(up) - 6}" text-anchor="middle">${fmtV(total, unit, true)}</text>` : '');
+            // a total above the bar only when it fits its slot; otherwise neighbouring labels run into each other
+            (n <= 12 && total && band >= fmtV(total, unit, true).length * 7 + 6 ? `<text class="c-val" x="${x + bw / 2}" y="${Y(up) - 6}" text-anchor="middle">${fmtV(total, unit, true)}</text>` : '');
         }).join('')}</svg>`;
     } else {
       const band = (W - pl - pr) / n, gap = 2, bw = Math.min(46, (band * 0.7 - gap * (series.length - 1)) / series.length);
@@ -381,15 +393,21 @@ function attachTips(host, area) {
 /* ---------- import ---------- */
 function importPage() {
   const I = ui.imp;
-  const hasKey = S ? !!S.status.ai_mode : true;
+  const ap = S?.status?.ai || {};
+  const importer = chosenAIProvider('import');
+  const hasKey = importer === 'openai' ? !!ap.has_openai_plan : S ? !!S.status.ai_mode : true;
   $('#view').innerHTML = `<div class="stack-y">
     ${I.result ? `<section class="card msg-like"><div class="card-head"><h2>${I.result.undone ? 'Import undone' : 'Import done'}</h2>
         ${I.result.undo && !I.result.undone ? '<button class="btn" id="undoImport">Undo</button>' : ''}</div>${md(I.result.summary)}</section>` : ''}
-    ${!hasKey ? '<div class="banner warn">No AI available to read files. See <a href="#settings">Settings</a>.</div>' : ''}
+    ${!hasKey ? '<div class="banner warn">The selected AI provider is not configured. See <a href="#settings">Settings</a>. Known bank CSV exports still import without AI.</div>' : ''}
     <section class="card">
-      <h2>Import screenshots and files</h2>
-      <p class="sub">Drop anything: screenshots, transaction lists, yearly statements, CSV or Excel exports, PDFs, or a zip holding a whole folder of them, from any bank, broker or crypto exchange. The AI updates your investments and balances, adds new accounts when needed, and builds your history over the years. Payment account exports, statements and screenshots of payments (current account, credit card) go to <a href="#spending">Spending</a> automatically. Every import can be undone.</p>
-      <div class="drop" id="drop" tabindex="0" role="button" aria-label="Choose files"><strong>Drop screenshots or files here</strong><span class="muted">Images, CSV, Excel, PDF, text, or a zip of them. Click to choose, or paste with Ctrl+V</span></div>
+      <div class="card-head"><h2>Import screenshots and files</h2><div class="controls" style="margin:0">
+        ${aiProviderSwitch('import', I.busy)}
+        <select id="importMode" aria-label="Document type" ${I.busy?'disabled':''}><option value="auto" ${I.mode!=='receipts'?'selected':''}>Automatic</option><option value="receipts" ${I.mode==='receipts'?'selected':''}>Invoices & receipts</option></select></div></div>
+      <div class="import-plan-status">${aiPlanNotice('import')}</div>
+      ${I.mode==='receipts' ? '<p class="sub">Keep products and the original document, then confirm the bank payment. This does not create another expense.</p>' : ''}
+      <p class="sub">From any bank, broker or exchange. Payments go to Spending; the rest updates your investments, balances and history. Every import can be undone.</p>
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="Choose files"><strong>Drop screenshots or files here</strong><span class="muted">Screenshots, CSV, Excel, PDF or a zip. Click to choose, or paste.</span></div>
       <input type="file" id="file" accept="image/*,.csv,.tsv,.txt,.json,.xml,.pdf,.xlsx,.xls,.xlsm,.zip" multiple hidden>
       <div class="thumbs">${I.images.map((im, i) => im.url
         ? `<div class="thumb"><img src="${im.url}" alt="${esc(im.name)}"><button data-rm="${i}" aria-label="Remove">×</button></div>`
@@ -397,10 +415,10 @@ function importPage() {
       <div class="field" style="margin-top:16px">Note for the AI (optional)
         <textarea id="note" rows="2" placeholder="For example: these are all investments in my ABN AMRO managed portfolio">${esc(I.note)}</textarea></div>
       ${I.error ? `<div class="banner err" style="margin-bottom:12px">${esc(I.error)}</div>` : ''}
-      <button class="btn primary" id="analyse" ${!I.images.length || I.busy || !hasKey ? 'disabled' : ''}>${I.busy ? '<span class="spinner"></span> Importing' : `Import ${I.images.length || ''} file${I.images.length === 1 ? '' : 's'}`}</button>
+      <button class="btn primary" id="analyse" ${!I.images.length || I.busy ? 'disabled' : ''}>${I.busy ? '<span class="spinner"></span> Importing' : `Import ${I.images.length || ''} file${I.images.length === 1 ? '' : 's'}`}</button>
       ${I.busy ? `<div class="card working-box" id="impSteps">${stepsHtml(I.steps)}</div>` : ''}
+      <p class="note">Yearly statements are the best source for history. Very long transaction lists work, but the AI reads them as text, so check the totals. A Trade Republic Transaction_export.csv on its own is calculated exactly, without AI. You can also tell the AI what changed (press /).</p>
     </section>
-    <section class="card"><h2>Tips</h2><p class="sub" style="margin:0">Yearly statements are the best source for history. Very long transaction lists work, but the AI reads them as text, so check the totals. A Trade Republic Transaction_export.csv on its own is calculated exactly, without AI. You can also just tell Claude what changed (press /).</p></section>
     <div id="importExtras" class="stack-y"></div>
   </div>`;
   if ($('#undoImport')) $('#undoImport').onclick = async () => {
@@ -417,10 +435,17 @@ function importPage() {
   $$('[data-rm]').forEach(b => b.onclick = () => { I.images.splice(+b.dataset.rm, 1); importView(); });
   $('#note').oninput = e => { I.note = e.target.value; };
   $('#analyse').onclick = analyse;
+  bindAIProviderSwitch($('.provider-switch', $('#view')), 'import', importView);
+  bindChatGPTButtons($('#view'));
+  $('#importMode').onchange = e => { I.mode=e.target.value; importView(); };
 }
 document.addEventListener('paste', e => {
-  if (CP.open && document.activeElement && document.activeElement.closest('#chatPanel') && e.clipboardData?.files?.length) {
-    e.preventDefault(); readFiles(e.clipboardData.files).then(f => { CP.files.push(...f); renderChat(); }); return;
+  if (CP.open && document.activeElement && document.activeElement.closest('#chatPanel')) {
+    if (e.clipboardData?.files?.length) {
+      e.preventDefault(); readFiles(e.clipboardData.files).then(f => { CP.files.push(...f); renderChat(); });
+    }
+    // Plain text belongs in the chat composer, even when Import is the underlying page.
+    return;
   }
   if (view !== 'import' || ui.imp.busy) return;
   const files = [...(e.clipboardData?.files || [])];
@@ -438,7 +463,11 @@ async function readFiles(list) {
   const out = [];
   for (const f of [...list]) {
     try {
-      if (f.type.startsWith('image/')) { out.push({name: f.name || 'screenshot.png', ...await shrink(f)}); continue; }
+      if (f.size > 25e6) { toast(`${f.name} is larger than 25 MB`); continue; }
+      if (f.type.startsWith('image/')) {
+        const original_data=await new Promise((res,rej)=>{const reader=new FileReader();reader.onload=()=>res(reader.result.split(',')[1]);reader.onerror=rej;reader.readAsDataURL(f);});
+        out.push({name:f.name || 'screenshot.png', ...await shrink(f), original_data, original_media_type:f.type}); continue;
+      }
       const ext = (f.name.split('.').pop() || '').toLowerCase();
       if (!MIME[ext]) { toast(`${f.name}: this file type is not supported`); continue; }
       if (f.size > 25e6) { toast(`${f.name} is larger than 25 MB`); continue; }
@@ -476,8 +505,8 @@ async function analyse() {
   const pid = 'i' + Date.now() + Math.random().toString(36).slice(2, 7);
   watchProgress(pid, () => I.busy, '#impSteps');
   try {
-    const r = await post('/api/import', {files: I.images.map(({name, media_type, data}) => ({name, media_type, data})),
-      note: I.note, progress_id: pid});
+    const r = await post('/api/import', {files: I.images.map(({name, media_type, data, original_data, original_media_type}) => ({name, media_type, data, original_data, original_media_type})),
+      note: I.note, progress_id: pid, provider:chosenAIProvider('import'), mode:I.mode || "auto"});
     Object.assign(I, {images: [], note: '', result: {summary: r.summary, undo: r.undo}});
     await load();
   } catch (e) { I.error = e.message; }
@@ -491,50 +520,50 @@ function confirmTwice(key, msg) {
 }
 
 /* ---------- settings ---------- */
+/* One settings row: what it is on the left, the control on the right. */
+const setRow = (title, desc, control, id = '') => `<div class="set-row"${id ? ` id="${id}"` : ''}><div class="set-l"><b>${title}</b>${desc ? `<span>${desc}</span>` : ''}</div><div class="set-c">${control}</div></div>`;
+const SET_GROUPS = [['set-general', 'General'], ['set-ai', 'Claude & AI'], ['set-data', 'Data'], ['set-public', 'Public data'], ['set-you', 'About you']];
 function settingsBase() {
   const st = S ? S.status : {errors: [], has_api_key: false};
-  const theme = store.get('theme', 'system');
-  $('#view').innerHTML = `<div class="grid g2">
-    <section class="card">
-      <h2>AI import</h2>
-      <p class="sub">Screenshots and files you import are sent to Claude to be read.</p>
-      <div class="banner ${st.ai_mode ? 'ok' : 'warn'}" style="margin-bottom:12px">${st.ai_mode === 'api' ? 'Using your Anthropic API key (billed per import).' : st.ai_mode === 'claude_code' ? 'Using Claude Code on your normal Claude plan. No extra costs.' : 'No AI found. Install Claude Code or add an API key below.'}</div>
-      <p class="sub">Optional: an API key from console.anthropic.com is a bit faster, but is billed separately. Leave it empty to keep using your Claude plan.</p>
-      <form id="keyForm" class="controls" style="margin:0"><input type="password" id="key" placeholder="${st.has_api_key ? 'Key saved. Save empty to remove it' : 'sk-ant-...'}" autocomplete="off" style="flex:1" aria-label="API key"><button class="btn">Save key</button></form>
-    </section>
-    <section class="card">
-      <h2>Prices</h2>
-      <p class="sub">From Yahoo Finance, refreshed every 5 minutes, about 15 minutes delayed.</p>
-      <div class="kv"><span>Live priced</span><span>${S ? `${st.live_positions} of ${st.total_positions}` : ''}</span><span>Last update</span><span>${st.last_refresh ? new Date(st.last_refresh).toLocaleString('en-GB', {dateStyle: 'medium', timeStyle: 'short'}) : 'not yet'}</span></div>
-      <button class="btn" id="refresh" style="margin-top:14px">Refresh prices now</button>
-      ${st.errors.length ? `<h2 style="margin-top:18px">Pricing issues</h2>${st.errors.map(e => `<div class="list-row small">${esc(e)}</div>`).join('')}` : ''}
-    </section>
-    <section class="card">
-      <h2>Display</h2>
-      <div class="controls" style="margin-top:12px">${seg('theme', [['system', 'System'], ['light', 'Light'], ['dark', 'Dark']], theme)}</div>
-      <label class="check"><input type="checkbox" id="priv" ${document.body.classList.contains('private') ? 'checked' : ''}> Hide amounts (hover to reveal one)</label>
-    </section>
-    <section class="card" id="cloudCard">
-      <h2>Cloud database (Supabase)</h2>
-      <p class="sub">Keeps a copy of all investments, accounts, savings, debts, daily history and a full backup in your own Supabase database. It syncs every 15 minutes and after every change.</p>
-      ${st.cloud && st.cloud.connected
-        ? `<div class="banner ${st.cloud.error ? 'err' : 'ok'}" style="margin-bottom:12px">${st.cloud.error ? esc(st.cloud.error) : `Connected to ${esc(st.cloud.url.replace('https://', ''))}. ${st.cloud.last_sync ? 'Last sync ' + new Date(st.cloud.last_sync).toLocaleString('en-GB', {dateStyle: 'medium', timeStyle: 'short'}) + '.' : 'Not synced yet.'}`}</div>
-           <div class="controls" style="margin:0"><button class="btn primary" id="syncNow">Sync now</button><button class="btn ghost danger" id="cloudOff">Disconnect</button></div>`
-        : `<ol class="sub" style="padding-left:18px;margin:0 0 12px">
-             <li>Create a free project at supabase.com (<a href="https://supabase.com/dashboard/new" target="_blank" rel="noopener">open</a>).</li>
-             <li>Open SQL Editor, paste the contents of supabase-schema.sql from the app folder, and press Run.</li>
-             <li>Under Project Settings, API Keys, copy the Project URL and the secret key, and paste them here.</li></ol>
-           <form id="cloudForm" class="stack-y" style="margin:0">
-             <input type="text" id="cloudUrl" placeholder="https://yourproject.supabase.co" aria-label="Project URL" style="width:100%">
-             <input type="password" id="cloudKey" placeholder="Secret key (sb_secret_...)" autocomplete="off" aria-label="Secret key" style="width:100%">
-             <button class="btn primary">Connect and sync</button></form>`}
-    </section>
-    <section class="card">
-      <h2>Your data</h2>
-      <p class="sub" style="margin:0">Everything lives in portfolio.json in the app folder. Before every change a copy goes to the backups folder (the last 50 are kept). A Trade Republic Transaction_export.csv dropped on the Import page is calculated exactly, without AI.</p>
-    </section>
-    <div id="settingsExtras" style="display:contents"></div>
+  const theme = store.get('theme', 'system'), cloud = st.cloud || {};
+  const when = st.last_refresh ? new Date(st.last_refresh).toLocaleString('en-GB', {dateStyle: 'medium', timeStyle: 'short'}) : 'not yet';
+  const ai = st.ai_mode === 'api' ? 'Claude, with your API key' : st.ai_mode === 'claude_code' ? 'Claude Code, on your Claude plan' : 'Not connected. Install Claude Code or add an API key.';
+  const cloudRow = cloud.connected
+    ? setRow('Cloud copy', cloud.error ? `<span class="neg">${esc(cloud.error)}</span>` : `${esc(cloud.url.replace('https://', ''))} · ${cloud.last_sync ? 'synced ' + new Date(cloud.last_sync).toLocaleString('en-GB', {dateStyle: 'medium', timeStyle: 'short'}) : 'not synced yet'}`,
+      '<button class="btn sm" id="syncNow">Sync now</button><button class="btn ghost danger" id="cloudOff">Disconnect</button>')
+    : setRow('Cloud copy', 'Keep a copy of everything in your own Supabase database. It syncs every 15 minutes.', '<button type="button" class="btn sm" id="cloudSetup">Set up</button>')
+      + `<div class="set-more" id="cloudSteps" hidden><ol><li>Create a free project at <a href="https://supabase.com/dashboard/new" target="_blank" rel="noopener">supabase.com</a>.</li><li>In SQL Editor, run the contents of supabase-schema.sql from the app folder.</li><li>Under Project Settings, API Keys, copy the Project URL and the secret key.</li></ol>
+        <form id="cloudForm" class="set-form"><input type="text" id="cloudUrl" placeholder="https://yourproject.supabase.co" aria-label="Project URL"><input type="password" id="cloudKey" placeholder="Secret key (sb_secret_...)" autocomplete="off" aria-label="Secret key"><button class="btn primary sm">Connect and sync</button></form></div>`;
+  $('#view').innerHTML = `<div class="settings">
+    <nav class="set-nav" aria-label="Settings sections">${SET_GROUPS.map(([id, l], i) => `<button type="button" data-set-go="${id}" class="${i ? '' : 'on'}">${l}</button>`).join('')}</nav>
+    <div class="set-main stack-y">
+      <section class="card set-group no-tools" id="set-general"><h2>General</h2>
+        ${setRow('Appearance', '', seg('theme', [['system', 'System'], ['light', 'Light'], ['dark', 'Dark']], theme))}
+        ${setRow('Hide amounts', 'Point at an amount to see it.', `<input type="checkbox" class="switch" id="priv" ${document.body.classList.contains('private') ? 'checked' : ''} aria-label="Hide amounts">`)}
+        <div id="setPrefs"></div>
+        ${setRow('Layout', 'Cards you moved go back to where they started.', '<button type="button" class="btn sm" id="layoutReset">Reset every page</button>')}
+      </section>
+      <section class="card set-group no-tools" id="set-ai"><h2>Claude & AI</h2>
+        ${setRow('Connected to', ai, `<span class="dot ${st.ai_mode ? '' : 'off'}"></span>`)}
+        ${setRow('API key', 'Optional. A bit faster, but billed separately.', `<form id="keyForm" class="set-inline"><input type="password" id="key" placeholder="${st.has_api_key ? 'Saved. Save empty to remove' : 'sk-ant-...'}" autocomplete="off" aria-label="API key"><button class="btn sm">Save</button></form>`)}
+        <div id="providerSettings"></div><div id="setEffort"></div><div id="localBox"></div><div id="setUsage"></div>
+      </section>
+      <section class="card set-group no-tools" id="set-data"><h2>Data</h2>
+        ${setRow('Prices', `Yahoo Finance, about 15 minutes delayed. ${S ? `${st.live_positions} of ${st.total_positions} live, ` : ''}last update ${when}.`, '<button class="btn sm" id="refresh">Refresh now</button>')}
+        ${st.errors.length ? `<details class="set-more"><summary>${st.errors.length} pricing issue${st.errors.length === 1 ? '' : 's'}</summary>${st.errors.map(e => `<div class="list-row small">${esc(e)}</div>`).join('')}</details>` : ''}
+        ${setRow('Export', 'Your data as files.', '<a class="btn sm" href="/api/export?what=all">Everything</a><a class="btn sm" href="/api/export?what=transactions">Transactions</a><a class="btn sm" href="/api/export?what=holdings">Investments</a>')}
+        <div id="cloudCard">${cloudRow}</div>
+        ${setRow('Files and backups', 'Everything lives in portfolio.json in the app folder. Before every change a copy goes to backups.', '<button type="button" class="btn sm" data-ws-go="backups">Backups</button><button type="button" class="btn sm" data-ws-go="documents">Documents</button>')}
+        ${cloud.receipts?.ready === false ? '<p class="sub set-note">Invoice details stay on this computer until you run supabase-receipts.sql once.</p>' : ''}
+      </section>
+      <section class="card set-group no-tools" id="set-public"><h2>Public data</h2>
+        ${setRow('Contact email for the SEC', 'Company figures come from the SEC, which asks who is calling. Only sent there.', '<form id="contactForm" class="set-inline"><input type="email" id="contactEmail" placeholder="you@example.com" aria-label="Contact email"><button class="btn sm">Save</button></form>')}
+        <div id="intSettingsConnections"></div>
+      </section>
+      <section class="card set-group no-tools" id="set-you"><h2>About you</h2><p class="sub">Used for the plan, the advice and by Claude.</p><div id="setYou"></div></section>
+    </div>
   </div>`;
+  providerSettings();
   $('#keyForm').onsubmit = async e => {
     e.preventDefault();
     try { await post('/api/settings', {anthropic_api_key: $('#key').value}); toast('Key saved'); await load(); settings(); }
@@ -546,11 +575,17 @@ function settingsBase() {
     try { const r = await post(url, body); toast(r.done); } catch (err) { toast(err.message); }
     await load(); settings();
   };
+  if ($('#cloudSetup')) $('#cloudSetup').onclick = () => { $('#cloudSteps').hidden = !$('#cloudSteps').hidden; };
   if ($('#cloudForm')) $('#cloudForm').onsubmit = e => { e.preventDefault(); cloudCall('/api/cloud', {url: $('#cloudUrl').value, key: $('#cloudKey').value}, $('#cloudForm button')); };
   if ($('#syncNow')) $('#syncNow').onclick = e => cloudCall('/api/cloud/sync', {}, e.target);
   if ($('#cloudOff')) $('#cloudOff').onclick = e => { if (confirmTwice('cloudoff', 'Click Disconnect again to stop syncing. Your Supabase data stays where it is.')) cloudCall('/api/cloud', {url: '', key: ''}, e.target); };
-  onSeg('theme', v => { store.set('theme', v); applyTheme(); settings(); });
+  onSeg('theme', v => { store.set('theme', v); applyTheme(); $$('[data-seg="theme"] button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === v)); });
   $('#priv').onchange = e => setPrivate(e.target.checked);
+  $$('[data-ws-go]').forEach(b => b.onclick = () => wsNavigate(b.dataset.wsGo));
+  // the section index follows the scroll
+  $$('[data-set-go]').forEach(b => b.onclick = () => { const g = document.getElementById(b.dataset.setGo); if (g) window.scrollTo({top: g.getBoundingClientRect().top + scrollY - 16, behavior: 'smooth'}); });
+  const spy = () => { if (view !== 'settings' || !$('.set-nav')) return removeEventListener('scroll', spy); let on = SET_GROUPS[0][0]; for (const [id] of SET_GROUPS) { const g = document.getElementById(id); if (g && g.getBoundingClientRect().top < 140) on = id; } $$('[data-set-go]').forEach(b => b.classList.toggle('on', b.dataset.setGo === on)); };
+  addEventListener('scroll', spy, {passive: true});
 }
 
 /* ---------- dialog form ---------- */
@@ -596,6 +631,6 @@ window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() =
 window.addEventListener('DOMContentLoaded', () => {
   shellInit();
   route();
-  load().then(() => { if (view === 'import' || view === 'settings') renderView(); });
-  setInterval(load, 30000);
+  load().then(preloadDashboard);
+  setInterval(() => load({background:true}), 30000);
 });

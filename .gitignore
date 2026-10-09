@@ -29,3 +29,26 @@ Transaction_export*.csv
 *.xls
 *.pdf
 # The invented demo_data/ fixtures are deliberately versioned.
+
+# Isolated personal profiles and all local account credentials
+/.personal-runtime/
+/.personal-runtime-init-*/
+/.chatgpt/
+/.openbb-env/
+/attachments/
+/receipts.json
+/receipts_new.json
+/spending_new.json
+/spending_rules.json
+/.env
+.env.*
+*.wealthbackup
+*.log
+/cache/
+/runtime-profile.json
+# Optional adapters and installed dependencies are never shared.
+
+# Only explicitly fictional text samples are public.
+!/demo_data/attachments/receipts/*.txt
+!/web/samples/*.txt
+!/demo_data/web/samples/*.txt

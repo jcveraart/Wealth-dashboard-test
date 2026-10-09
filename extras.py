@@ -222,18 +222,19 @@ def briefing_facts(state):
                                                                   "filter": {"category": c, "month": m0}}})
         # a payment far above what that merchant normally charges
         by_key = defaultdict(list)
+        merchant_key=lambda t:t.get('key') or t.get('merchant_key') or re.sub('[^a-z0-9]','',str(t.get('merchant') or t.get('counterparty') or t.get('description') or '').lower())
         for t in d["transactions"]:
             if t["amount"] < 0:
-                by_key[t["key"]].append(t)
+                by_key[merchant_key(t)].append(t)
         since = (today - timedelta(days=14)).isoformat()
         for t in d["transactions"]:
             if t["date"] < since or t["amount"] >= 0 or kind(t) != "expense":
                 continue
-            earlier = sorted(-o["amount"] for o in by_key[t["key"]] if o["date"] < t["date"])
+            earlier = sorted(-o["amount"] for o in by_key[merchant_key(t)] if o["date"] < t["date"])
             size = -t["amount"]
             med = earlier[len(earlier) // 2] if earlier else None
             if (med and size >= 250 and size >= 3 * med) or (not earlier and size >= 400):
-                facts.append({"text": f"A {_eur(size)} payment to {t['merchant']} on {day_month(t['date'])} is {'far above what they normally charge' if med else 'a new merchant'}.",
+                facts.append({"text": f"A {_eur(size)} payment to {t.get('merchant') or t.get('counterparty') or 'an unlabelled merchant'} on {day_month(t['date'])} is {'far above what they normally charge' if med else 'a new merchant'}.",
                               "impact": size * 0.5, "link": {"kind": "tx", "id": t["id"]}})
                 break
         unc = sum(1 for t in d["transactions"] if not t.get("category"))
@@ -281,13 +282,53 @@ def briefing_facts(state):
                           "impact": 60, "link": {"kind": "page", "page": "cash"}})
     except Exception:
         pass
+    # Broad, useful observations remain available even on a quiet market day.
+    totals=state.get('totals') or {}
+    if totals.get('invested') is not None and totals['invested']>0:
+        plans=[p for p in state.get('savings_plans',[]) if p.get('active')]
+        monthly=sum(p.get('per_month') or 0 for p in plans)
+        text=f"Your investments total {_eur(totals['invested'])}."
+        if plans:text+=f" {len(plans)} active savings plans schedule {_eur(monthly)} a month."
+        facts.append({'text':text,'impact':35,'link':{'kind':'page','page':'holdings'}})
+    live=[p for p in state.get('positions',[]) if p.get('live') and p.get('day_change') is not None]
+    if live:
+        mover=max(live,key=lambda p:abs(p['day_change']))
+        if abs(mover['day_change'])>=.5:
+            facts.append({'text':f"{mover['name']} has the largest recorded contribution today: {'+' if mover['day_change']>=0 else '−'}{_eur(mover['day_change'])}.",'impact':max(40,abs(mover['day_change'])*.3),'link':{'kind':'holding','id':mover.get('isin') or 'n:'+mover['name'].strip().lower()}})
+    recorded=[r for r in rows if r['date']<=today.isoformat()]
+    if recorded:
+        month=max(r['date'] for r in recorded)[:7];selected=[r for r in recorded if r['date'].startswith(month)]
+        spent=-sum(r['amount'] for r in selected if kind(r)=='expense')
+        income=sum(r['amount'] for r in selected if kind(r)=='income')
+        signed=lambda value:('−' if value<0 else '')+_eur(value)
+        facts.append({'text':f"Recorded spending in {date.fromisoformat(month+'-01'):%B} is {signed(spent)}; income recorded is {signed(income)}.",'impact':32,'link':{'kind':'page','page':'spending'}})
+    dismissed={r.get('id') for r in (state.get('advice_dismissed') or [])+(state.get('advice_done') or [])}
+    recommendations=[r for r in state.get('advice',[]) if r.get('id') not in dismissed]
+    if recommendations:
+        facts.append({'text':f"{len(recommendations)} recommendations are ready to review, including {recommendations[0].get('title','your current plan')}.",'impact':28,'link':{'kind':'page','page':'advice'}})
+    goals=state.get('goals') or []
+    if goals:facts.append({'text':f"{len(goals)} goals are recorded. {goals[0].get('name','Your first goal')} is one to check against your current saving plans.",'impact':25,'link':{'kind':'page','page':'plan'}})
+    if totals.get('savings') is not None:
+        facts.append({'text':f"Your recorded bank accounts hold {_eur(totals['savings'])}; recorded debt is {_eur(totals.get('debt') or 0)}.",'impact':15,'link':{'kind':'page','page':'cash'}})
+    if not facts:facts.append({'text':'Import a bank or broker statement to connect spending, investments and your financial plan.','impact':1,'link':{'kind':'page','page':'import'}})
     facts.sort(key=lambda f: -f["impact"])
     return facts
+
+
+def diverse_briefing_facts(facts,limit=8):
+    """Keep the most useful observation per category in the model's short candidate list."""
+    chosen=[];seen=set()
+    for fact in facts:
+        link=fact.get('link') or {};category='spending' if link.get('kind') in ('payments','tx') else 'holdings' if link.get('kind')=='holding' else link.get('page','general')
+        if category not in seen:chosen.append(fact);seen.add(category)
+        if len(chosen)>=limit:break
+    return chosen
 
 
 BRIEF_RULES = """You write the short money briefing at the top of the owner's personal finance dashboard.
 You get a list of facts, most important first. Pick the two that matter most to them right now and rewrite each as one short,
 friendly, concrete sentence with the amounts (at most 18 words). Keep the facts true; don't add advice they didn't ask for.
+Consider all supplied categories. Prefer a useful mix of spending, investments, goals, savings and advice unless one item is urgent.
 Never use dashes as punctuation. Reply with only JSON: [{"i": <index of the fact>, "text": "<sentence>"}]."""
 
 
@@ -299,15 +340,16 @@ def briefing(state, prefs, exe=None, key=None, force=False):
         return {"off": True, "items": []}
     cache = read(BRIEFING, {})
     age = (date.today() - date.fromisoformat(cache["date"])).days if cache.get("date") else 99
-    if not force and age < (7 if freq == "weekly" else 1) and cache.get("items") is not None:
+    if not force and cache.get('version')=='overview-v2' and age < (7 if freq == "weekly" else 1) and cache.get("items") is not None:
         return cache
-    facts = briefing_facts(state)
-    out = {"date": date.today().isoformat(), "time": now(), "by": "code",
+    facts = diverse_briefing_facts(briefing_facts(state))
+    out = {"date": date.today().isoformat(), "time": now(), "by": "code", "version":"overview-v2",
            "items": [{"text": f["text"], "link": f["link"]} for f in facts[:2]]}
-    write(BRIEFING, out)
     if (exe or key) and facts:
         out["updating"] = True
-        threading.Thread(target=_phrase, args=(facts[:5], exe, key), daemon=True).start()
+    write(BRIEFING, out)
+    if out.get('updating'):
+        threading.Thread(target=_phrase, args=(facts, exe, key), daemon=True).start()
     return out
 
 
@@ -319,10 +361,13 @@ def _phrase(facts, exe, key):
         items = [{"text": str(a["text"]).strip(), "link": facts[int(a["i"])]["link"]}
                  for a in answer if isinstance(a, dict) and str(a.get("i", "")).isdigit() and int(a["i"]) < len(facts)][:2]
         if items:
-            write(BRIEFING, {"date": date.today().isoformat(), "time": now(), "by": "claude", "items": items})
+            write(BRIEFING, {"date": date.today().isoformat(), "time": now(), "by": "claude", "version":"overview-v2", "items": items})
+        else:
+            cache=read(BRIEFING,{});cache.pop('updating',None);write(BRIEFING,cache)
     except Exception as e:  # the code version stays
         cache = read(BRIEFING, {})
         cache["error"] = str(e)[:200]
+        cache.pop('updating',None)
         write(BRIEFING, cache)
 
 
@@ -399,7 +444,8 @@ def price_history(cfg, tickers, offline=False):
     """{series: {position id: history}, proxy: {symbol: history}, benchmark: history, updating, missing}."""
     benchmark = (cfg.get("profile") or {}).get("benchmark") or "IWDA.AS"
     want = dict(tickers)
-    proxy = [p["symbol"] for p in cfg["managed"].get("proxy", [])] if not cfg["managed"].get("positions") else []
+    weights=cfg['managed'].get('proxy',[])
+    proxy = (list(weights) if isinstance(weights,dict) else [p['symbol'] for p in weights if isinstance(p,dict) and p.get('symbol')]) if not cfg['managed'].get('positions') else []
     symbols = set(want.values()) | set(proxy) | {benchmark}
     stale = [s for s in symbols if read(_file(s), {}).get("fetched") != date.today().isoformat() and s not in _fetching]
     if stale and not offline:
@@ -552,10 +598,19 @@ INFO_RULES = """You describe one investment for its owner, inside their personal
  "currency": "<ISO code of its main currency exposure>", "overlap": "<one sentence on how much it overlaps with the owner's other holdings, or null>"}
 Use what you know about the fund or company. Never use dashes as punctuation."""
 
-CLASSIFY_RULES = """You classify investments for grouping in a personal finance dashboard. For every holding give region
-(Global, North America, Europe, Netherlands, Asia Pacific, Emerging markets or Other), main sector (or Diversified for broad funds,
-Government bonds or Corporate bonds for bonds) and the ISO code of its main currency exposure (an MSCI World fund is mostly USD).
-Reply with only one JSON object mapping each id to {"region": ..., "sector": ..., "currency": ...}."""
+CLASSIFY_RULES = """Classify investment exposure using the security's exact name, category, ISIN and tickers.
+For a company use its main business geography; for a fund use its investment mandate, never its registration domicile.
+An Irish-registered world ETF is Global, not Ireland. Emerging-market funds are Emerging markets. Bonds use the issuer geography.
+Crypto is Global. Do not treat EQT/Apollo private funds as listed EQT/APO shares. Use no portfolio amounts or personal information.
+Allowed regions: Global, North America, Europe, Netherlands, Asia Pacific, Emerging markets, Latin America, Middle East & Africa.
+Also give main sector (Diversified for broad funds), main currency exposure as three uppercase ISO letters, confidence high/medium/low,
+and a short basis explaining what the classification means. Trading currency is not necessarily the currency exposure.
+Only classify securities you can identify. Unknown attributes must be null; never use Other as a guess or invent regional weights.
+Reply only with one JSON object mapping each supplied id to {"region":..., "sector":..., "currency":..., "confidence":..., "basis":...}."""
+
+REGIONS={'Global','North America','Europe','Netherlands','Asia Pacific','Emerging markets','Latin America','Middle East & Africa'}
+def classification_missing(value):
+    return value is None or str(value).strip().lower() in ('','other','unknown','unclassified','not filled in','n/a')
 
 
 def holding_info(cfg, position_id, pid, exe, key, force=False):
@@ -581,15 +636,29 @@ def holding_info(cfg, position_id, pid, exe, key, force=False):
 
 
 def classify(cfg, pid, exe, key):
-    """Region, sector and currency for every holding that has none yet. Returns {position id: {...}}."""
+    """Infer missing grouping labels in bounded batches, retaining a clearly marked basis."""
     import spending
     every = [p for a in cfg["accounts"] for p in a["positions"]] + cfg["managed"].get("positions", [])
-    todo = {pid(p): {"name": p["name"], "isin": p.get("isin"), "type": p.get("category")} for p in every if not p.get("region")}
+    todo = {pid(p): {"name": p["name"], "isin": p.get("isin"), "type": p.get("category"), "tickers": p.get("tickers",[])} for p in every if any(classification_missing(p.get(k)) for k in ('region','sector','currency'))}
     if not todo:
         return {}
-    answer = spending.json_from(spending.run_ai(json.dumps(todo, ensure_ascii=False), CLASSIFY_RULES, exe=exe, api_key=key, kind="classify", level="quick"))
-    return {k: {f: str(v.get(f))[:40] for f in ("region", "sector", "currency") if v.get(f)}
-            for k, v in answer.items() if k in todo and isinstance(v, dict)}
+    found={};keys=list(todo)
+    for offset in range(0,len(keys),20):
+        batch={k:todo[k] for k in keys[offset:offset+20]}
+        # Identity/mandate classification needs the normal connected model. A small local
+        # categorisation model can time out repeatedly on long security identifiers.
+        answer=spending.json_from(spending.run_ai(json.dumps(batch,ensure_ascii=False),CLASSIFY_RULES,exe=exe,api_key=key,kind='holding',level='normal'))
+        if not isinstance(answer,dict):continue
+        for ident,value in answer.items():
+            if ident not in batch or not isinstance(value,dict) or value.get('confidence') not in ('high','medium'):continue
+            attrs={}
+            if value.get('region') in REGIONS:attrs['region']=value['region']
+            if isinstance(value.get('sector'),str) and not classification_missing(value['sector']):attrs['sector']=value['sector'][:80]
+            if isinstance(value.get('currency'),str) and re.fullmatch('[A-Z]{3}',value['currency']):attrs['currency']=value['currency']
+            if attrs:
+                attrs.update(classification_note='AI inferred ('+value['confidence']+'): '+str(value.get('basis') or 'Investment mandate or company geography')[:240],classification_date=date.today().isoformat())
+                found[ident]=attrs
+    return found
 
 
 INDUSTRY_RULES = """You match single stocks to an industry from a fixed list. Reply with only one JSON object mapping each id to
