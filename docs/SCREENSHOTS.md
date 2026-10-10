@@ -1,6 +1,6 @@
 # Screenshot walkthrough
 
-All 17 screenshots were captured from this public build using a fresh download. Financial records, rates, prices, news and company figures are fictional; the personal-setup screenshot shows an empty test profile. No private dashboard, bank statement or credential was photographed.
+All 19 screenshots were captured from this public build using a fresh download. Financial records, rates, prices, news and company figures are fictional; the personal-setup screenshot shows an empty test profile. No private dashboard, bank statement or credential was photographed.
 
 Follow the [installation guide](INSTALLATION.md) first. The [connections guide](CONNECTIONS.md) explains provider setup, cost/access requirements and what data leaves your computer. Light/dark appearance follows your selected theme; the layout is the same.
 
@@ -69,6 +69,18 @@ Open Spending & income → Overview. Change account chips and date range, then i
 Click a spending category. The popup has just Sort by (Date/Amount) and Ascending/Descending. Open in Transactions carries the selection into the full transaction view.
 
 ![A small payment drilldown](screenshots/11-payment-popup.jpg)
+
+## Trips with country maps
+
+Open Spending & income → Trips. Each inferred trip has a country map, recorded dates, total spending, daily average and category breakdown. Trips are grouped from payments abroad; bookings paid from home may remain outside the trip. These Germany, Spain and Portugal visits are fictional examples.
+
+![Trips with country maps](screenshots/19-trips.jpg)
+
+## Spending across countries
+
+Choose Countries beside Trips. The map highlights countries with recorded spending, and the list below compares payments and category totals. Change the date range or account chips, zoom the map, or select a country to inspect its payments. Missing country assignments remain visible for review. The map works offline using bundled public country outlines.
+
+![Spending across countries](screenshots/18-countries-map.jpg)
 
 ## Income sources and history
 

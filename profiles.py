@@ -12,7 +12,7 @@ def inside(path,root):
     if path==root or root not in path.parents:raise RuntimeError('The runtime must stay inside its project folder.')
     return path
 def source_files(root=ROOT):
-    names=set(read(root/'release.json',{}).get('source_files',[]))|{'profile_setup.py','profiles.py','launch.py','personal.py','demo.py','generate_demo.py','demo_extras.py','release.json'}
+    names=set(read(root/'release.json',{}).get('source_files',[]))|{'profile_setup.py','profiles.py','launch.py','personal.py','demo.py','generate_demo.py','demo_extras.py','release.json','web/countries.json'}
     for p in (root/'web').rglob('*'):
         if p.is_file() and p.suffix.lower() in ('.js','.css','.html','.png','.jpg','.jpeg','.svg','.csv','.txt'):names.add(p.relative_to(root).as_posix())
     names.update(p.relative_to(root).as_posix() for p in (root/'docs').rglob('*') if p.is_file() and p.suffix.lower() in ('.md','.png','.jpg'))

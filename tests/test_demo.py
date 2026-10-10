@@ -95,6 +95,9 @@ class DemoFixtures(unittest.TestCase):
                 demo.prepare()
             self.assertTrue(json.loads((runtime / 'manifest.json').read_text())['synthetic'])
             self.assertTrue((runtime / 'spending.json').is_file())
+            geography=json.loads((runtime / 'web/countries.json').read_text(encoding='utf-8'))
+            self.assertTrue(geography['countries']['NL']['p'])
+            self.assertEqual(geography['countries']['PT']['n'],'Portugal')
 
     def test_interrupted_setup_is_preserved_and_recovers(self):
         import demo

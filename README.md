@@ -46,9 +46,11 @@ The sample includes several years of dated history, hundreds of payments, multip
 
 ![Flexible savings comparisons](docs/screenshots/08-savings-rates.jpg)
 
+![Trips and country maps with fictional travel data](docs/screenshots/19-trips.jpg)
+
 ![Company research and stock price](docs/screenshots/14-company-research.jpg)
 
-[See all 17 screenshots and what each feature does →](docs/SCREENSHOTS.md)
+[See all 19 screenshots and what each feature does →](docs/SCREENSHOTS.md)
 
 ## Personal use
 

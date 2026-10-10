@@ -1,4 +1,10 @@
-# Public edition — 9 October 2026
+# Public edition
+
+## 10 October 2026
+
+Added Trips and Countries screenshots to the gallery and README, bringing the walkthrough to 19 images. Include the static country-outline file in both demo and personal runtime copies so country names, travel-card maps and the full spending map work offline after downloading. Fresh-download packaging and privacy checks pass.
+
+## 9 October 2026
 
 Updated application source and design from the current local application, without copying its records or Git history. Includes the cash-account workspace, savings-rate comparisons, repayment scenarios, research dossiers and daily-price charts, invoice matching, recurring plans, AI provider controls, contextual observations, preload/caching and compact transaction sorting.
 
