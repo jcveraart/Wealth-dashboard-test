@@ -531,8 +531,8 @@ function settingsBase() {
   const cloudRow = cloud.connected
     ? setRow('Cloud copy', cloud.error ? `<span class="neg">${esc(cloud.error)}</span>` : `${esc(cloud.url.replace('https://', ''))} · ${cloud.last_sync ? 'synced ' + new Date(cloud.last_sync).toLocaleString('en-GB', {dateStyle: 'medium', timeStyle: 'short'}) : 'not synced yet'}`,
       '<button class="btn sm" id="syncNow">Sync now</button><button class="btn ghost danger" id="cloudOff">Disconnect</button>')
-    : setRow('Cloud copy', 'Keep a copy of everything in your own Supabase database. It syncs every 15 minutes.', '<button type="button" class="btn sm" id="cloudSetup">Set up</button>')
-      + `<div class="set-more" id="cloudSteps" hidden><ol><li>Create a free project at <a href="https://supabase.com/dashboard/new" target="_blank" rel="noopener">supabase.com</a>.</li><li>In SQL Editor, run the contents of supabase-schema.sql from the app folder.</li><li>Under Project Settings, API Keys, copy the Project URL and the secret key.</li></ol>
+    : setRow('Cloud copy', 'Copy portfolio, history, payments and receipt metadata to your own Supabase project while the app runs.', '<button type="button" class="btn sm" id="cloudSetup">Set up</button>')
+      + `<div class="set-more" id="cloudSteps" hidden><ol><li>Create a dedicated empty project at <a href="https://supabase.com/dashboard/new" target="_blank" rel="noopener">supabase.com</a>.</li><li>In SQL Editor, run these five files in order: supabase-schema.sql, supabase-history.sql, supabase-spending.sql, supabase-plans.sql, supabase-receipts.sql. Keep RLS enabled.</li><li>Find your Project URL in Connect and your server secret under Settings → API Keys. Enter it only here; never in an AI chat.</li></ol><p class="sub">Connect and sync tests access and sends your dashboard records to your own project. <a href="/guide.html#connections" target="_blank" rel="noopener">Full connection instructions ↗</a></p>
         <form id="cloudForm" class="set-form"><input type="text" id="cloudUrl" placeholder="https://yourproject.supabase.co" aria-label="Project URL"><input type="password" id="cloudKey" placeholder="Secret key (sb_secret_...)" autocomplete="off" aria-label="Secret key"><button class="btn primary sm">Connect and sync</button></form></div>`;
   $('#view').innerHTML = `<div class="settings">
     <nav class="set-nav" aria-label="Settings sections">${SET_GROUPS.map(([id, l], i) => `<button type="button" data-set-go="${id}" class="${i ? '' : 'on'}">${l}</button>`).join('')}</nav>
@@ -545,7 +545,7 @@ function settingsBase() {
       </section>
       <section class="card set-group no-tools" id="set-ai"><h2>Claude & AI</h2>
         ${setRow('Connected to', ai, `<span class="dot ${st.ai_mode ? '' : 'off'}"></span>`)}
-        ${setRow('API key', 'Optional. A bit faster, but billed separately.', `<form id="keyForm" class="set-inline"><input type="password" id="key" placeholder="${st.has_api_key ? 'Saved. Save empty to remove' : 'sk-ant-...'}" autocomplete="off" aria-label="API key"><button class="btn sm">Save</button></form>`)}
+        ${setRow('API key', 'Optional Anthropic key. Uses your Claude Console API credits/billing.', `<form id="keyForm" class="set-inline"><input type="password" id="key" placeholder="${st.has_api_key ? 'Saved. Save empty to remove' : 'sk-ant-...'}" autocomplete="off" aria-label="API key"><button class="btn sm">Save</button></form>`)}
         <div id="providerSettings"></div><div id="setEffort"></div><div id="localBox"></div><div id="setUsage"></div>
       </section>
       <section class="card set-group no-tools" id="set-data"><h2>Data</h2>

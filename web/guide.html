@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wealth — installation and screenshots</title><style>body{max-width:1000px;margin:32px auto;padding:0 22px;font:16px/1.75 system-ui;color:#222;background:#fafaf8}h1{margin-top:64px;font-size:30px}h2{margin-top:36px}a{color:#26364a}code{background:#eeeee9;border-radius:5px;padding:2px 5px}pre{white-space:pre-wrap;padding:18px;background:#eeeee9;border-radius:12px}pre code{padding:0}img{display:block;max-width:100%;height:auto;border-radius:12px;border:1px solid #ddd;margin:18px 0}table{border-collapse:collapse;width:100%;font-size:14px}td,th{text-align:left;padding:10px;border-bottom:1px solid #ddd;vertical-align:top}.table-scroll{overflow:auto}li{margin:7px 0}nav{display:flex;gap:20px;flex-wrap:wrap;position:sticky;top:0;background:#fafaf8;padding:12px 0;border-bottom:1px solid #ddd}</style><nav><a href="#installation">Installation</a><a href="#connections">Connections</a><a href="#screenshots">Screenshots</a><a href="/">Dashboard</a></nav><h1 id="installation">Installation and first use</h1>
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wealth — installation and connection guide</title><style>body{max-width:1000px;margin:32px auto;padding:0 22px;font:16px/1.75 system-ui;color:#222;background:#fafaf8}h1{margin-top:64px;font-size:30px;scroll-margin-top:110px}h2{margin-top:36px}a{color:#26364a}code{background:#eeeee9;border-radius:5px;padding:2px 5px}pre{white-space:pre-wrap;overflow-wrap:anywhere;padding:18px;background:#eeeee9;border-radius:12px}pre code{padding:0}img{display:block;max-width:100%;height:auto;border-radius:12px;border:1px solid #ddd;margin:18px 0}table{border-collapse:collapse;width:100%;font-size:14px}td,th{text-align:left;padding:10px;border-bottom:1px solid #ddd;vertical-align:top}.table-scroll{overflow:auto}li{margin:7px 0}nav{display:flex;gap:12px 20px;flex-wrap:wrap;position:sticky;top:0;background:#fafaf8;padding:12px 0;border-bottom:1px solid #ddd}.prompt-tools{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.prompt-tools button{font:inherit;border:1px solid #ccc;background:#fff;color:#222;border-radius:9px;padding:7px 14px;cursor:pointer}.prompt-tools span{font-size:14px}</style><nav><a href="#installation">Installation</a><a href="#keychecklist">Keys & checklist</a><a href="#connections">Connections</a><a href="#assisted_setup">AI setup prompt</a><a href="#screenshots">Screenshots</a><a href="/">Dashboard</a></nav><h1 id="installation">Installation and first use</h1>
 <p>This guide starts with a disconnected demo, then creates a separate workspace for your own records. You do not need a GitHub account, bank login, AI account or Supabase project to try the demo.</p>
 <h2>1. Download and extract</h2>
 <ul>
@@ -22,11 +22,8 @@
 <h3>Stop, reopen or reset</h3>
 <pre><code>
 python launch.py demo --command stop
-
 python demo.py
-
 python launch.py demo --command restart
-
 </code></pre>
 <p>On Windows, <code>stop-demo-windows.bat</code> stops this profile. If you used foreground mode, press Ctrl+C in its terminal.</p>
 <p>To reset demo edits, first stop it, then run <code>python demo.py --reset</code>. The old demo is preserved in the ignored <code>backups/</code> folder before a new sample dataset is created. This never resets the personal profile. An interrupted first setup or an old unmarked demo folder is also preserved rather than deleted.</p>
@@ -62,7 +59,7 @@ python launch.py demo --command restart
 <li><strong>Supabase:</strong> your separately configured cloud copy.</li>
 </ul>
 <p>Select <strong>Save choices &amp; restart this workspace</strong>. After restart, configure the relevant provider in Settings. A choice enables the feature; it does not sign in, create a financial account, buy anything or copy someone else&#x27;s credentials. If the browser reloads before restart finishes, wait a few seconds and refresh.</p>
-<p>Follow <a href="#connections">Connections</a> for exact instructions, costs, data sharing and limitations. Every connection is optional. The public app has no developer-supplied keys and no shared financial database.</p>
+<p>Use the <a href="#keychecklist">account/key checklist</a> first, or paste the <a href="#assisted_setup">setup-assistant prompt</a> into ChatGPT/Claude for help. Follow <a href="#connections">Connections</a> for exact instructions, costs, data sharing and limitations. Every connection is optional. The public app has no developer-supplied keys and no shared financial database.</p>
 <h2>6. Import real records</h2>
 <p>Do this in <strong>personal mode</strong>:</p>
 <ul>
@@ -101,15 +98,97 @@ python launch.py demo --command restart
 <tr><td>Supabase errors</td><td>Use your own dedicated project, apply all five schema files, check URL and server secret key, and inspect Settings status.</td></tr>
 <tr><td>Background start failed</td><td>Read the selected profile&#x27;s <code>cache/server-error.log</code>. Do not post logs publicly without checking for private information.</td></tr>
 </tbody></table></div>
-<p>For development: <code>python demo.py --foreground --no-browser</code>; run tests with <code>python -m unittest discover -s tests</code>. The server binds only to loopback. This is a local single-user application, not an internet-hosted service.</p><h1 id="connections">Connections: what to enable and how</h1>
+<p>For development: <code>python demo.py --foreground --no-browser</code>; run tests with <code>python -m unittest discover -s tests</code>. The server binds only to loopback. This is a local single-user application, not an internet-hosted service.</p><h1 id="keychecklist">Setup checklist: accounts, keys and what to connect</h1>
+<p>Start with the demo. You do not need to collect keys before trying it. In personal mode, <strong>local imports + public data + one chosen AI provider</strong> are a useful first setup. Supabase and advanced data providers can wait.</p>
+<p>An <strong>API key</strong> is a secret that lets an application use a service. A <strong>project URL</strong> is the address of your database. <strong>Sign-in</strong> means completing the provider&#x27;s browser login; you do not copy its tokens yourself.</p>
+<p>Use the <a href="#installation">installation guide</a> to download/start the app, <a href="#connections">connection instructions</a> for each feature, and the <a href="#assisted_setup">setup-assistant prompt</a> if you want ChatGPT or Claude to walk you through it.</p>
+<h2>Choose your setup</h2>
+<div class="table-scroll"><table><thead><tr><th>What you want</th><th>What to connect</th><th>What to collect</th></tr></thead><tbody>
+<tr><td>Try the dashboard</td><td>Nothing</td><td>Python and the extracted download</td></tr>
+<tr><td>See your own finances locally</td><td>Personal profile and your own imports</td><td>Bank/broker exports; no bank password</td></tr>
+<tr><td>Public prices, research and savings comparisons</td><td>Live public data</td><td>Optional packages; no default market API key</td></tr>
+<tr><td>Chat/import with Claude on your plan</td><td>Claude Code CLI and your own login</td><td>Eligible Claude access; no manually copied API key for this route</td></tr>
+<tr><td>Chat/import with OpenAI</td><td>ChatGPT-plan sign-in</td><td>Eligible ChatGPT account; no OpenAI API key</td></tr>
+<tr><td>Claude through its API instead</td><td>Anthropic API</td><td>Your own API key and usable Console credits/billing</td></tr>
+<tr><td>Small AI tasks on your computer</td><td>Ollama</td><td>A downloaded local model; no cloud key</td></tr>
+<tr><td>US filings, insiders and investor disclosures</td><td>SEC EDGAR</td><td>App/contact identification and consent; no SEC API key</td></tr>
+<tr><td>Keep a cloud copy</td><td>Supabase</td><td>Your own dedicated project URL + server secret key</td></tr>
+<tr><td>More research datasets</td><td>Optional OpenBB / Quiver</td><td>Optional environment; provider keys only for datasets you select</td></tr>
+</tbody></table></div>
+<p>“Everything” does not mean every paid service. Connect only the features you want. Enabling public data does not connect a bank or copy its transactions.</p>
+<h2>Before touching accounts</h2>
+<ul>
+<li>Download and extract the whole repository; verify the demo works on port 8051.</li>
+<li>Choose <strong>Use my own data → Start my personal workspace</strong>. Its default port is 8052.</li>
+<li>Confirm the bar says <strong>Personal · your local data</strong> and the workspace contains no demo balances.</li>
+<li>From the extracted project folder, install optional features with <code>python install.py</code> (or <code>python3 install.py</code> on macOS/Linux), then restart the personal launcher.</li>
+<li>In personal <strong>Setup &amp; help</strong>, choose Live public data, AI and/or Supabase, and select <strong>Save choices &amp; restart this workspace</strong>.</li>
+<li>Configure the chosen accounts in <strong>Settings</strong>. These checkboxes enable features; they do not perform provider sign-in.</li>
+</ul>
+<h2>Complete key and account inventory</h2>
+<div class="table-scroll"><table><thead><tr><th>Item</th><th>Needed when</th><th>Where to obtain it</th><th>Where this app uses it</th></tr></thead><tbody>
+<tr><td>Supabase project URL</td><td>You choose cloud copy</td><td>Your project&#x27;s <strong>Connect</strong> dialog</td><td>Settings → Data → Cloud copy → Set up → Project URL</td></tr>
+<tr><td>Supabase server secret (<code>sb_secret_…</code>)</td><td>You choose cloud copy</td><td>Project <strong>Settings → API Keys</strong>; create a dedicated secret if needed</td><td>The local Secret key field, then the private Python backend</td></tr>
+<tr><td>Legacy Supabase <code>service_role</code></td><td>Only for an existing legacy setup</td><td>Project Settings → API Keys</td><td>Supported alternative to the modern secret; use the modern secret for new setups</td></tr>
+<tr><td>Anthropic API key</td><td>You choose the Claude API route</td><td>Claude Console <strong>Settings → API keys → Create key</strong></td><td>Settings → Claude &amp; AI → API key</td></tr>
+<tr><td>Claude Code login</td><td>You choose the subscription/CLI route</td><td>Run <code>claude</code> after installing the CLI and complete your own login</td><td>Detected by the dashboard after restarting it</td></tr>
+<tr><td>ChatGPT login</td><td>You choose OpenAI in this app</td><td>Settings → Claude &amp; AI → ChatGPT plan → Connect; complete browser consent</td><td>Stored by the app&#x27;s local sign-in flow; do not copy tokens into a field</td></tr>
+<tr><td>SEC contact identification</td><td>You choose SEC requests</td><td>An email/contact identification you are willing to send to SEC</td><td>Settings → Public data; research Data connections &amp; coverage</td></tr>
+<tr><td>Quiver API token</td><td>You choose supported Quiver datasets</td><td><a href="https://www.quiverquant.com/api-setup/">Quiver API setup</a> and your entitled account</td><td>Data connections &amp; coverage → Quiver API key</td></tr>
+<tr><td>Other OpenBB provider credentials</td><td>Only a chosen provider needs them</td><td>That provider&#x27;s official account/developer console</td><td>Its private OpenBB settings, not this repo or frontend</td></tr>
+<tr><td>Portable-backup password</td><td>You create an encrypted portable backup</td><td>Choose your own password and store it separately</td><td>Backups → portable password-protected backup</td></tr>
+</tbody></table></div>
+<p>The app currently needs <strong>no OpenAI API key</strong>, Supabase database password, Supabase personal-access token or GitHub personal-access token for these ordinary workflows. A ZIP download needs no GitHub login. Do not buy an API key to make a ChatGPT-plan sign-in work.</p>
+<p>A Supabase publishable/anon key is not sufficient for this app&#x27;s backend copy. The database connection string (<code>postgresql://…</code>) and the Supabase dashboard page URL are also not the Project URL this form expects. See <a href="https://supabase.com/docs/guides/getting-started/api-keys">Supabase&#x27;s key documentation</a>.</p>
+<h2>Collect information without collecting secrets in chat</h2>
+<p>Keep this non-secret checklist in your own notes:</p>
+<pre><code>
+Computer/OS:
+Extracted application folder:
+Demo opens: yes / no
+Personal opens and is empty: yes / no
+Optional packages installed: yes / no
+Public data: enabled / not wanted
+AI route: Claude Code / ChatGPT plan / Anthropic API / none
+AI sign-in or key entered locally: ready / not ready / not wanted
+SEC identification consent: yes / no
+Supabase project created for this app only: yes / no / not wanted
+Supabase five schema files applied: yes / no / not wanted
+Supabase URL and secret entered locally: ready / not ready / not wanted
+Quiver/OpenBB: not wanted / chosen and configured
+Small import totals checked:
+Portable backup verified:
+</code></pre>
+<p>Write <strong>ready</strong>, not the actual key. Enter secrets yourself in your own local dashboard&#x27;s fields. Never paste them into ChatGPT/Claude, a GitHub issue, a screenshot or a shared prompt. Supabase/Anthropic settings are local private files, not a general-purpose secret vault; keep the computer/account and personal folder private. ChatGPT credentials have a separate local store and Windows OS protection where available.</p>
+<h2>What to verify after connecting</h2>
+<div class="table-scroll"><table><thead><tr><th>Feature</th><th>A useful first check</th><th>What it does not prove</th></tr></thead><tbody>
+<tr><td>Public data</td><td>A public ticker/rate has a source and retrieval date</td><td>A listing is not a live bank connection or guaranteed real-time data</td></tr>
+<tr><td>AI</td><td>A short question succeeds with the selected provider</td><td>Being signed in or seeing a model list does not guarantee every model/request is allowed</td></tr>
+<tr><td>Import</td><td>A small supported export imports; totals and account match; Undo is available</td><td>Unavailable return metrics should not be filled with guesses</td></tr>
+<tr><td>SEC</td><td>A requested disclosure is returned with its filing date</td><td>Coverage can be delayed or incomplete, especially outside the US</td></tr>
+<tr><td>Supabase</td><td>Own project receives the intended rows after Connect and sync</td><td>It is a cloud copy, not automatic account login or two-way restore</td></tr>
+<tr><td>Local AI</td><td>Settings discovers your model and a small supported task works</td><td>Full chat/import and live web research are not guaranteed by Ollama</td></tr>
+<tr><td>Backup</td><td>Restore verification opens an isolated recovery copy</td><td>A copied Windows credential file is not a portable provider login</td></tr>
+</tbody></table></div>
+<p>Ask your setup assistant for a final <strong>working / skipped / unavailable</strong> report. A failed sign-in or missing provider entitlement should stay visible; switching to a paid alternative is your choice.</p><h1 id="connections">Connections: what to enable and how</h1>
 <p>Use <strong>personal mode</strong>, install optional packages, then enable the relevant choice in <strong>Setup &amp; help</strong> and restart. All connections start unconfigured. Nothing logs into a bank or shares records just because you downloaded the repository.</p>
+<h2>Start in this order</h2>
+<ul>
+<li><strong>Personal workspace:</strong> follow <a href="#installation">Installation</a> and check that no sample balances came across.</li>
+<li><strong>Your records:</strong> import a small bank/broker export and check totals. This needs no cloud database.</li>
+<li><strong>Public data:</strong> enable it for prices and savings comparisons; it does not need a default API key.</li>
+<li><strong>One AI route:</strong> choose Claude Code, ChatGPT-plan sign-in or Anthropic API. Use the account you already have when supported.</li>
+<li><strong>SEC, if wanted:</strong> configure identification only after you agree to send that contact to SEC.</li>
+<li><strong>Cloud/advanced sources, if wanted:</strong> add Supabase, Ollama, OpenBB or Quiver independently. Missing an optional provider should not prevent ordinary local use.</li>
+</ul>
+<p>Keep the <a href="#keychecklist">complete account/key checklist</a> beside you. The <a href="#assisted_setup">copyable setup-assistant prompt</a> lets ChatGPT or Claude guide these steps. Nothing in this guide supplies a shared key or guarantees a provider subscription.</p>
 <h2>Connection map</h2>
 <div class="table-scroll"><table><thead><tr><th>Connection</th><th>Supplies</th><th>What you need</th><th>Cost/access note</th></tr></thead><tbody>
 <tr><td>Local bank/broker imports</td><td>Your payments, holdings and execution records</td><td>Files you export yourself</td><td>No direct bank-login integration is bundled</td></tr>
 <tr><td>Yahoo Finance</td><td>Public market prices/history</td><td>Public-data choice and installed dependencies</td><td>No key; availability, timing and coverage vary</td></tr>
 <tr><td>Flexible savings pages</td><td>Published Raisin/ABN/Trade Republic offers</td><td>Public-data choice</td><td>Public comparisons; no account opening or transfer</td></tr>
 <tr><td>Claude Code</td><td>Chat, supported AI imports and observations</td><td>Installed CLI and your own login</td><td>Uses your plan/provider rules; account limits apply</td></tr>
-<tr><td>Anthropic API</td><td>AI through a saved API key</td><td>Your own key and billing</td><td>Separately billed; optional</td></tr>
+<tr><td>Anthropic API</td><td>AI through a saved API key</td><td>Your own key and billing</td><td>Uses Console API credits/billing; optional</td></tr>
 <tr><td>ChatGPT plan</td><td>OpenAI chat/import where eligible</td><td>Continue with ChatGPT in Settings</td><td>Plan eligibility, model access and preview limits apply</td></tr>
 <tr><td>Ollama</td><td>Selected small local AI tasks</td><td>Installed/running local model</td><td>Local inference; hardware and model quality matter</td></tr>
 <tr><td>SEC EDGAR</td><td>Public issuer filings, Form 4 and 13F disclosures</td><td>Explicit SEC identification consent</td><td>Your configured contact identification is sent to SEC</td></tr>
@@ -123,7 +202,7 @@ python launch.py demo --command restart
 <h2>Live market and savings information</h2>
 <p>Enable <strong>Live public data</strong>, restart, then use Investments/Explore and <strong>Savings &amp; debt → Rates &amp; options</strong>. The savings view loads source-dated flexible-EUR products, separates promotions, applies published amount limits and retains stale markers when a source fails. It does not replace a saved personal rate or establish your eligibility. A published overnight account may still require transfer time. Protection limits belong to the legal bank and retain their quoted currency.</p>
 <p>Public requests concern securities/products, not your account balances. There is no guarantee of complete market coverage or a real-time quote. Inspect source/retrieval/effective dates and product terms before acting. Ordinary daily price charts are separate from adjusted historical-return series.</p>
-<h2>Claude</h2>
+<h2>Claude Code: use your own CLI login</h2>
 <ul>
 <li>Install Claude Code using the current <a href="https://code.claude.com/docs/en/setup">official setup guide</a>. A native Windows option is <code>winget install Anthropic.ClaudeCode</code>; macOS/Linux instructions are on that page.</li>
 <li>Open a new terminal and run <code>claude --version</code>, then <code>claude</code> to complete your own login.</li>
@@ -131,12 +210,37 @@ python launch.py demo --command restart
 <li>In <strong>Settings → Claude &amp; AI</strong>, check the connection and choose Claude for chat/import. The small chat and import provider switches can also change it per workflow.</li>
 <li>Ask a small question first. Check the chosen account/context and provider&#x27;s limits.</li>
 </ul>
-<p>An Anthropic API key is an optional alternative in Settings and is billed separately. Do not paste keys into chat, commit them or place them in the public sample files. AI chat/import sends the selected question/document/context to your configured provider. Explicitly requested supported dashboard edits have Undo; they never place broker orders.</p>
+<p>After login, restart the personal dashboard so it can detect the CLI. A Claude desktop/web login alone is not proof that the command-line program is installed and signed in. If Settings still reports disconnected, run <code>claude --version</code> in a new terminal, verify your login with <code>claude</code>, then restart the dashboard. See the <a href="https://code.claude.com/docs/en/quickstart">official CLI quickstart</a>.</p>
+<h3>Anthropic API: an alternative to CLI login</h3>
+<ul>
+<li>Open your own <a href="https://platform.claude.com/">Claude Console</a> account.</li>
+<li>Choose <strong>Settings → API keys → Create key</strong>, name it for this dashboard and choose its scope/expiration.</li>
+<li>Check the Console&#x27;s credit/billing balance and usage limits before making API requests. An API route uses Console credits/billing; do not assume a Claude chat subscription provides unlimited API usage. Some eligible plans can claim API credits in a linked Console organization.</li>
+<li>In the personal dashboard, open <strong>Settings → Claude &amp; AI → API key</strong>. Paste your own key there and select <strong>Save</strong>. Do not use an organization Admin API key.</li>
+<li>Choose Claude for chat/import, try a small request and verify usage in your own Console. The saved key takes precedence over the CLI route; saving an empty key removes the local saved key. Check any independently configured environment key if it still appears connected.</li>
+</ul>
+<p>See <a href="https://platform.claude.com/docs/en/manage-claude/authentication">API-key authentication</a> and <a href="https://platform.claude.com/docs/en/about-claude/api-credits-for-subscribers">eligible plan credits</a>. This is optional: a working chosen Claude Code route does not require manually copying an API key. Do not paste keys into chat, commit them or place them in the public sample files. AI chat/import sends the selected question/document/context to your configured provider. Explicitly requested supported dashboard edits have Undo; they never place broker orders.</p>
 <h2>OpenAI / ChatGPT plan</h2>
-<p>Enable AI, restart, then choose <strong>Continue with ChatGPT</strong> in Settings. Complete the provider&#x27;s browser consent flow yourself, return to the dashboard and verify connection status. Choose an available model and try a short request. Eligible plan usage is distinct from an API-key account; this app does not silently switch to paid OpenAI API billing. Model lists do not themselves prove entitlement, and the provider can reject a request or impose usage limits. See the <a href="https://developers.openai.com/siwc/quickstart">official sign-in quickstart</a> and <a href="https://developers.openai.com/siwc/token-sharing-open-source/preview-limitations">preview limitations</a>.</p>
+<ul>
+<li>Enable AI in personal <strong>Setup &amp; help</strong>, save/restart, and open <strong>Settings → Claude &amp; AI</strong>.</li>
+<li>Find <strong>ChatGPT plan</strong> and select <strong>Connect</strong>. The chat/import OpenAI controls can also offer <strong>Continue with ChatGPT</strong>.</li>
+<li>Complete the OpenAI browser login and consent yourself. Return to the local dashboard; leave it running while the local callback completes.</li>
+<li>Verify that the plan connection shows connected. Choose OpenAI for <strong>Chat with</strong> and/or <strong>Read imports with</strong>, then <strong>Save choices</strong>.</li>
+<li>Under <strong>OpenAI models</strong>, choose an available chat/import model or keep the account default. The small chat and Import switches can change the provider for those workflows.</li>
+<li>Try a short question and check <strong>Usage</strong>. A connected identity or model list alone is not proof that your account can run that request.</li>
+</ul>
+<p>This is a ChatGPT-plan sign-in route, not the API-key route. Eligible Plus/Pro accounts can use plan access where the provider permits it; workspace policies, models and preview limits still apply. The app does not silently switch to paid OpenAI API billing. Do not generate or purchase an OpenAI API key for this feature. See the <a href="https://developers.openai.com/siwc/quickstart">official sign-in quickstart</a> and <a href="https://developers.openai.com/siwc/token-sharing-open-source/preview-limitations">preview limitations</a>.</p>
+<p>If sign-in opens but does not finish, confirm the local app is running, complete the browser consent, and retry from the same profile. If a request is refused, keep the exact error with tokens/identifiers removed. Reconnect or choose another available model; eligibility failures may require a different supported provider chosen by you.</p>
 <p>Use your own account, not the author&#x27;s login or a shared token. You can disconnect it in Settings. Windows credentials use local OS protection; on other systems keep credential files and their containing folder private. Signing in does not grant this dashboard access to your ChatGPT conversation history.</p>
 <h2>Ollama</h2>
-<p>Install <a href="https://ollama.com/download">Ollama</a>, run it on your computer, and install a suitable model using its own instructions. In Settings, select a local model for small tasks. This is not a substitute for a live research source or a guarantee that chat/import supports every local model. Check classifications and extracted figures. Local-model availability can be seen in Settings; the demo never discovers or uses your local model automatically.</p>
+<ul>
+<li>Install <a href="https://ollama.com/download">Ollama</a> and start its local service.</li>
+<li>Follow the <a href="https://docs.ollama.com/quickstart">official quickstart</a> to download/run a <strong>local</strong> model suitable for your hardware. A cloud model is a different choice and should not be described as local processing.</li>
+<li>Confirm a model appears with <code>ollama list</code>. Model downloads use disk space and an internet connection; inference needs suitable memory/compute.</li>
+<li>Enable AI in personal Setup, restart, then select the model under Settings&#x27; local-AI controls.</li>
+<li>Test a small supported categorisation/classification task and check the result.</li>
+</ul>
+<p>The included adapter expects Ollama on <code>http://127.0.0.1:11434</code>. In Settings, select a local model for small tasks. This is not a substitute for a live research source or a guarantee that chat/import supports every local model. Check classifications and extracted figures. Local-model availability can be seen in Settings; the demo never discovers or uses your local model automatically.</p>
 <h2>SEC EDGAR and research coverage</h2>
 <ul>
 <li>Enable public data in personal mode.</li>
@@ -147,23 +251,111 @@ python launch.py demo --command restart
 <p>SEC data is disclosure data: institutional holdings are delayed, insider forms need classification, and non-US coverage can be missing. Absence of a record is not proof that no event occurred. Read <a href="https://github.com/jcveraart/Wealth-dashboard-test/blob/main/INTELLIGENCE.md">INTELLIGENCE.md</a> for sources and calculation conventions. Public ECB, OECD, BIS, AFM and other adapters need no private-bank login; optional providers may need their own account.</p>
 <h2>Supabase cloud copy</h2>
 <p>Local use does not require Supabase. If you choose it, the configured portfolio/history/payment/receipt metadata is copied to your own hosted project; raw local source files are not automatically made public.</p>
+<h3>Create your own project</h3>
 <ul>
-<li>Create a <strong>dedicated empty project</strong> in <a href="https://supabase.com/dashboard">Supabase</a>. Do not reuse another application&#x27;s production database.</li>
-<li>Open <strong>SQL Editor → New query</strong>. Run, in order: <code>supabase-schema.sql</code>, <code>supabase-history.sql</code>, <code>supabase-spending.sql</code>, <code>supabase-plans.sql</code>, <code>supabase-receipts.sql</code> from this repository.</li>
-<li>These fresh-install scripts do not contain destructive DROP TABLE commands. They assume this application&#x27;s schema; they are not a migration tool for arbitrary existing tables.</li>
-<li>Keep Row Level Security enabled. The included views use the caller&#x27;s security context; no public read policies are supplied.</li>
-<li>Find your project URL and a <strong>server secret key</strong> (<code>sb_secret_…</code>), or a legacy <code>service_role</code> key if your project still uses it. A publishable/anon key cannot perform this server-side copy. Secret keys have elevated access; keep them only in local settings. <a href="https://supabase.com/docs/guides/getting-started/api-keys">Official key documentation</a>.</li>
-<li>Enable Supabase in personal Setup, restart, then enter your own URL/key in <strong>Settings → Data → Supabase</strong>. Test the connection, then request a sync.</li>
-<li>Verify the rows in your project. Settings shows sync status. Automatic syncing depends on the running app; manual sync remains available.</li>
+<li>Open <a href="https://supabase.com/dashboard">Supabase Dashboard</a>, sign in and create a <strong>dedicated empty project</strong> for your own dashboard. Complete any project/plan/terms decisions yourself.</li>
+<li>Choose your organization, a clear project name and an appropriate region. Keep any database password in your own password manager; this application uses its REST interface and does not ask for that password.</li>
+<li>Wait for the project to finish provisioning. Do not reuse a production database from another application.</li>
 </ul>
+<h3>Create the tables before connecting</h3>
+<p>Open <strong>SQL Editor → New query</strong> in that project. In your extracted application folder, open each file as text, copy its full contents into a query, run it, and check for a successful result before continuing. Use this order:</p>
+<div class="table-scroll"><table><thead><tr><th>Order</th><th>Repository file</th><th>Creates</th></tr></thead><tbody>
+<tr><td>1</td><td><code>supabase-schema.sql</code></td><td>Core accounts, institutions, holdings, instruments, history and portfolio backup</td></tr>
+<tr><td>2</td><td><code>supabase-history.sql</code></td><td>Recorded account history and yearly flows</td></tr>
+<tr><td>3</td><td><code>supabase-spending.sql</code></td><td>Payment accounts, categories, rules and transactions</td></tr>
+<tr><td>4</td><td><code>supabase-plans.sql</code></td><td>Recurring investment plans and payment linking fields</td></tr>
+<tr><td>5</td><td><code>supabase-receipts.sql</code></td><td>Invoice/product metadata and evidence links</td></tr>
+</tbody></table></div>
+<p>These are fresh-install scripts for this app&#x27;s schema, not general migrations for an arbitrary existing database. They contain no destructive DROP TABLE commands. Keep RLS enabled; the views use the caller&#x27;s security context and no public read policies are supplied. Do not add anonymous/public read policies just to fix an incorrect key.</p>
+<h3>Find the two values the dashboard needs</h3>
+<ul>
+<li>In your project&#x27;s <strong>Connect</strong> dialog, find the <strong>Project URL</strong>, shaped like <code>https://YOUR_PROJECT_REF.supabase.co</code>. This is not the dashboard page address and not a PostgreSQL connection string.</li>
+<li>In <strong>Settings → API Keys</strong>, find or create a dedicated <strong>server secret key</strong>, beginning <code>sb_secret_</code>. Prefer this modern key for a new project. An existing legacy <code>service_role</code> key is a supported alternative while available; a publishable/anon key cannot perform this app&#x27;s backend copy.</li>
+<li>Keep the secret private. It has elevated database access and bypasses RLS. Do not send it to a setup assistant, commit it, embed it in frontend code, or share its screenshot. Only your own local Python backend uses the key saved through the local form. <a href="https://supabase.com/docs/guides/getting-started/api-keys">Official key documentation</a>.</li>
+</ul>
+<h3>Connect and verify the first copy</h3>
+<ul>
+<li>In personal <strong>Setup &amp; help</strong>, enable <strong>Supabase</strong>, then save/restart. Enabling it alone does not create a connection.</li>
+<li>Open <strong>Settings → Data → Cloud copy → Set up</strong>.</li>
+<li>Enter your <strong>Project URL</strong> and <strong>Secret key</strong> yourself in the local form.</li>
+<li>Select <strong>Connect and sync</strong> only when you are ready to send the intended portfolio/history/payment/receipt metadata to your own project. This button tests access, saves the local configuration and starts the first copy; it is not a read-only test button.</li>
+<li>Inspect the sync result, then open your own Supabase <strong>Table Editor</strong>. Verify the expected accounts, holdings and payments, and check receipt metadata where present. No rows on an empty personal workspace can be a correct result.</li>
+<li>Later, <strong>Sync now</strong> requests another copy; automatic copying requires the app to remain running. <strong>Disconnect</strong> stops use of the saved connection but leaves the existing cloud rows in place.</li>
+</ul>
+<p>This is a local-to-cloud copy, not a bank connector and not automatic two-way editing/restore. The spending sync replaces the dashboard&#x27;s spending tables in that project; this is another reason to use a dedicated project. Local source documents are not uploaded as cloud file storage by this metadata sync.</p>
+<h3>If it fails</h3>
+<div class="table-scroll"><table><thead><tr><th>Message or symptom</th><th>Check</th></tr></thead><tbody>
+<tr><td>Project URL rejected</td><td>Use the HTTPS project URL, not the dashboard page or database connection string</td></tr>
+<tr><td>Key rejected / 401 / 403</td><td>Correct project, server secret, key not revoked, and personal cloud feature enabled</td></tr>
+<tr><td>Tables missing</td><td>Run all five SQL files in the correct project; read the SQL result</td></tr>
+<tr><td>Core rows copied but receipt metadata missing</td><td>Apply <code>supabase-receipts.sql</code>, then Sync now</td></tr>
+<tr><td>No rows</td><td>Confirm there are real records in this personal workspace and inspect the sync result</td></tr>
+<tr><td>Connection worked earlier</td><td>Confirm project availability/quota and your key&#x27;s status in the provider dashboard</td></tr>
+</tbody></table></div>
+<p>Never use another person&#x27;s project/key. Troubleshoot a redacted error without copying secrets or raw financial rows into public chats/issues.</p>
 <p>Do not run the synthetic SQL seed against a personal project. <code>build_supabase_seed.py</code> is only for a separate empty <strong>demo</strong> project if you deliberately want to inspect example tables; it creates SQL locally and makes no connection. Never use a friend&#x27;s/project author&#x27;s secret key. GitHub never needs this key.</p>
 <h2>OpenBB, Quiver and other optional sources</h2>
-<p>Most public features use the built-in sources. OpenBB is optional and is not installed by the basic installer. Follow <code>INTELLIGENCE.md</code> and <code>requirements-openbb.txt</code>, use a separate OpenBB environment, and configure its Python/provider path in Connections. Provider entitlements and returned datasets vary; missing data remains unavailable.</p>
+<p>Most public features use the built-in sources. OpenBB is optional and is not installed by the basic installer. It is not preinstalled for the person downloading this repository.</p>
+<h3>OpenBB: advanced, optional</h3>
+<p>Start the personal profile once so its folder exists. Use Python 3.10+ (3.11/3.12 recommended) and install the repository&#x27;s v4 compatibility requirements in the private personal runtime. From the <strong>project folder</strong>, the Windows commands are:</p>
+<pre><code>
+python -m venv .personal-runtime/.openbb-env
+.\.personal-runtime\.openbb-env\Scripts\python.exe -m pip install -r requirements-openbb.txt
+</code></pre>
+<p>On macOS/Linux:</p>
+<pre><code>
+python3 -m venv .personal-runtime/.openbb-env
+.personal-runtime/.openbb-env/bin/python -m pip install -r requirements-openbb.txt
+</code></pre>
+<p>The adapter detects that runtime-local environment. Restart the personal app and check <strong>Data connections &amp; coverage → OpenBB</strong>. The supplied adapter uses a v4-compatible layout; upgrading major versions can require code/configuration changes. Try supported public data first; additional providers have their own entitlements and private settings. No author credentials are installed.</p>
+<p> Follow <code>INTELLIGENCE.md</code> and <code>requirements-openbb.txt</code>, use a separate OpenBB environment, and configure its Python/provider path in Connections. Provider entitlements and returned datasets vary; missing data remains unavailable.</p>
+<h3>Quiver: advanced, optional</h3>
+<p>Open <a href="https://www.quiverquant.com/api-setup/">Quiver API setup</a>, sign into your own account and check that your entitlement covers the datasets you want. Obtain your own token, enable public data in personal mode, then use <strong>Data connections &amp; coverage → Quiver API key</strong> and <strong>Save connections</strong>. Refresh a supported dataset and inspect its source/coverage or failure. A saved key is not proof of entitlement.</p>
 <p>For Quiver, add your own key in Settings only if your subscription supplies the desired dataset. It is not necessary for the core dashboard. You can remove optional keys without losing your local financial records.</p>
+<h2>Other built-in public sources: no extra key checklist</h2>
+<p>The current adapters include selected ECB, Eurostat/CBS, World Bank, OECD, BIS, FRED chart CSV, AFM disclosures, GLEIF, OpenFIGI identifier candidates, GDELT, openFDA, ClinicalTrials.gov, USAspending and Kraken public-market history. Use public-data mode and the supported query controls in Connections/research tools. Coverage and public rate limits vary; an available adapter is not a promise that every query succeeds.</p>
+<p>You do not need a separate key for each of these included public adapters. The FRED adapter uses selected public CSV downloads, not every keyed FRED API function. Kraken public candles do not use your exchange account or permit trading. OpenFIGI returns identifier candidates for review, not proof that a security match is correct. None of these connects to your bank or uploads your ledger as a public-data search query.</p>
 <h2>GitHub and updates</h2>
 <p>GitHub distributes the code, not your finances. Downloading a ZIP requires no Git login. Cloning/pulling requires Git; a private fork requires your own GitHub authentication. Keep runtime folders ignored. Source-update checks do not upload your local finances. Read the installation update steps before replacing code.</p>
 <h2>Backups and moving computers</h2>
-<p>Use a portable encrypted backup with a password you keep separately. Preview the restore and recover into a new/isolated workspace before replacing the old one. Windows-local keys are tied to that OS user; do not assume copying a credential blob is a portable login. Sign in to providers again on the new machine. The demo&#x27;s sample files and reset backups are distinct from your personal records.</p><h1 id="screenshots">Screenshot walkthrough</h1>
+<p>Use a portable encrypted backup with a password you keep separately. Preview the restore and recover into a new/isolated workspace before replacing the old one. Windows-local keys are tied to that OS user; do not assume copying a credential blob is a portable login. Sign in to providers again on the new machine. The demo&#x27;s sample files and reset backups are distinct from your personal records.</p><h1 id="assisted_setup">Set up with help from ChatGPT or Claude</h1>
+<p>Use this prompt in your preferred assistant. It guides the assistant through the actual application setup, while leaving provider logins, secrets and financial choices with you.</p>
+<h2>Which assistant should I use?</h2>
+<ul>
+<li><strong>A normal ChatGPT/Claude web chat:</strong> it can explain steps and troubleshoot redacted errors. It generally cannot read your downloaded folder or operate your local dashboard unless an appropriate local tool is connected.</li>
+<li><strong>An assistant with local terminal/file access:</strong> open the extracted project as its workspace, then paste the prompt. It can inspect the code and perform permitted local installation/checks. Its tool permissions and your provider access still apply.</li>
+<li><strong>The dashboard&#x27;s own chat:</strong> configure its provider first. This chat is for your dashboard data/workflows; do not rely on it to install the application that is running it.</li>
+</ul>
+<p>You do not need to upload your finances or keys to get installation help. Answer with your OS, folder, desired features and redacted errors. The assistant should explain what it can access before acting.</p>
+<h2>Before you paste</h2>
+<p>Have the <a href="#installation">installation guide</a>, <a href="#keychecklist">key checklist</a> and <a href="#connections">connections guide</a> available. You can paste the prompt as-is: the assistant should ask for missing preferences. If using a web-only chat, provide the public repository link and these public documents if it cannot retrieve them.</p>
+<p>In the running app, <strong>Setup &amp; help → Setup checklist &amp; assistant prompt</strong> opens the same instructions. The in-app guide has <strong>Copy setup prompt</strong> and <strong>Download prompt</strong> controls. On GitHub, copy the entire text block below, or open the <a href="https://github.com/jcveraart/Wealth-dashboard-test/blob/main/web/setup-assistant-prompt.txt">plain-text prompt</a>, choose Raw and copy it.</p>
+<h2>Copy this entire prompt</h2>
+<div class="prompt-tools"><button type="button" id="copySetupPrompt">Copy setup prompt</button><a href="/setup-assistant-prompt.txt" download>Download prompt</a><span id="copyPromptStatus" role="status"></span></div><pre id="setupAssistantPrompt"><code>
+Help me install and connect my own local Wealth dashboard from https://github.com/jcveraart/Wealth-dashboard-test. I am a beginner. Keep the demo separate from my personal finances, and keep the existing design.
+
+Read the current README, docs/INSTALLATION.md, docs/KEYCHECKLIST.md and docs/CONNECTIONS.md first. Check the actual downloaded version and settings before giving commands. If you cannot browse or read files, say so and ask me for the relevant documentation, without private records or keys.
+
+First ask, in one short message, for my operating system, extracted folder, preferred AI route (Claude Code subscription, ChatGPT plan, Anthropic API, or none), whether I want a Supabase cloud copy, and whether I want SEC or advanced providers. Recommend local imports + public data + one AI provider as the first stage. I do not need every paid service.
+
+Explain whether you have access to my local files/terminal. If you do, perform the authorised local installation and reversible checks. If you do not, guide me one small step at a time with commands for my OS and wait for the result. Do not claim that a normal web chat can open localhost or connect my computer without an appropriate tool.
+
+1. Verify Python and the complete extracted folder. Start demo.py and confirm fictional data appears. Preserve any existing runtime and my edits. Use the launcher and its actual local port; never stop an unrelated server or reset personal data.
+2. Create/reopen the separate personal workspace with personal.py or Setup &amp; help. Verify that it is empty of demo records. Install optional features with install.py in the project folder when needed; the launcher should use this project&#x27;s virtual environment.
+3. Enable only the features I chose in personal Setup &amp; help, save/restart, and configure them in Settings. Leave unwanted services disabled.
+4. For public prices/research/savings comparisons, use the supported built-in sources first. Check source dates, stale/unavailable messages and a public ticker. No default Yahoo or savings API key is needed. This does not log into my bank.
+5. For AI, guide my chosen route. Claude Code needs the CLI and my own login; Anthropic API needs my own key and usable Console credits/billing. OpenAI uses this app&#x27;s ChatGPT-plan sign-in, not a pasted OpenAI API key. Complete login/consent myself, then test a short request after approval and verify the selected chat and import providers. Respect eligibility/limits; do not introduce a paid fallback.
+6. For SEC, explain the contact identification sent in requests and ask whether I consent before configuring it. Missing filings should stay unavailable.
+7. If I chose Supabase, help me create my own dedicated empty project. Have me complete account creation and terms. Apply the five repository schema files in documented order: supabase-schema.sql, supabase-history.sql, supabase-spending.sql, supabase-plans.sql, supabase-receipts.sql. Keep RLS enabled. Never reuse another app&#x27;s production database or seed my personal project with demo data. Explain where to find the Project URL and server secret in the project&#x27;s Connect dialog / Settings &gt; API Keys. Let me enter the secret directly in my local dashboard, then explain that Connect and sync tests and writes the intended cloud copy. Obtain my approval for that first sync and verify rows in my own project.
+8. Configure Ollama, OpenBB or Quiver only if I chose them. Use the included requirements/adapter instructions and my own provider entitlements. Do not install every provider or assume any paid dataset is available.
+9. Guide a small real import locally. Explain which files/context will go to an AI provider before sending them and obtain my approval. Check account, date, currency, totals, duplicate handling and Undo. Invoices must link to existing payments, not duplicate spending. Keep savings plans as dashboard records; never place financial orders.
+10. Help me create and verify a portable backup, and explain normal start/stop/update commands. Finish with a concise table: feature, working/skipped/unavailable, evidence checked, and anything I must still do.
+
+Do not ask me to paste API keys, passwords, tokens, private financial documents or unredacted screenshots into this chat. I enter credentials directly in my own app/provider UI. Do not print secrets, copy another person&#x27;s credentials, commit runtimes/backups or expose the server to the internet. Explain costs and data destinations before I choose a connection. If a step fails, use the actual redacted error to troubleshoot rather than guessing or declaring it connected.
+</code></pre>
+<h2>What a successful setup report looks like</h2>
+<p>The assistant should identify your actual personal URL/folder, selected services and verified results. “Skipped by choice” and “unavailable for this account” are valid outcomes. It should never call a connection successful just because a checkbox is selected, a key was saved or a sign-in page opened.</p>
+<p>Provider sign-in, billing/eligibility and the first real data transfer require your own participation. The prompt does not grant your assistant a bank login, permission to trade, or access to another user&#x27;s accounts.</p><h1 id="screenshots">Screenshot walkthrough</h1>
 <p>All 19 screenshots were captured from this public build using a fresh download. Financial records, rates, prices, news and company figures are fictional; the personal-setup screenshot shows an empty test profile. No private dashboard, bank statement or credential was photographed.</p>
 <p>Follow the <a href="#installation">installation guide</a> first. The <a href="#connections">connections guide</a> explains provider setup, cost/access requirements and what data leaves your computer. Light/dark appearance follows your selected theme; the layout is the same.</p>
 <h2>Overview: your whole dashboard</h2>
@@ -222,4 +414,11 @@ python launch.py demo --command restart
 <p><img loading="lazy" alt="Try first, then choose your own workspace" src="guide-images/16-demo-setup.jpg"></p>
 <h2>Personal mode: empty and opt-in</h2>
 <p>The separate personal workspace starts with no sample financial records. Install optional packages, choose desired features, save/restart, then configure your own providers. Leave unwanted connections disabled.</p>
-<p><img loading="lazy" alt="Personal mode: empty and opt-in" src="guide-images/17-personal-setup.jpg"></p></html>
+<p><img loading="lazy" alt="Personal mode: empty and opt-in" src="guide-images/17-personal-setup.jpg"></p><script>
+const copySetup=document.getElementById('copySetupPrompt');
+if(copySetup)copySetup.addEventListener('click',async()=>{
+  const status=document.getElementById('copyPromptStatus');
+  try{await navigator.clipboard.writeText(document.querySelector('#setupAssistantPrompt code').textContent.trim());status.textContent='Copied. Paste into ChatGPT or Claude.';}
+  catch{status.textContent='Select the prompt below and copy it with Ctrl+C or Command+C, or download it.';}
+});
+</script></html>

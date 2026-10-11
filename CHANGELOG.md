@@ -1,5 +1,9 @@
 # Public edition
 
+## 11 October 2026
+
+Added a beginner connection sequence, complete account/key checklist, step-by-step Supabase and AI setup, optional-provider instructions, and a downloadable/copyable ChatGPT/Claude setup prompt. In-app Settings now lists all five Supabase schema files and explains that Connect and sync writes the cloud copy. No credentials or connections are supplied.
+
 ## 10 October 2026
 
 Added Trips and Countries screenshots to the gallery and README, bringing the walkthrough to 19 images. Include the static country-outline file in both demo and personal runtime copies so country names, travel-card maps and the full spending map work offline after downloading. Fresh-download packaging and privacy checks pass.

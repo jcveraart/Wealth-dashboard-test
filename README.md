@@ -15,7 +15,9 @@ The demo needs no AI account, API key, bank login, cloud database or package ins
 ## Complete guides
 
 - [Installation, personal-mode transition, updates and troubleshooting](docs/INSTALLATION.md)
+- [What to connect: complete account/API-key checklist](docs/KEYCHECKLIST.md)
 - [All optional connections, setup steps, costs and privacy](docs/CONNECTIONS.md)
+- [Copyable ChatGPT/Claude setup prompt](docs/ASSISTED_SETUP.md)
 - [Screenshot tour of pages and features](docs/SCREENSHOTS.md)
 - [Application walkthrough](docs/APP_GUIDE.md)
 - [Data format](DATA.md), [investment research](INTELLIGENCE.md), [connected workflows](WORKFLOWS.md)

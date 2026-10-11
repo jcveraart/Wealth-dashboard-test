@@ -52,3 +52,5 @@ Transaction_export*.csv
 !/demo_data/attachments/receipts/*.txt
 !/web/samples/*.txt
 !/demo_data/web/samples/*.txt
+
+!/web/setup-assistant-prompt.txt

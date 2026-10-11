@@ -79,7 +79,7 @@ In personal mode, open **Setup & help**. Enable only what you want:
 
 Select **Save choices & restart this workspace**. After restart, configure the relevant provider in Settings. A choice enables the feature; it does not sign in, create a financial account, buy anything or copy someone else's credentials. If the browser reloads before restart finishes, wait a few seconds and refresh.
 
-Follow [Connections](CONNECTIONS.md) for exact instructions, costs, data sharing and limitations. Every connection is optional. The public app has no developer-supplied keys and no shared financial database.
+Use the [account/key checklist](KEYCHECKLIST.md) first, or paste the [setup-assistant prompt](ASSISTED_SETUP.md) into ChatGPT/Claude for help. Follow [Connections](CONNECTIONS.md) for exact instructions, costs, data sharing and limitations. Every connection is optional. The public app has no developer-supplied keys and no shared financial database.
 
 ## 6. Import real records
 
